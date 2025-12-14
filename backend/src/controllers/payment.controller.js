@@ -1,200 +1,215 @@
-﻿const crypto = require('crypto');
-const db = require('../config/db');
-const razorpayService = require('../services/razorpay');
+﻿const Razorpay = require("razorpay");
+const crypto = require("crypto");
+const db = require("../config/db");
 
-/**
- * Create payment order
- * POST /api/payment/create-order
- */
-const createOrder = async (req, res) => {
+// ------------------------------
+// Initialize Razorpay
+// ------------------------------
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+// ------------------------------
+// CREATE ORDER
+// ------------------------------
+exports.createOrder = async (req, res) => {
   try {
-    const { projectId } = req.body;
-    const userId = req.user.id;
+    const { projectId, couponCode } = req.body;  // ✅ Added couponCode support
 
-    // Get project details
-    const projects = await db.query(
-      'SELECT id, title, price FROM projects WHERE id = ?',
+    if (!projectId) {
+      return res.json({ success: false, message: "projectId is required" });
+    }
+
+    // 1. Get project price from DB
+    const rows = await db.query(
+      "SELECT id, price FROM projects WHERE id = ? LIMIT 1",
       [projectId]
     );
 
-    if (projects.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+    if (!rows.length) {
+      return res.json({ success: false, message: "Project not found" });
     }
 
-    const project = projects[0];
+    let originalAmount = Number(rows[0].price);
+    let discountAmount = 0;
+    let finalAmount = originalAmount;
 
-    // Check if already purchased
-    const existingOrders = await db.query(
-      `SELECT id FROM orders 
-       WHERE user_id = ? AND project_id = ? AND status = 'paid'`,
-      [userId, projectId]
-    );
+    // ✅ Apply coupon if provided
+    if (couponCode) {
+      const coupons = await db.query(
+        `SELECT * FROM coupons 
+         WHERE code = ? AND is_active = TRUE 
+         AND (valid_until IS NULL OR valid_until > NOW())`,
+        [couponCode.toUpperCase()]
+      );
 
-    if (existingOrders.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'You have already purchased this project'
-      });
-    }
+      if (coupons.length > 0) {
+        const coupon = coupons[0];
+        
+        // Check usage limit
+        if (!coupon.usage_limit || coupon.used_count < coupon.usage_limit) {
+          // Check if user already used this coupon
+          const userUsage = await db.query(
+            'SELECT id FROM coupon_usage WHERE coupon_id = ? AND user_id = ?',
+            [coupon.id, req.user.id]
+          );
 
-    // Create Razorpay order (or mock order)
-    const amount = Math.round(project.price * 100); // Convert to paise
-    const razorpayOrder = await razorpayService.createOrder({
-      amount,
-      currency: 'INR',
-      receipt: `order_${userId}_${projectId}_${Date.now()}`,
-      notes: {
-        projectId: projectId.toString(),
-        userId: userId.toString(),
-        projectTitle: project.title
+          if (userUsage.length === 0) {
+            // Calculate discount (values in DB are in paise for fixed, percentage for %)
+            if (coupon.discount_type === 'percentage') {
+              discountAmount = (originalAmount * coupon.discount_value) / 100;
+            } else {
+              discountAmount = coupon.discount_value; // Fixed amount in rupees
+            }
+
+            // Apply max discount limit (stored in paise, convert to rupees)
+            if (coupon.max_discount_amount) {
+              const maxDiscount = coupon.max_discount_amount / 100;
+              discountAmount = Math.min(discountAmount, maxDiscount);
+            }
+
+            // Ensure discount doesn't exceed price
+            discountAmount = Math.min(discountAmount, originalAmount);
+            finalAmount = originalAmount - discountAmount;
+            finalAmount = Math.max(0, finalAmount);
+          }
+        }
       }
-    });
+    }
 
-    // Save order to database
-    const result = await db.query(
-      `INSERT INTO orders 
-       (user_id, project_id, razorpay_order_id, amount, status, created_at) 
-       VALUES (?, ?, ?, ?, 'pending', NOW())`,
-      [userId, projectId, razorpayOrder.id, project.price]
-    );
+    const amountInPaise = Math.round(finalAmount * 100);
 
-    res.json({
+    // 2. Create Razorpay order
+    const options = {
+      amount: amountInPaise,
+      currency: "INR",
+      receipt: `order_${projectId}_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    return res.json({
       success: true,
-      data: {
-        orderId: result.insertId,
-        razorpayOrderId: razorpayOrder.id,
-        amount: amount,
-        currency: 'INR',
-        projectTitle: project.title,
-        keyId: process.env.RAZORPAY_KEY_ID || 'mock_key',
-        isMockPayment: !process.env.RAZORPAY_KEY_ID
-      }
+      orderId: order.id,
+      amount: order.amount,
+      originalAmount,
+      discountAmount,
+      couponCode: couponCode || null
     });
   } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({
+    console.error("Create order error:", error);
+    return res.json({
       success: false,
-      message: 'Failed to create order'
+      message: "Failed to create order",
     });
   }
 };
 
-/**
- * Verify payment
- * POST /api/payment/verify-payment
- */
-const verifyPayment = async (req, res) => {
+// ------------------------------
+// VERIFY PAYMENT
+// ------------------------------
+exports.verifyPayment = async (req, res) => {
   try {
     const {
+      projectId,
       razorpay_order_id,
       razorpay_payment_id,
-      razorpay_signature
+      razorpay_signature,
+      couponCode,
+      discountAmount
     } = req.body;
 
-    // Find the order
-    const orders = await db.query(
-      'SELECT * FROM orders WHERE razorpay_order_id = ?',
-      [razorpay_order_id]
-    );
-
-    if (orders.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
+    if (!projectId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.json({ success: false, message: "Missing payment fields" });
     }
 
-    const order = orders[0];
+    // 1. Verify signature
+    const signData = `${razorpay_order_id}|${razorpay_payment_id}`;
 
-    // Verify signature (skip for mock payments)
-    const isMockPayment = razorpay_order_id.startsWith('order_mock_');
-    
-    if (!isMockPayment && process.env.RAZORPAY_KEY_SECRET) {
-      const expectedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-        .digest('hex');
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(signData)
+      .digest("hex");
 
-      if (expectedSignature !== razorpay_signature) {
-        // Update order status to failed
+    if (expectedSignature !== razorpay_signature) {
+      return res.json({ success: false, message: "Invalid signature" });
+    }
+
+    // 2. Get project price
+    const rows = await db.query(
+      "SELECT price FROM projects WHERE id = ? LIMIT 1",
+      [projectId]
+    );
+
+    if (!rows.length) {
+      return res.json({ success: false, message: "Project not found" });
+    }
+
+    const originalAmount = Number(rows[0].price);
+    const discount = discountAmount || 0;
+    const finalAmount = originalAmount - discount;
+
+    // 3. Save order with coupon info
+    const result = await db.query(
+      `INSERT INTO orders (user_id, project_id, razorpay_order_id, razorpay_payment_id, 
+                           amount, original_amount, discount_amount, coupon_code, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paid', NOW())`,
+      [
+        req.user.id, 
+        projectId, 
+        razorpay_order_id,
+        razorpay_payment_id, 
+        finalAmount,
+        originalAmount,
+        discount,
+        couponCode || null
+      ]
+    );
+
+    const orderId = result.insertId;
+
+    // 4. If coupon used, log it and increment usage
+    if (couponCode) {
+      const coupons = await db.query(
+        'SELECT id FROM coupons WHERE code = ?',
+        [couponCode.toUpperCase()]
+      );
+      
+      if (coupons.length > 0) {
+        const couponId = coupons[0].id;
+        
+        // Log coupon usage
         await db.query(
-          `UPDATE orders SET status = 'failed' WHERE id = ?`,
-          [order.id]
+          `INSERT INTO coupon_usage (coupon_id, user_id, order_id, discount_amount, created_at)
+           VALUES (?, ?, ?, ?, NOW())`,
+          [couponId, req.user.id, orderId, Math.round(discount * 100)]
         );
-
-        return res.status(400).json({
-          success: false,
-          message: 'Payment verification failed'
-        });
       }
     }
 
-    // Update order status to paid
+    // 5. Create download log (6 months expiry, 5 downloads max)
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + 6);
+
     await db.query(
-      `UPDATE orders 
-       SET razorpay_payment_id = ?, status = 'paid', updated_at = NOW() 
-       WHERE id = ?`,
-      [razorpay_payment_id, order.id]
+      `INSERT INTO download_logs (user_id, project_id, order_id, download_count, max_downloads, expiry_date, created_at)
+       VALUES (?, ?, ?, 0, 5, ?, NOW())`,
+      [req.user.id, projectId, orderId, expiryDate]
     );
 
-    res.json({
+    // ✅ REMOVED: purchases table insert (table doesn't exist)
+
+    return res.json({ 
       success: true,
-      message: 'Payment verified successfully',
-      data: {
-        orderId: order.id,
-        projectId: order.project_id
-      }
+      message: "Payment verified successfully",
+      orderId 
     });
   } catch (error) {
-    console.error('Verify payment error:', error);
-    res.status(500).json({
+    console.error("Verify payment error:", error);
+    return res.json({
       success: false,
-      message: 'Payment verification failed'
+      message: "Payment verification failed",
     });
   }
-};
-
-/**
- * Get payment status
- * GET /api/payment/status/:orderId
- */
-const getPaymentStatus = async (req, res) => {
-  try {
-    const { orderId } = req.params;
-
-    const orders = await db.query(
-      `SELECT o.*, p.title as project_title 
-       FROM orders o 
-       JOIN projects p ON o.project_id = p.id 
-       WHERE o.razorpay_order_id = ? AND o.user_id = ?`,
-      [orderId, req.user.id]
-    );
-
-    if (orders.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Order not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: orders[0]
-    });
-  } catch (error) {
-    console.error('Get payment status error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch payment status'
-    });
-  }
-};
-
-module.exports = {
-  createOrder,
-  verifyPayment,
-  getPaymentStatus
 };

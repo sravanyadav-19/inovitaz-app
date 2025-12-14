@@ -1,4 +1,5 @@
-﻿const jwt = require('jsonwebtoken');
+﻿// src/middlewares/auth.middleware.js
+const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
 /**
@@ -18,13 +19,13 @@ const authOptional = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Verify user still exists
+      // FIXED: No array destructuring
       const users = await db.query(
         'SELECT id, email, name, role FROM users WHERE id = ?',
         [decoded.id]
       );
       
-      if (users.length > 0) {
+      if (users && users.length > 0) {
         req.user = users[0];
       } else {
         req.user = null;
@@ -59,13 +60,13 @@ const authRequired = async (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       
-      // Verify user still exists and is active
+      // FIXED: No array destructuring
       const users = await db.query(
         'SELECT id, email, name, role FROM users WHERE id = ?',
         [decoded.id]
       );
       
-      if (users.length === 0) {
+      if (!users || users.length === 0) {
         return res.status(401).json({
           success: false,
           message: 'User not found or has been deactivated.'
@@ -101,10 +102,12 @@ const authRequired = async (req, res, next) => {
  */
 const adminOnly = async (req, res, next) => {
   try {
-    // First check if user is authenticated
     const authHeader = req.headers.authorization;
     
+    console.log('🔐 [ADMIN CHECK] Authorization Header:', authHeader ? 'Present ✓' : 'Missing ✗');
+    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('🔐 [ADMIN CHECK] Failed: No Bearer token');
       return res.status(401).json({
         success: false,
         message: 'Access denied. No token provided.'
@@ -112,17 +115,22 @@ const adminOnly = async (req, res, next) => {
     }
     
     const token = authHeader.split(' ')[1];
+    console.log('🔐 [ADMIN CHECK] Token:', token.substring(0, 30) + '...');
     
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      console.log('🔐 [ADMIN CHECK] Decoded:', decoded);
       
-      // Verify user exists and is admin
+      // FIXED: No array destructuring
       const users = await db.query(
         'SELECT id, email, name, role FROM users WHERE id = ?',
         [decoded.id]
       );
       
-      if (users.length === 0) {
+      console.log('🔐 [ADMIN CHECK] Query result:', users);
+      
+      if (!users || users.length === 0) {
+        console.log('🔐 [ADMIN CHECK] Failed: User not found in DB');
         return res.status(401).json({
           success: false,
           message: 'User not found.'
@@ -130,24 +138,28 @@ const adminOnly = async (req, res, next) => {
       }
       
       const user = users[0];
+      console.log('🔐 [ADMIN CHECK] User from DB:', user);
       
       if (user.role !== 'admin') {
+        console.log('🔐 [ADMIN CHECK] Failed: User role is', user.role, 'not admin');
         return res.status(403).json({
           success: false,
           message: 'Access denied. Admin privileges required.'
         });
       }
       
+      console.log('🔐 [ADMIN CHECK] Success! User is admin ✓');
       req.user = user;
       next();
     } catch (jwtError) {
+      console.log('🔐 [ADMIN CHECK] JWT Error:', jwtError.message);
       return res.status(401).json({
         success: false,
         message: 'Invalid or expired token.'
       });
     }
   } catch (error) {
-    console.error('Admin middleware error:', error);
+    console.error('🔐 [ADMIN CHECK] Unexpected error:', error);
     return res.status(500).json({
       success: false,
       message: 'Authorization error.'

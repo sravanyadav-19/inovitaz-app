@@ -1,151 +1,217 @@
 // src/api/projects.js
-const API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+const API_URL = 'http://localhost:4000/api';
 
-// Public (non-admin) endpoints
+// Read token from localStorage
+const getToken = () => localStorage.getItem('token');
+
+// PUBLIC PROJECT APIs
 export const projectsAPI = {
-  // Get all projects
   getAll: async (params = {}) => {
     try {
-      const queryString = new URLSearchParams(params).toString();
-      const response = await fetch(`${API_URL}/projects?${queryString}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching projects:', error);
+      const q = new URLSearchParams(params).toString();
+      const res = await fetch(`${API_URL}/projects?${q}`);
+      return await res.json();
+    } catch (err) {
+      console.error('Error fetching projects:', err);
       return { success: false, data: { projects: [] } };
     }
   },
 
-  // Get single project by ID
   getById: async (id) => {
-    try {
-      const response = await fetch(`${API_URL}/projects/${id}`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching project:', error);
-      return { success: false, data: null };
-    }
+    const token = localStorage.getItem("token");
+
+    const response = await fetch(`${API_URL}/projects/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    const res = await response.json();
+
+    // Normalize backend structure for frontend
+    return {
+      success: res.success,
+      data: res.data?.project || res.data || null
+    };
   },
 
-  // Get projects by category
   getByCategory: async (category) => {
     try {
-      const response = await fetch(
-        `${API_URL}/projects?category=${encodeURIComponent(category)}`
-      );
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching projects:', error);
+      const res = await fetch(`${API_URL}/projects?category=${category}`);
+      return await res.json();
+    } catch (err) {
+      console.error('Error fetching projects:', err);
       return { success: false, data: { projects: [] } };
     }
   },
 
-  // Categories list (used in Projects.jsx)
+  // ✅ ADDED: Get categories function
   getCategories: async () => {
     try {
-      const response = await fetch(`${API_URL}/projects/categories`);
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching categories:', error);
-      return { success: false, data: [] };
+      const res = await fetch(`${API_URL}/projects/categories`);
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      // Fallback to hardcoded categories if API not ready
+      return { 
+        success: true, 
+        data: [
+          { category: 'IoT', count: 0 },
+          { category: 'Arduino', count: 0 },
+          { category: 'ESP32', count: 0 },
+          { category: 'Raspberry Pi', count: 0 },
+          { category: 'Robotics', count: 0 }
+        ] 
+      };
     }
   },
 
-  // Prepare download URL (used in Dashboard.jsx)
+  // ⚠️ MODIFIED: Wishlist functions (disabled until backend ready)
+  getWishlist: async () => {
+    // Return empty wishlist until backend is ready
+    return { success: true, data: [] };
+    
+    /* UNCOMMENT WHEN BACKEND IS READY:
+    try {
+      const token = getToken();
+      if (!token) return { success: false, data: [] };
+
+      const res = await fetch(`${API_URL}/wishlist`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Error fetching wishlist:', err);
+      return { success: false, data: [] };
+    }
+    */
+  },
+
+  addToWishlist: async (projectId) => {
+    // Temporarily use localStorage until backend ready
+    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    if (!wishlist.includes(projectId)) {
+      wishlist.push(projectId);
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    }
+    return { success: true, message: 'Added to wishlist (local)' };
+    
+    /* UNCOMMENT WHEN BACKEND IS READY:
+    try {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch(`${API_URL}/wishlist`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ project_id: projectId })
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Error adding to wishlist:', err);
+      return { success: false, message: err.message };
+    }
+    */
+  },
+
+  removeFromWishlist: async (projectId) => {
+    // Temporarily use localStorage until backend ready
+    let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+    wishlist = wishlist.filter(id => id !== projectId);
+    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    return { success: true, message: 'Removed from wishlist (local)' };
+    
+    /* UNCOMMENT WHEN BACKEND IS READY:
+    try {
+      const token = getToken();
+      if (!token) throw new Error('Not authenticated');
+
+      const res = await fetch(`${API_URL}/wishlist/${projectId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('Error removing from wishlist:', err);
+      return { success: false, message: err.message };
+    }
+    */
+  },
+
   download: async (projectId) => {
     try {
-      const token = localStorage.getItem('token') || '';
+      const token = localStorage.getItem("token");
+
       const response = await fetch(`${API_URL}/projects/${projectId}/download`, {
+        method: "GET",
         headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
         },
-        credentials: 'include',
       });
+
       return await response.json();
     } catch (error) {
-      console.error('Error preparing download:', error);
-      return { success: false, data: null };
+      console.error("Download request failed:", error);
+      return { success: false, message: "Download failed" };
     }
   },
 };
 
-// Helper for authenticated admin requests
-const adminFetch = async (url, options = {}) => {
-  const token = localStorage.getItem('token') || '';
 
-  const response = await fetch(url, {
+// FIXED ADMIN FETCH (with Bearer auth)
+const adminFetch = async (url, options = {}) => {
+  const token = getToken();
+
+  const res = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
-      Authorization: token ? `Bearer ${token}` : undefined,
+      Authorization: `Bearer ${token}`,
       ...(options.headers || {}),
     },
-    credentials: 'include',
     ...options,
   });
 
-  return await response.json();
+  return await res.json();
 };
 
-// Admin endpoints used in AdminDashboard.jsx
+// ADMIN APIs
 export const adminProjectsAPI = {
   getStats: async () => {
-    try {
-      return await adminFetch(`${API_URL}/admin/stats`);
-    } catch (error) {
-      console.error('Error fetching admin stats:', error);
-      return { success: false, data: null };
-    }
+    return await adminFetch(`${API_URL}/admin/stats`);
   },
 
-  create: async (projectData) => {
-    try {
-      return await adminFetch(`${API_URL}/admin/projects`, {
-        method: 'POST',
-        body: JSON.stringify(projectData),
-      });
-    } catch (error) {
-      console.error('Error creating project:', error);
-      return { success: false };
-    }
+  create: async (data) => {
+    return await adminFetch(`${API_URL}/admin/projects`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 
-  update: async (id, projectData) => {
-    try {
-      return await adminFetch(`${API_URL}/admin/projects/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(projectData),
-      });
-    } catch (error) {
-      console.error('Error updating project:', error);
-      return { success: false };
-    }
+  update: async (id, data) => {
+    return await adminFetch(`${API_URL}/admin/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
   },
 
   delete: async (id) => {
-    try {
-      return await adminFetch(`${API_URL}/admin/projects/${id}`, {
-        method: 'DELETE',
-      });
-    } catch (error) {
-      console.error('Error deleting project:', error);
-      return { success: false };
-    }
+    return await adminFetch(`${API_URL}/admin/projects/${id}`, {
+      method: 'DELETE',
+    });
   },
 
   getAllOrders: async () => {
-    try {
-      return await adminFetch(`${API_URL}/admin/orders`);
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      return { success: false, data: { orders: [] } };
-    }
+    return await adminFetch(`${API_URL}/admin/orders`);
   },
 
   getAllUsers: async () => {
-    try {
-      return await adminFetch(`${API_URL}/admin/users`);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      return { success: false, data: { users: [] } };
-    }
+    return await adminFetch(`${API_URL}/admin/users`);
   },
 };

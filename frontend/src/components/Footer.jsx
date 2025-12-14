@@ -1,105 +1,174 @@
-import { Link } from 'react-router-dom';
-import { HiMail, HiPhone, HiLocationMarker } from 'react-icons/hi';
+import { Link } from "react-router-dom";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { 
+  HiMail, 
+  HiPhone, 
+  HiLocationMarker, 
+  HiChat, 
+  HiArrowRight,
+  HiShieldCheck,
+  HiCreditCard 
+} from "react-icons/hi";
+import { FaInstagram, FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa"; // Standard social icons
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const { user } = useContext(AuthContext);
 
   return (
-    <footer className="bg-secondary-900 text-secondary-300">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">I</span>
+    <footer className="bg-secondary-900 text-secondary-300 mt-auto border-t border-secondary-800">
+      
+      {/* ========= CTA SECTION (For Visitors Only) ========= */}
+      {!user && (
+        <div className="relative bg-secondary-800 border-b border-secondary-700">
+          <div className="max-w-7xl mx-auto px-6 py-10">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-1">Need help choosing a project?</h3>
+                <p className="text-secondary-400 text-sm">Our engineering team is available 24/7 to assist you.</p>
               </div>
-              <span className="text-xl font-bold text-white">Inovitaz</span>
-            </Link>
-            <p className="text-secondary-400 mb-4 max-w-md">
-              Your one-stop marketplace for premium IoT and academic projects. 
-              Get production-ready code with full documentation and support.
+              <div className="flex flex-wrap justify-center gap-3">
+                <a
+                  href="https://wa.me/919705594777"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium flex items-center gap-2 transition-all shadow-lg shadow-green-900/20"
+                >
+                  <HiChat className="w-5 h-5" /> WhatsApp
+                </a>
+                <Link
+                  to="/support"
+                  className="px-5 py-2.5 rounded-lg bg-secondary-700 hover:bg-secondary-600 text-white text-sm font-medium flex items-center gap-2 transition-all"
+                >
+                  Contact Support <HiArrowRight />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-6 pt-16 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+          
+          {/* 1. Brand & Description */}
+          <div className="space-y-4">
+{/* Replace Logo Section with this: */}
+<Link to="/" className="flex items-center gap-2 group">
+  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform">
+    {/* Microchip Icon */}
+    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+    </svg>
+  </div>
+              <span className="text-2xl font-bold text-white tracking-tight">Inovitaz</span>
+</Link>
+            <p className="text-secondary-400 text-sm leading-relaxed">
+              India's #1 Marketplace for IoT, Embedded Systems, and Robotics projects. 
+              Get production-ready code, circuit diagrams, and expert support.
             </p>
-            <div className="flex gap-4">
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-secondary-400 hover:text-white transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-              </a>
+            
+            {/* Social Icons */}
+            <div className="flex gap-4 pt-2">
+              {[
+                { icon: FaInstagram, link: "#" },
+                { icon: FaFacebook, link: "#" },
+                { icon: FaLinkedin, link: "#" },
+                { icon: FaYoutube, link: "#" }
+              ].map((social, idx) => (
+                <a 
+                  key={idx}
+                  href={social.link} 
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-800 hover:bg-primary-600 text-secondary-400 hover:text-white transition-all duration-300"
+                >
+                  <social.icon className="w-4 h-4" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* 2. Quick Links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/" className="hover:text-white transition-colors">Home</Link>
-              </li>
-              <li>
-                <Link to="/projects" className="hover:text-white transition-colors">Projects</Link>
-              </li>
-              <li>
-                <Link to="/dashboard" className="hover:text-white transition-colors">My Orders</Link>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">About Us</a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">Contact</a>
-              </li>
+            <h3 className="text-white font-semibold text-lg mb-5">Explore</h3>
+            <ul className="space-y-3 text-sm">
+              <li><Link to="/projects" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span> Browse Projects</Link></li>
+              <li><Link to="/projects?category=IoT" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-secondary-600"></span> IoT Solutions</Link></li>
+              <li><Link to="/projects?category=Robotics" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-secondary-600"></span> Robotics</Link></li>
+              <li><Link to="/about" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-secondary-600"></span> About Us</Link></li>
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* 3. Legal & Account */}
           <div>
-            <h3 className="text-white font-semibold mb-4">Contact Us</h3>
-            <ul className="space-y-3">
-              <li className="flex items-center gap-3">
-                <HiMail className="w-5 h-5 text-primary-500" />
-                <a href="mailto:support@inovitaz.com" className="hover:text-white transition-colors">
-                  support@inovitaz.com
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <HiPhone className="w-5 h-5 text-primary-500" />
-                <a href="tel:+919876543210" className="hover:text-white transition-colors">
-                  +91 98765 43210
-                </a>
-              </li>
-              <li className="flex items-start gap-3">
-                <HiLocationMarker className="w-5 h-5 text-primary-500 mt-0.5" />
-                <span>Bangalore, Karnataka, India</span>
-              </li>
+            <h3 className="text-white font-semibold text-lg mb-5">Account</h3>
+            <ul className="space-y-3 text-sm">
+              {user ? (
+                <>
+                  <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">My Dashboard</Link></li>
+                  <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">Order History</Link></li>
+                </>
+              ) : (
+                <>
+                  <li><Link to="/login" className="hover:text-primary-400 transition-colors">Login</Link></li>
+                  <li><Link to="/signup" className="hover:text-primary-400 transition-colors">Register</Link></li>
+                </>
+              )}
+              <li><Link to="/privacy" className="hover:text-primary-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-primary-400 transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/refund" className="hover:text-primary-400 transition-colors">Refund Policy</Link></li>
             </ul>
+          </div>
+
+          {/* 4. Newsletter & Contact */}
+          <div>
+            <h3 className="text-white font-semibold text-lg mb-5">Stay Updated</h3>
+            <div className="bg-secondary-800 p-1 rounded-lg flex mb-6 border border-secondary-700">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="bg-transparent text-sm text-white px-3 py-2 w-full focus:outline-none placeholder-secondary-500"
+              />
+              <button className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                Join
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <div className="flex items-start gap-3">
+                <HiLocationMarker className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                <span>Amaravati, Andhra Pradesh,<br />India - 522020</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <HiPhone className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                <a href="tel:+919705594777" className="hover:text-white">+91 9705594777</a>
+              </div>
+              <div className="flex items-center gap-3">
+                <HiMail className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                <a href="mailto:inovitaz.help@gmail.com" className="hover:text-white">inovitaz.help@gmail.com</a>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div className="mt-12 pt-8 border-t border-secondary-800 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-secondary-500 text-sm">
-            © {currentYear} Inovitaz. All rights reserved.
+        {/* Footer Bottom */}
+        <div className="pt-8 border-t border-secondary-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+          <p className="text-secondary-500 text-center md:text-left">
+            © {currentYear} <span className="text-white font-medium">Inovitaz</span>. All Rights Reserved.
           </p>
-          <div className="flex gap-6 text-sm">
-            <a href="#" className="text-secondary-500 hover:text-white transition-colors">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-secondary-500 hover:text-white transition-colors">
-              Terms of Service
-            </a>
-            <a href="#" className="text-secondary-500 hover:text-white transition-colors">
-              Refund Policy
-            </a>
+          
+          {/* Payment Trust Badges */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 text-secondary-500 text-xs">
+              <HiShieldCheck className="w-4 h-4 text-green-500" />
+              <span>100% Secure Payment</span>
+            </div>
+            <div className="h-4 w-px bg-secondary-700"></div>
+            <div className="flex items-center gap-2 text-secondary-400">
+              <HiCreditCard className="w-6 h-6" title="Credit/Debit Card" />
+              <span className="font-bold text-xs tracking-wider">UPI</span>
+              <span className="font-bold text-xs tracking-wider">Razorpay</span>
+            </div>
           </div>
         </div>
       </div>

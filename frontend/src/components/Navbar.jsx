@@ -5,13 +5,12 @@ import { useAuth } from '../hooks/useAuth';
 import {
   HiMenu,
   HiX,
-  HiUser,
   HiLogout,
   HiViewGrid,
-  HiShoppingCart,
   HiHome,
   HiCollection,
   HiSupport,
+  HiShieldCheck, // Changed from HiShoppingCart for Admin
 } from 'react-icons/hi';
 
 const Navbar = () => {
@@ -24,6 +23,7 @@ const Navbar = () => {
     logout();
     navigate('/');
     setShowDropdown(false);
+    setIsOpen(false);
   };
 
   const navLinkClass = ({ isActive }) =>
@@ -38,14 +38,16 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">I</span>
-              </div>
-              <span className="text-xl font-bold text-secondary-900">Inovitaz</span>
-            </Link>
-          </div>
+{/* Replace Logo Section with this: */}
+<Link to="/" className="flex items-center gap-2 group">
+  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-900/20 group-hover:scale-105 transition-transform">
+    {/* Microchip Icon */}
+    <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+    </svg>
+  </div>
+  <span className="text-xl font-bold text-secondary-900 tracking-tight">Inovitaz</span>
+</Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-2">
@@ -66,14 +68,16 @@ const Navbar = () => {
 
             {isAuthenticated && (
               <>
+                {/* Dashboard for logged-in users */}
                 <NavLink to="/dashboard" className={navLinkClass}>
                   <HiViewGrid className="w-5 h-5" />
                   Dashboard
                 </NavLink>
 
+                {/* Admin link only for admins */}
                 {isAdmin && (
                   <NavLink to="/admin" className={navLinkClass}>
-                    <HiShoppingCart className="w-5 h-5" />
+                    <HiShieldCheck className="w-5 h-5" />
                     Admin
                   </NavLink>
                 )}
@@ -89,29 +93,38 @@ const Navbar = () => {
                         {user?.name?.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <span className="text-secondary-700 font-medium">
+                    <span className="text-secondary-700 font-medium max-w-[100px] truncate">
                       {user?.name}
                     </span>
                   </button>
 
+                  {/* Dropdown Menu */}
                   {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-secondary-200 py-1 fade-in">
-                      <div className="px-4 py-2 border-b border-secondary-100">
-                        <p className="text-sm font-medium text-secondary-900">
-                          {user?.name}
-                        </p>
-                        <p className="text-xs text-secondary-500">
-                          {user?.email}
-                        </p>
+                    <>
+                      {/* Invisible backdrop to close menu when clicking outside */}
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setShowDropdown(false)}
+                      ></div>
+                      
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-secondary-200 py-1 fade-in z-20">
+                        <div className="px-4 py-2 border-b border-secondary-100">
+                          <p className="text-sm font-medium text-secondary-900 truncate">
+                            {user?.name}
+                          </p>
+                          <p className="text-xs text-secondary-500 truncate">
+                            {user?.email}
+                          </p>
+                        </div>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                          <HiLogout className="w-5 h-5" />
+                          Logout
+                        </button>
                       </div>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2 px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <HiLogout className="w-5 h-5" />
-                        Logout
-                      </button>
-                    </div>
+                    </>
                   )}
                 </div>
               </>
@@ -133,7 +146,7 @@ const Navbar = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items_center">
+          <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2 rounded-lg text-secondary-600 hover:bg-secondary-100"
@@ -146,7 +159,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation */}
       {isOpen && (
-        <div className="md:hidden bg-white border-t border-secondary-200 fade-in">
+        <div className="md:hidden bg-white border-t border-secondary-200 fade-in absolute w-full shadow-lg">
           <div className="px-4 py-4 space-y-2">
             <NavLink
               to="/"
@@ -192,8 +205,8 @@ const Navbar = () => {
                     className={navLinkClass}
                     onClick={() => setIsOpen(false)}
                   >
-                    <HiShoppingCart className="w-5 h-5" />
-                    Admin
+                    <HiShieldCheck className="w-5 h-5" />
+                    Admin Panel
                   </NavLink>
                 )}
 
@@ -204,20 +217,13 @@ const Navbar = () => {
                         {user?.name?.charAt(0).toUpperCase()}
                       </span>
                     </div>
-                    <div>
-                      <p className="font-medium text-secondary-900">
-                        {user?.name}
-                      </p>
-                      <p className="text-sm text-secondary-500">
-                        {user?.email}
-                      </p>
+                    <div className="overflow-hidden">
+                      <p className="font-medium text-secondary-900 truncate">{user?.name}</p>
+                      <p className="text-sm text-secondary-500 truncate">{user?.email}</p>
                     </div>
                   </div>
                   <button
-                    onClick={() => {
-                      handleLogout();
-                      setIsOpen(false);
-                    }}
+                    onClick={handleLogout}
                     className="w-full flex items-center gap-2 px-3 py-2 mt-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <HiLogout className="w-5 h-5" />

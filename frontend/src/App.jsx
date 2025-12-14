@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
+import ScrollToTop from './components/ScrollToTop'; // ✅ Imported
 
 // Pages
 import Home from './pages/Home';
@@ -14,10 +15,17 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 import Support from './pages/Support';
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Refund from "./pages/Refund";
 
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
+      {/* 👇 ADD THIS LINE HERE 👇 */}
+      <ScrollToTop />
+      
       <Navbar />
       <main className="flex-grow">
         <Routes>
@@ -28,6 +36,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/refund" element={<Refund />} />
 
           {/* Protected Routes */}
           <Route

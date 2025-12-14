@@ -1,14 +1,5 @@
 ﻿import React from "react";
-
-// export default function Home() {
-//   return (
-//     <div className="container">
-//       <h1>Welcome to InovitaZ</h1>
-//       <p>Marketplace for electronics & IoT projects.</p>
-//     </div>
-//   );
-// }
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   HiLightningBolt, 
@@ -20,10 +11,12 @@ import {
 } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
 import { projectsAPI } from '../api/projects';
+import { AuthContext } from '../context/AuthContext'; // ← ADD THIS
 
 const Home = () => {
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext); // ← ADD THIS
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -99,9 +92,11 @@ const Home = () => {
                   Browse Projects
                   <HiArrowRight className="w-5 h-5 ml-2" />
                 </Link>
-                <Link to="/signup" className="btn btn-lg bg-primary-500 text-white hover:bg-primary-400 border-2 border-white/20">
-                  Get Started
-                </Link>
+                {!user && (
+                  <Link to="/signup" className="btn btn-lg bg-primary-500 text-white hover:bg-primary-400 border-2 border-white/20">
+                    Get Started
+                  </Link>
+                )}
               </div>
 
               {/* Stats */}
@@ -126,7 +121,7 @@ const Home = () => {
               <div className="relative">
                 <div className="absolute -inset-4 bg-white/10 rounded-3xl blur-2xl"></div>
                 <img
-                  src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600"
+                  src="/public/hero-iot.png"
                   alt="IoT Projects"
                   className="relative rounded-2xl shadow-2xl"
                 />
@@ -223,25 +218,27 @@ const Home = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-secondary-900">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Ready to Start Building?
-          </h2>
-          <p className="text-lg text-secondary-300 mb-8">
-            Join thousands of developers and makers who trust Inovitaz for their IoT projects.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/signup" className="btn btn-lg btn-primary">
-              Create Free Account
-            </Link>
-            <Link to="/projects" className="btn btn-lg bg-secondary-800 text-white hover:bg-secondary-700">
-              Explore Projects
-            </Link>
+      {/* CTA Section - ONLY FOR VISITORS */}
+      {!user && (
+        <section className="py-20 bg-secondary-900">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+              Ready to Start Building?
+            </h2>
+            <p className="text-lg text-secondary-300 mb-8">
+              Join thousands of developers and makers who trust Inovitaz for their IoT projects.
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link to="/signup" className="btn btn-lg btn-primary">
+                Create Free Account
+              </Link>
+              <Link to="/projects" className="btn btn-lg bg-secondary-800 text-white hover:bg-secondary-700">
+                Explore Projects
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 };

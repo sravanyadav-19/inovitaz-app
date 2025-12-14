@@ -1,8 +1,13 @@
 ﻿import api from './auth';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+
 export const paymentsAPI = {
-  createOrder: async (projectId) => {
-    const response = await api.post('/payment/create-order', { projectId });
+  createOrder: async (projectId, couponCode = null) => {
+    const response = await api.post('/payment/create-order', { 
+      projectId,
+      couponCode 
+    });
     return response.data;
   },
 
@@ -18,19 +23,29 @@ export const paymentsAPI = {
 };
 
 export const ordersAPI = {
-  getMyOrders: async (params = {}) => {
-    const queryParams = new URLSearchParams(params);
-    const response = await api.get(`/orders/my?${queryParams.toString()}`);
-    return response.data;
+  getMyOrders: async () => {
+    const res = await fetch(`${API_URL}/orders`, {  // ✅ FIXED: consistent API_URL
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    return res.json();
   },
 
   getPurchased: async () => {
-    const response = await api.get('/orders/purchased');
-    return response.data;
-  },
-
-  getById: async (id) => {
-    const response = await api.get(`/orders/${id}`);
-    return response.data;
+    const res = await fetch(`${API_URL}/orders/purchased`, {  // ✅ FIXED: changed from /downloads
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    });
+    const data = await res.json();
+    
+    // Map response to expected format
+    return {
+      success: data.success,
+      data: {
+        downloads: data.data || []
+      }
+    };
   },
 };

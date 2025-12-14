@@ -1,7 +1,6 @@
-// src/api/auth.js
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_BASE || 'http://localhost:4000/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';  // ✅ Changed from VITE_API_URL
 
 const api = axios.create({
   baseURL: API_URL,
@@ -10,7 +9,7 @@ const api = axios.create({
   },
 });
 
-// Add auth token
+// Add auth token to requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -19,13 +18,14 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle 401
+// Handle response errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      // Optionally redirect to login
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }

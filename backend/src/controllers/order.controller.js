@@ -78,6 +78,7 @@ const getPurchasedProjects = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Join orders with projects and download_logs
     const projects = await db.query(
       `SELECT 
         p.id,
@@ -86,9 +87,13 @@ const getPurchasedProjects = async (req, res) => {
         p.thumbnail,
         p.category,
         o.created_at as purchased_at,
-        o.amount as paid_amount
+        o.amount as paid_amount,
+        dl.download_count,
+        dl.max_downloads,
+        dl.expiry_date
        FROM orders o
        JOIN projects p ON o.project_id = p.id
+       LEFT JOIN download_logs dl ON o.id = dl.order_id
        WHERE o.user_id = ? AND o.status = 'paid'
        ORDER BY o.created_at DESC`,
       [userId]
@@ -96,7 +101,9 @@ const getPurchasedProjects = async (req, res) => {
 
     res.json({
       success: true,
-      data: projects
+      data: {
+        downloads: projects // Return as 'downloads' array to match frontend
+      }
     });
   } catch (error) {
     console.error('Get purchased projects error:', error);
