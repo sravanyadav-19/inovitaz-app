@@ -1,18 +1,21 @@
 ﻿const mysql = require('mysql2/promise');
-require('dotenv').config();
+
+// Load .env only for LOCAL development
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
 
 const poolConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'inovitaz',
+  host: process.env.DB_HOST,                     // TiDB host
+  port: Number(process.env.DB_PORT),            // 4000
+  user: process.env.DB_USER,                    // 256HsJ85VeRhi2V.root
+  password: process.env.DB_PASSWORD,            // your TiDB password
+  database: process.env.DB_NAME,                // MUST be "test"
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  // 👇 REQUIRED FOR TiDB CLOUD / RENDER DEPLOYMENT 👇
   ssl: {
     minVersion: 'TLSv1.2',
     rejectUnauthorized: true
@@ -34,7 +37,7 @@ const testConnection = async () => {
   }
 };
 
-// Query helper with error handling (use text protocol)
+// Query helper with error handling
 const query = async (sql, params = []) => {
   try {
     const [results] = await pool.query(sql, params);
