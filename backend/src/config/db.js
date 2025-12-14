@@ -11,7 +11,12 @@ const poolConfig = {
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
-  keepAliveInitialDelay: 0
+  keepAliveInitialDelay: 0,
+  // 👇 REQUIRED FOR TiDB CLOUD / RENDER DEPLOYMENT 👇
+  ssl: {
+    minVersion: 'TLSv1.2',
+    rejectUnauthorized: true
+  }
 };
 
 const pool = mysql.createPool(poolConfig);
