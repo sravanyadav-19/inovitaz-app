@@ -6,19 +6,19 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const poolConfig = {
-  host: process.env.DB_HOST,                     // TiDB host
-  port: Number(process.env.DB_PORT),            // 4000
-  user: process.env.DB_USER,                    // 256HsJ85VeRhi2V.root
-  password: process.env.DB_PASSWORD,            // your TiDB password
-  database: process.env.DB_NAME,                // MUST be "test"
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
+  // 👇 THIS IS THE CRITICAL CHANGE 👇
   ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: true
+    rejectUnauthorized: false 
   }
 };
 
