@@ -51,24 +51,20 @@ if (process.env.NODE_ENV !== 'production') {
   const networkIP = getNetworkIP();
   allowedOrigins.push(`http://${networkIP}:5173`);
 }
-
+// ==========================================
+// CORS CONFIGURATION (UPDATED)
+// ==========================================
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Check if the origin is in our allowed list
-    if (allowedOrigins.indexOf(origin) !== -1 || !process.env.NODE_ENV) {
-      // !process.env.NODE_ENV means "if development, allow everything"
-      return callback(null, true);
-    } else {
-      console.log('Blocked by CORS:', origin); // Log blocked attempts for debugging
-      return callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    "http://localhost:5173",                    // Local development
+    "http://127.0.0.1:5173",                    // Local IP
+    "https://inovitaz-app.onrender.com",        // 👈 YOUR FRONTEND URL (From error log)
+    "https://inovitaz-frontend.onrender.com",   // Alternate name
+    process.env.FRONTEND_URL                    // Environment variable fallback
+  ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 app.use(express.json());
