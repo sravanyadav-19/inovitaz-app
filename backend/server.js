@@ -2,7 +2,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const os = require('os');
 require('dotenv').config();
 
 // Fix MaxListeners warning
@@ -25,43 +24,17 @@ const db = require('./src/config/db');
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Helper: Get network IP (Only used for local development)
-const getNetworkIP = () => {
-  const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name]) {
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
-      }
-    }
-  }
-  return 'localhost';
-};
-
-// Middleware - CORS Configuration
-// This is critical for connecting your Frontend to this Backend
-const allowedOrigins = [
-  'http://localhost:5173',      // Vite Localhost
-  'http://127.0.0.1:5173',      // IP Localhost
-  process.env.FRONTEND_URL      // Your Render Frontend URL (e.g., https://inovitaz.onrender.com)
-];
-
-// Add local network IP only if we are NOT in production
-if (process.env.NODE_ENV !== 'production') {
-  const networkIP = getNetworkIP();
-  allowedOrigins.push(`http://${networkIP}:5173`);
-}
 // ==========================================
-// CORS CONFIGURATION (UPDATED)
+// 🔐 CORS CONFIGURATION (THE FIX)
 // ==========================================
 app.use(cors({
   origin: [
     "http://localhost:5173",                    // Local development
     "http://127.0.0.1:5173",                    // Local IP
-    "https://inovitaz-app.onrender.com",        // 👈 YOUR FRONTEND URL (From error log)
-    "https://inovitaz-frontend.onrender.com",   // Alternate name
+    "https://inovitaz-app.onrender.com",        // 👈 MATCHES YOUR ERROR LOG
+    "https://inovitaz-frontend.onrender.com",   // Alternate URL
     process.env.FRONTEND_URL                    // Environment variable fallback
-  ],
+  ].filter(Boolean),                            // Removes undefined values to prevent crashes
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -70,7 +43,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Static files (Note: On Render Free Tier, these files disappear after restart)
+// Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check
@@ -103,7 +76,7 @@ app.use((req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('SERVER ERROR:', err); // Better logging for cloud
+  console.error('SERVER ERROR:', err);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal server error'
