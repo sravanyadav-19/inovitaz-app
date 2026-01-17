@@ -6,53 +6,43 @@ const setupDatabase = async () => {
   let connection;
 
   try {
-    // Connect without database first
+    // 1. Connect to the database defined in .env
     connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      port: process.env.DB_PORT || 3306,
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      multipleStatements: true,
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
+      ssl: { rejectUnauthorized: false } // Required for Aiven
     });
 
-    console.log('Connected to MySQL server');
+    console.log(`Connected to database: ${process.env.DB_NAME}`);
 
-    const dbName = process.env.DB_NAME || 'inovitaz';
-
-    // Create database if not exists
-    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    console.log(`Database '${dbName}' created/verified`);
-
-    // Select the database
-    await connection.query(`USE \`${dbName}\``);
-
-    // DROP old tables so schema is guaranteed correct (DEV ONLY)
+    // 2. Drop old tables (Order matters due to foreign keys)
     await connection.query('SET FOREIGN_KEY_CHECKS = 0');
-    await connection.query('DROP TABLE IF EXISTS orders');
-    await connection.query('DROP TABLE IF EXISTS projects');
-    await connection.query('DROP TABLE IF EXISTS users');
+    const tables = ['download_logs', 'coupon_usage', 'reviews', 'wishlist', 'orders', 'coupons', 'projects', 'users'];
+    for (const table of tables) {
+      await connection.query(`DROP TABLE IF EXISTS ${table}`);
+    }
     await connection.query('SET FOREIGN_KEY_CHECKS = 1');
-    console.log('Old tables dropped (users, projects, orders)');
+    console.log('✅ Old tables dropped');
 
-    // Create Users table
+    // 3. Create Users Table
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS users (
+      CREATE TABLE users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(255) NOT NULL UNIQUE,
         password VARCHAR(255) NOT NULL,
         name VARCHAR(100) NOT NULL,
         role ENUM('user', 'admin') DEFAULT 'user',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_email (email),
-        INDEX idx_role (role)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
     `);
-    console.log('Users table created/verified');
 
-    // Create Projects table
+    // 4. Create Projects Table (FIXED: Added missing columns)
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS projects (
+      CREATE TABLE projects (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         description TEXT NOT NULL,
@@ -60,218 +50,193 @@ const setupDatabase = async () => {
         thumbnail VARCHAR(500),
         content_url VARCHAR(500),
         category VARCHAR(100) DEFAULT 'IoT',
+        difficulty VARCHAR(50) DEFAULT 'Beginner', -- New Column
+        average_rating DECIMAL(3, 2) DEFAULT 0.00, -- New Column
+        reviews_count INT DEFAULT 0,               -- New Column
         features JSON,
         tech_stack JSON,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        INDEX idx_category (category),
-        INDEX idx_price (price)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
     `);
-    console.log('Projects table created/verified');
 
-    // Create Orders table
+    // 5. Create Orders Table
     await connection.query(`
-      CREATE TABLE IF NOT EXISTS orders (
+      CREATE TABLE orders (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id INT NOT NULL,
         project_id INT NOT NULL,
         razorpay_order_id VARCHAR(100),
         razorpay_payment_id VARCHAR(100),
         amount DECIMAL(10, 2) NOT NULL,
+        original_amount DECIMAL(10, 2),
+        discount_amount DECIMAL(10, 2) DEFAULT 0,
+        coupon_code VARCHAR(50),
         status ENUM('pending', 'paid', 'failed', 'refunded') DEFAULT 'pending',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
+      )
+    `);
+
+    // 6. Create Reviews Table
+    await connection.query(`
+      CREATE TABLE reviews (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        project_id INT NOT NULL,
+        user_id INT NOT NULL,
+        order_id INT NOT NULL,
+        rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+        comment TEXT,
+        is_verified_purchase BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // 7. Create Wishlist Table
+    await connection.query(`
+      CREATE TABLE wishlist (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        project_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
-        INDEX idx_user_id (user_id),
-        INDEX idx_project_id (project_id),
-        INDEX idx_status (status),
-        INDEX idx_razorpay_order_id (razorpay_order_id)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        UNIQUE KEY unique_user_project (user_id, project_id)
+      )
     `);
-    console.log('Orders table created/verified');
 
-    // Create admin user if not exists
+    // 8. Create Coupons Table
+    await connection.query(`
+      CREATE TABLE coupons (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        code VARCHAR(50) UNIQUE NOT NULL,
+        description VARCHAR(255),
+        discount_type ENUM('percentage', 'fixed') NOT NULL,
+        discount_value DECIMAL(10, 2) NOT NULL,
+        min_purchase_amount INT DEFAULT 0,
+        max_discount_amount INT DEFAULT NULL,
+        usage_limit INT DEFAULT NULL,
+        used_count INT DEFAULT 0,
+        valid_until DATETIME DEFAULT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // 9. Create Coupon Usage Table
+    await connection.query(`
+      CREATE TABLE coupon_usage (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        coupon_id INT NOT NULL,
+        user_id INT NOT NULL,
+        order_id INT NOT NULL,
+        discount_amount DECIMAL(10, 2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (coupon_id) REFERENCES coupons(id) ON DELETE CASCADE
+      )
+    `);
+
+    // 10. Create Download Logs Table
+    await connection.query(`
+      CREATE TABLE download_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        project_id INT NOT NULL,
+        order_id INT NOT NULL,
+        download_count INT DEFAULT 0,
+        max_downloads INT DEFAULT 5,
+        expiry_date DATETIME NOT NULL,
+        last_downloaded_at TIMESTAMP NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    console.log('✅ All tables created successfully');
+
+    // 11. Create Admin User
     const adminEmail = 'admin@inovitaz.com';
-    const [existingAdmin] = await connection.query(
-      'SELECT id FROM users WHERE email = ?',
-      [adminEmail]
+    const hashedPassword = await bcrypt.hash('admin123', 12);
+    await connection.query(
+      `INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, 'admin')`,
+      [adminEmail, hashedPassword, 'Admin User']
     );
+    console.log('✅ Admin user created');
 
-    if (existingAdmin.length === 0) {
-      const hashedPassword = await bcrypt.hash('admin123', 12);
-      await connection.query(
-        `INSERT INTO users (email, password, name, role) VALUES (?, ?, ?, 'admin')`,
-        [adminEmail, hashedPassword, 'Admin User']
-      );
-      console.log('Admin user created (admin@inovitaz.com / admin123)');
-    }
-
-    // Insert sample projects if none exist
-    const [existingProjects] = await connection.query(
-      'SELECT COUNT(*) as count FROM projects'
-    );
-
-    if (existingProjects[0].count === 0) {
-      const sampleProjects = [
-        {
-          title: 'Smart Home Automation System',
-          description:
-            'Complete IoT-based home automation system with mobile app control. Features include smart lighting, temperature control, security monitoring, and voice assistant integration. Built with ESP32, MQTT protocol, and React Native mobile app.',
-          price: 2499.0,
-          thumbnail:
-            'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-          content_url: 'https://example.com/downloads/smart-home.zip',
-          category: 'IoT',
-          features: JSON.stringify([
-            'ESP32-based controller',
-            'React Native mobile app',
-            'MQTT protocol',
-            'Voice assistant integration',
-            'Real-time monitoring',
-            'Energy usage tracking',
-          ]),
-          tech_stack: JSON.stringify([
-            'ESP32',
-            'MQTT',
-            'React Native',
-            'Node.js',
-            'MongoDB',
-          ]),
-        },
-        {
-          title: 'IoT Weather Monitoring Station',
-          description:
-            'Advanced weather monitoring system with real-time data visualization. Includes temperature, humidity, pressure, wind speed, and rainfall sensors. Features cloud data storage and web dashboard.',
-          price: 1799.0,
-          thumbnail:
-            'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=400',
-          content_url: 'https://example.com/downloads/weather-station.zip',
-          category: 'IoT',
-          features: JSON.stringify([
-            'Multiple sensor integration',
-            'Real-time data visualization',
-            'Historical data analysis',
-            'Weather prediction',
-            'Mobile alerts',
-            'Solar powered option',
-          ]),
-          tech_stack: JSON.stringify([
-            'Arduino',
-            'ESP8266',
-            'InfluxDB',
-            'Grafana',
-            'Python',
-          ]),
-        },
-        {
-          title: 'Automatic Plant Watering System',
-          description:
-            'Smart irrigation system for home gardens and farms. Automatically monitors soil moisture and waters plants based on requirements. Includes mobile app for remote monitoring and control.',
-          price: 1299.0,
-          thumbnail:
-            'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400',
-          content_url: 'https://example.com/downloads/plant-watering.zip',
-          category: 'IoT',
-          features: JSON.stringify([
-            'Soil moisture sensing',
-            'Automatic watering schedule',
-            'Water level monitoring',
-            'Mobile app control',
-            'Multiple zone support',
-            'Water usage analytics',
-          ]),
-          tech_stack: JSON.stringify([
-            'ESP32',
-            'Flutter',
-            'Firebase',
-            'Soil Sensors',
-          ]),
-        },
-        {
-          title: 'Smart Energy Meter',
-          description:
-            'IoT-based energy monitoring system for homes and offices. Track real-time energy consumption, get usage analytics, and receive alerts for unusual consumption patterns.',
-          price: 1999.0,
-          thumbnail:
-            'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=400',
-          content_url: 'https://example.com/downloads/energy-meter.zip',
-          category: 'IoT',
-          features: JSON.stringify([
-            'Real-time consumption tracking',
-            'Cost estimation',
-            'Usage analytics',
-            'Anomaly detection',
-            'Bill prediction',
-            'Multi-device support',
-          ]),
-          tech_stack: JSON.stringify([
-            'ESP32',
-            'Current Sensors',
-            'React',
-            'PostgreSQL',
-            'Redis',
-          ]),
-        },
-        {
-          title: 'Vehicle GPS Tracking System',
-          description:
-            'Complete vehicle tracking solution with real-time location, speed monitoring, and geofencing. Includes web dashboard and mobile app for fleet management.',
-          price: 2999.0,
-          thumbnail:
-            'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400',
-          content_url: 'https://example.com/downloads/gps-tracker.zip',
-          category: 'IoT',
-          features: JSON.stringify([
-            'Real-time GPS tracking',
-            'Speed monitoring',
-            'Geofencing alerts',
-            'Route history',
-            'Fuel monitoring',
-            'Driver behavior analysis',
-          ]),
-          tech_stack: JSON.stringify([
-            'ESP32',
-            'GPS Module',
-            'React',
-            'Node.js',
-            'MongoDB',
-            'Google Maps API',
-          ]),
-        },
-      ];
-
-      for (const project of sampleProjects) {
-        await connection.query(
-          `INSERT INTO projects (title, description, price, thumbnail, content_url, category, features, tech_stack) 
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            project.title,
-            project.description,
-            project.price,
-            project.thumbnail,
-            project.content_url,
-            project.category,
-            project.features,
-            project.tech_stack,
-          ]
-        );
+    // 12. Insert Sample Projects (With new columns)
+    const sampleProjects = [
+      {
+        title: 'Smart Home Automation System',
+        description: JSON.stringify({ overview: 'Complete IoT-based home automation system with mobile app control.' }),
+        price: 2499.0,
+        thumbnail: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+        content_url: '#',
+        category: 'IoT',
+        difficulty: 'Advanced',
+        features: JSON.stringify(['App Control', 'Voice Command']),
+        tech_stack: JSON.stringify(['ESP32', 'React Native'])
+      },
+      {
+        title: 'IoT Weather Monitoring Station',
+        description: JSON.stringify({ overview: 'Advanced weather monitoring system with real-time data visualization.' }),
+        price: 1799.0,
+        thumbnail: 'https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=400',
+        content_url: '#',
+        category: 'IoT',
+        difficulty: 'Intermediate',
+        features: JSON.stringify(['Real-time Data', 'Cloud Storage']),
+        tech_stack: JSON.stringify(['Arduino', 'InfluxDB'])
+      },
+      {
+        title: 'Automatic Plant Watering System',
+        description: JSON.stringify({ overview: 'Smart irrigation system for home gardens and farms.' }),
+        price: 1299.0,
+        thumbnail: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400',
+        content_url: '#',
+        category: 'IoT',
+        difficulty: 'Beginner',
+        features: JSON.stringify(['Soil Sensor', 'Auto Water']),
+        tech_stack: JSON.stringify(['ESP8266', 'C++'])
+      },
+      {
+        title: 'Vehicle GPS Tracking System',
+        description: JSON.stringify({ overview: 'Real-time vehicle tracking with Google Maps integration.' }),
+        price: 2999.0,
+        thumbnail: 'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=400',
+        content_url: '#',
+        category: 'IoT',
+        difficulty: 'Advanced',
+        features: JSON.stringify(['GPS', 'Geofencing']),
+        tech_stack: JSON.stringify(['GSM Module', 'Node.js'])
+      },
+      {
+        title: 'Line Following Robot',
+        description: JSON.stringify({ overview: 'Autonomous robot that follows a black line on the floor.' }),
+        price: 999.0,
+        thumbnail: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=400',
+        content_url: '#',
+        category: 'Robotics',
+        difficulty: 'Beginner',
+        features: JSON.stringify(['IR Sensors', 'Motor Driver']),
+        tech_stack: JSON.stringify(['Arduino Uno', 'C++'])
       }
-      console.log(`${sampleProjects.length} sample projects inserted`);
-    }
+    ];
 
-    console.log('\n✅ Database setup completed successfully!');
-    console.log('\nAdmin credentials:');
-    console.log('Email: admin@inovitaz.com');
-    console.log('Password: admin123');
+    for (const p of sampleProjects) {
+      await connection.query(
+        `INSERT INTO projects (title, description, price, thumbnail, content_url, category, difficulty, features, tech_stack) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [p.title, p.description, p.price, p.thumbnail, p.content_url, p.category, p.difficulty, p.features, p.tech_stack]
+      );
+    }
+    console.log(`✅ ${sampleProjects.length} sample projects inserted`);
+
   } catch (error) {
     console.error('❌ Database setup failed:', error.message);
-    process.exit(1);
   } finally {
-    if (connection) {
-      await connection.end();
-    }
+    if (connection) await connection.end();
   }
 };
 
