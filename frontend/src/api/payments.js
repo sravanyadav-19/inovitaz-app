@@ -1,51 +1,64 @@
-﻿import api from './auth';
+﻿/**
+ * Payment API
+ * Handles order creation and verification
+ */
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+import api from './axios';
 
 export const paymentsAPI = {
+  /**
+   * Create Razorpay order
+   * @param {number} projectId - Project to purchase
+   * @param {string} couponCode - Optional coupon code
+   */
   createOrder: async (projectId, couponCode = null) => {
-    const response = await api.post('/payment/create-order', { 
+    const response = await api.post('/payment/create-order', {
       projectId,
-      couponCode 
+      couponCode
     });
     return response.data;
   },
 
+  /**
+   * Verify payment after Razorpay callback
+   */
   verifyPayment: async (data) => {
-    const response = await api.post('/payment/verify-payment', data);
-    return response.data;
-  },
-
-  getStatus: async (orderId) => {
-    const response = await api.get(`/payment/status/${orderId}`);
+    const response = await api.post('/payment/verify', data);
     return response.data;
   },
 };
 
 export const ordersAPI = {
+  /**
+   * Get current user's orders
+   */
   getMyOrders: async () => {
-    const res = await fetch(`${API_URL}/orders`, {  // ✅ FIXED: consistent API_URL
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    return res.json();
+    const response = await api.get('/orders');
+    return response.data;
   },
 
+  /**
+   * Get purchased/downloadable projects
+   */
   getPurchased: async () => {
-    const res = await fetch(`${API_URL}/orders/purchased`, {  // ✅ FIXED: changed from /downloads
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
+    const response = await api.get('/orders/purchased');
+    return response.data;
+  },
+};
+
+export const couponsAPI = {
+  /**
+   * Validate coupon code
+   * @param {string} code - Coupon code
+   * @param {number} projectId - Project ID
+   * @param {number} amount - Original amount
+   */
+  validate: async (code, projectId, amount) => {
+    const response = await api.post('/coupons/validate', {
+      code,
+      project_id: projectId,
+      amount
     });
-    const data = await res.json();
-    
-    // Map response to expected format
-    return {
-      success: data.success,
-      data: {
-        downloads: data.data || []
-      }
-    };
+    return response.data;
   },
 };

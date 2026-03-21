@@ -1,57 +1,50 @@
-// src/api/projects.js
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+/**
+ * Projects API
+ * Handles all project-related API calls
+ */
 
-// Read token from localStorage
-const getToken = () => localStorage.getItem('token');
+import api from './axios';
 
-// PUBLIC PROJECT APIs
 export const projectsAPI = {
+  /**
+   * Get all projects with optional filters
+   */
   getAll: async (params = {}) => {
     try {
-      const q = new URLSearchParams(params).toString();
-      const res = await fetch(`${API_URL}/projects?${q}`);
-      return await res.json();
-    } catch (err) {
-      console.error('Error fetching projects:', err);
-      return { success: false, data: { projects: [] } };
+      const query = new URLSearchParams(params).toString();
+      const response = await api.get(`/projects?${query}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching projects:', error);
+      return { success: false, message: error.response?.data?.message || error.message, data: { projects: [], pagination: {} } };
     }
   },
 
+  /**
+   * Get single project by ID
+   */
   getById: async (id) => {
-    const token = localStorage.getItem("token");
-
-    const response = await fetch(`${API_URL}/projects/${id}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {}
-    });
-
-    const res = await response.json();
-
-    // Normalize backend structure for frontend
-    return {
-      success: res.success,
-      data: res.data?.project || res.data || null
-    };
-  },
-
-  getByCategory: async (category) => {
     try {
-      const res = await fetch(`${API_URL}/projects?category=${category}`);
-      return await res.json();
-    } catch (err) {
-      console.error('Error fetching projects:', err);
-      return { success: false, data: { projects: [] } };
+      const response = await api.get(`/projects/${id}`);
+      return {
+        success: response.data.success,
+        data: response.data.data?.project || response.data.data || null
+      };
+    } catch (error) {
+      console.error('Error fetching project:', error);
+      return { success: false, message: error.response?.data?.message || error.message, data: null };
     }
   },
 
-  // ✅ ADDED: Get categories function
+  /**
+   * Get project categories with counts
+   */
   getCategories: async () => {
     try {
-      const res = await fetch(`${API_URL}/projects/categories`);
-      const data = await res.json();
-      return data;
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-      // Fallback to hardcoded categories if API not ready
+      const response = await api.get('/projects/categories');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching categories:', error);
       return { 
         success: true, 
         data: [
@@ -65,153 +58,145 @@ export const projectsAPI = {
     }
   },
 
-  // ⚠️ MODIFIED: Wishlist functions (disabled until backend ready)
-  getWishlist: async () => {
-    // Return empty wishlist until backend is ready
-    return { success: true, data: [] };
-    
-    /* UNCOMMENT WHEN BACKEND IS READY:
-    try {
-      const token = getToken();
-      if (!token) return { success: false, data: [] };
-
-      const res = await fetch(`${API_URL}/wishlist`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      return await res.json();
-    } catch (err) {
-      console.error('Error fetching wishlist:', err);
-      return { success: false, data: [] };
-    }
-    */
-  },
-
-  addToWishlist: async (projectId) => {
-    // Temporarily use localStorage until backend ready
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    if (!wishlist.includes(projectId)) {
-      wishlist.push(projectId);
-      localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    }
-    return { success: true, message: 'Added to wishlist (local)' };
-    
-    /* UNCOMMENT WHEN BACKEND IS READY:
-    try {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-
-      const res = await fetch(`${API_URL}/wishlist`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ project_id: projectId })
-      });
-      return await res.json();
-    } catch (err) {
-      console.error('Error adding to wishlist:', err);
-      return { success: false, message: err.message };
-    }
-    */
-  },
-
-  removeFromWishlist: async (projectId) => {
-    // Temporarily use localStorage until backend ready
-    let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    wishlist = wishlist.filter(id => id !== projectId);
-    localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    return { success: true, message: 'Removed from wishlist (local)' };
-    
-    /* UNCOMMENT WHEN BACKEND IS READY:
-    try {
-      const token = getToken();
-      if (!token) throw new Error('Not authenticated');
-
-      const res = await fetch(`${API_URL}/wishlist/${projectId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      return await res.json();
-    } catch (err) {
-      console.error('Error removing from wishlist:', err);
-      return { success: false, message: err.message };
-    }
-    */
-  },
-
+  /**
+   * Get download URL for purchased project
+   */
   download: async (projectId) => {
     try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/projects/${projectId}/download`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token ? `Bearer ${token}` : "",
-        },
-      });
-
-      return await response.json();
+      const response = await api.get(`/projects/${projectId}/download`);
+      return response.data;
     } catch (error) {
-      console.error("Download request failed:", error);
-      return { success: false, message: "Download failed" };
+      console.error('Download request failed:', error);
+      return { success: false, message: error.message || 'Download failed' };
     }
   },
 };
 
+/**
+ * Wishlist API - Backend enabled
+ */
+export const wishlistAPI = {
+  /**
+   * Get user's wishlist
+   */
+  getAll: async () => {
+    try {
+      const response = await api.get('/wishlist');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+      return { success: false, message: error.response?.data?.message || error.message, data: [] };
+    }
+  },
 
-// FIXED ADMIN FETCH (with Bearer auth)
-const adminFetch = async (url, options = {}) => {
-  const token = getToken();
+  /**
+   * Add project to wishlist
+   */
+  add: async (projectId) => {
+    try {
+      const response = await api.post('/wishlist', { project_id: projectId });
+      return response.data;
+    } catch (error) {
+      console.error('Error adding to wishlist:', error);
+      return { success: false, message: error.message };
+    }
+  },
 
-  const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
-
-  return await res.json();
+  /**
+   * Remove project from wishlist
+   */
+  remove: async (projectId) => {
+    try {
+      const response = await api.delete(`/wishlist/${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error removing from wishlist:', error);
+      return { success: false, message: error.message };
+    }
+  },
 };
 
-// ADMIN APIs
+/**
+ * Admin Projects API
+ */
 export const adminProjectsAPI = {
+  /**
+   * Get dashboard statistics
+   */
   getStats: async () => {
-    return await adminFetch(`${API_URL}/admin/stats`);
+    const response = await api.get('/admin/stats');
+    return response.data;
   },
 
+  /**
+   * Create new project
+   */
   create: async (data) => {
-    return await adminFetch(`${API_URL}/admin/projects`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    const response = await api.post('/admin/projects', data);
+    return response.data;
   },
 
+  /**
+   * Update project
+   */
   update: async (id, data) => {
-    return await adminFetch(`${API_URL}/admin/projects/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+    const response = await api.put(`/admin/projects/${id}`, data);
+    return response.data;
   },
 
+  /**
+   * Delete project
+   */
   delete: async (id) => {
-    return await adminFetch(`${API_URL}/admin/projects/${id}`, {
-      method: 'DELETE',
-    });
+    const response = await api.delete(`/admin/projects/${id}`);
+    return response.data;
   },
 
+  /**
+   * Get all orders
+   */
   getAllOrders: async () => {
-    return await adminFetch(`${API_URL}/admin/orders`);
+    const response = await api.get('/admin/orders');
+    return response.data;
   },
 
+  /**
+   * Get all users
+   */
   getAllUsers: async () => {
-    return await adminFetch(`${API_URL}/admin/users`);
+    const response = await api.get('/admin/users');
+    return response.data;
+  },
+
+  /**
+   * Get all coupons
+   */
+  getAllCoupons: async () => {
+    const response = await api.get('/coupons');
+    return response.data;
+  },
+
+  /**
+   * Create coupon
+   */
+  createCoupon: async (data) => {
+    const response = await api.post('/coupons', data);
+    return response.data;
+  },
+
+  /**
+   * Toggle coupon status
+   */
+  toggleCoupon: async (id) => {
+    const response = await api.patch(`/coupons/${id}/toggle`);
+    return response.data;
+  },
+
+  /**
+   * Delete coupon
+   */
+  deleteCoupon: async (id) => {
+    const response = await api.delete(`/coupons/${id}`);
+    return response.data;
   },
 };

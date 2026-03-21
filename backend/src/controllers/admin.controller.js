@@ -1,4 +1,16 @@
+/**
+ * Admin Controller
+ * Handles all admin operations with field whitelisting
+ */
+
 const db = require('../config/db');
+const logger = require('../utils/logger');
+
+// Whitelist of allowed fields for project updates
+const ALLOWED_PROJECT_FIELDS = [
+  'title', 'description', 'price', 'thumbnail', 'content_url',
+  'category', 'difficulty', 'features', 'tech_stack'
+];
 
 /**
  * Create a new project (Admin only)
@@ -7,27 +19,22 @@ const db = require('../config/db');
 const createProject = async (req, res) => {
   try {
     const {
-      title,
-      description,
-      price,
-      thumbnail,
-      content_url,
-      category,
-      features,
-      tech_stack
+      title, description, price, thumbnail, content_url,
+      category, difficulty, features, tech_stack
     } = req.body;
 
     const result = await db.query(
       `INSERT INTO projects 
-       (title, description, price, thumbnail, content_url, category, features, tech_stack, created_at, updated_at) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+       (title, description, price, thumbnail, content_url, category, difficulty, features, tech_stack, created_at, updated_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         title,
         description,
         price,
-        thumbnail,
-        content_url,
+        thumbnail || null,
+        content_url || null,
         category || 'IoT',
+        difficulty || 'Beginner',
         JSON.stringify(features || []),
         JSON.stringify(tech_stack || [])
       ]
@@ -38,13 +45,15 @@ const createProject = async (req, res) => {
       [result.insertId]
     );
 
+    logger.admin('Project created', req.user.id, 'project', result.insertId);
+
     res.status(201).json({
       success: true,
       message: 'Project created successfully',
       data: newProject[0]
     });
   } catch (error) {
-    console.error('Create project error:', error);
+    logger.error('Create project error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to create project'
@@ -59,16 +68,6 @@ const createProject = async (req, res) => {
 const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      title,
-      description,
-      price,
-      thumbnail,
-      content_url,
-      category,
-      features,
-      tech_stack
-    } = req.body;
 
     // Check if project exists
     const existingProjects = await db.query(
@@ -83,41 +82,28 @@ const updateProject = async (req, res) => {
       });
     }
 
-    // Build update query dynamically
+    // Build update query with WHITELISTED fields only
     const updates = [];
     const params = [];
 
-    if (title !== undefined) {
-      updates.push('title = ?');
-      params.push(title);
+    for (const field of ALLOWED_PROJECT_FIELDS) {
+      if (req.body[field] !== undefined) {
+        updates.push(`${field} = ?`);
+        
+        // Handle JSON fields
+        if (field === 'features' || field === 'tech_stack') {
+          params.push(JSON.stringify(req.body[field]));
+        } else {
+          params.push(req.body[field]);
+        }
+      }
     }
-    if (description !== undefined) {
-      updates.push('description = ?');
-      params.push(description);
-    }
-    if (price !== undefined) {
-      updates.push('price = ?');
-      params.push(price);
-    }
-    if (thumbnail !== undefined) {
-      updates.push('thumbnail = ?');
-      params.push(thumbnail);
-    }
-    if (content_url !== undefined) {
-      updates.push('content_url = ?');
-      params.push(content_url);
-    }
-    if (category !== undefined) {
-      updates.push('category = ?');
-      params.push(category);
-    }
-    if (features !== undefined) {
-      updates.push('features = ?');
-      params.push(JSON.stringify(features));
-    }
-    if (tech_stack !== undefined) {
-      updates.push('tech_stack = ?');
-      params.push(JSON.stringify(tech_stack));
+
+    if (updates.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields to update'
+      });
     }
 
     updates.push('updated_at = NOW()');
@@ -133,13 +119,15 @@ const updateProject = async (req, res) => {
       [id]
     );
 
+    logger.admin('Project updated', req.user.id, 'project', id);
+
     res.json({
       success: true,
       message: 'Project updated successfully',
       data: updatedProject[0]
     });
   } catch (error) {
-    console.error('Update project error:', error);
+    logger.error('Update project error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to update project'
@@ -168,7 +156,7 @@ const deleteProject = async (req, res) => {
       });
     }
 
-    // Check if there are any paid orders for this project
+    // Check for paid orders
     const paidOrders = await db.query(
       `SELECT COUNT(*) as count FROM orders WHERE project_id = ? AND status = 'paid'`,
       [id]
@@ -190,12 +178,14 @@ const deleteProject = async (req, res) => {
     // Delete the project
     await db.query('DELETE FROM projects WHERE id = ?', [id]);
 
+    logger.admin('Project deleted', req.user.id, 'project', id);
+
     res.json({
       success: true,
       message: 'Project deleted successfully'
     });
   } catch (error) {
-    console.error('Delete project error:', error);
+    logger.error('Delete project error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to delete project'
@@ -256,7 +246,7 @@ const getAllOrders = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get all orders error:', error);
+    logger.error('Get all orders error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch orders'
@@ -305,7 +295,7 @@ const getDashboardStats = async (req, res) => {
        LIMIT 5`
     );
 
-    // Monthly revenue (last 6 months)
+    // Monthly revenue
     const monthlyRevenue = await db.query(
       `SELECT 
         DATE_FORMAT(created_at, '%Y-%m') as month,
@@ -330,7 +320,7 @@ const getDashboardStats = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get dashboard stats error:', error);
+    logger.error('Get dashboard stats error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch dashboard stats'
@@ -345,7 +335,6 @@ const getDashboardStats = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 20 } = req.query;
-
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const users = await db.query(
@@ -371,7 +360,7 @@ const getAllUsers = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get all users error:', error);
+    logger.error('Get all users error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch users'

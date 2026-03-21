@@ -1,4 +1,4 @@
-﻿const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const db = require('../config/db');
 const { generateToken } = require('../middlewares/auth.middleware');
@@ -235,9 +235,21 @@ const changePassword = async (req, res) => {
       [hashedPassword, req.user.id]
     );
 
+    // Generate new token
+    const userToSign = {
+      id: req.user.id,
+      email: req.user.email,
+      name: req.user.name,
+      role: req.user.role
+    };
+    const token = generateToken(userToSign);
+
     res.json({
       success: true,
-      message: 'Password changed successfully'
+      message: 'Password changed successfully',
+      data: {
+        token
+      }
     });
   } catch (error) {
     console.error('Change password error:', error);

@@ -1,5 +1,11 @@
-﻿// src/controllers/project.controller.js
+﻿/**
+ * Project Controller
+ * Handles project listing, details, and secure downloads
+ */
+
 const db = require('../config/db');
+const logger = require('../utils/logger');
+const { generateSignedUrl, verifySignedUrl } = require('../utils/signedUrl');
 
 /**
  * Get all projects (public)
@@ -13,9 +19,9 @@ const getAllProjects = async (req, res) => {
       sort, 
       page = 1, 
       limit = 12,
-      difficulty,      // NEW
-      maxPrice,        // NEW
-      technology       // NEW
+      difficulty,
+      maxPrice,
+      technology
     } = req.query;
     
     let sql = `
@@ -33,19 +39,19 @@ const getAllProjects = async (req, res) => {
       params.push(category);
     }
 
-    // NEW: Filter by difficulty
+    // Filter by difficulty
     if (difficulty) {
       sql += ' AND p.difficulty = ?';
       params.push(difficulty);
     }
 
-    // NEW: Filter by max price
+    // Filter by max price
     if (maxPrice && maxPrice !== '999') {
       sql += ' AND p.price <= ?';
       params.push(parseInt(maxPrice));
     }
 
-    // NEW: Filter by technology (searches in title/description)
+    // Filter by technology
     if (technology) {
       sql += ' AND (p.title LIKE ? OR p.description LIKE ? OR p.category LIKE ?)';
       params.push(`%${technology}%`, `%${technology}%`, `%${technology}%`);
@@ -68,10 +74,10 @@ const getAllProjects = async (req, res) => {
       case 'oldest':
         sql += ' ORDER BY p.created_at ASC';
         break;
-      case 'popular':  // NEW
+      case 'popular':
         sql += ' ORDER BY p.reviews_count DESC, p.average_rating DESC';
         break;
-      case 'rating':   // NEW
+      case 'rating':
         sql += ' ORDER BY p.average_rating DESC, p.reviews_count DESC';
         break;
       case 'newest':
@@ -86,7 +92,7 @@ const getAllProjects = async (req, res) => {
 
     const projects = await db.query(sql, params);
 
-    // Get total count for pagination
+    // Get total count
     let countSql = 'SELECT COUNT(*) as total FROM projects p WHERE 1=1';
     const countParams = [];
     
@@ -127,7 +133,7 @@ const getAllProjects = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get projects error:', error);
+    logger.error('Get projects error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch projects'
@@ -162,27 +168,27 @@ const getProjectById = async (req, res) => {
 
     const project = projects[0];
     
-    // Parse JSON fields
-    if (project.features) {
-      try {
+    // Parse JSON fields safely
+    try {
+      if (typeof project.features === 'string') {
         project.features = JSON.parse(project.features);
-      } catch (e) {
-        project.features = [];
       }
+    } catch (e) {
+      project.features = [];
     }
     
-    if (project.tech_stack) {
-      try {
+    try {
+      if (typeof project.tech_stack === 'string') {
         project.tech_stack = JSON.parse(project.tech_stack);
-      } catch (e) {
-        project.tech_stack = [];
       }
+    } catch (e) {
+      project.tech_stack = [];
     }
 
-    // Check if user has purchased this project
+    // Check if user has purchased
     let isPurchased = false;
     
-    if (req.user) {  // This will now work because authOptional sets req.user
+    if (req.user) {
       const orders = await db.query(
         `SELECT id FROM orders 
          WHERE user_id = ? AND project_id = ? AND status = 'paid'`,
@@ -201,7 +207,7 @@ const getProjectById = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Get project error:', error);
+    logger.error('Get project error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch project'
@@ -210,9 +216,8 @@ const getProjectById = async (req, res) => {
 };
 
 /**
- * Get project download (protected - only for purchased users)
+ * Get secure download URL
  * GET /api/projects/:id/download
- * ENHANCED: Now tracks downloads
  */
 const downloadProject = async (req, res) => {
   try {
@@ -220,44 +225,42 @@ const downloadProject = async (req, res) => {
     const userId = req.user.id;
     const isAdmin = req.user.role === 'admin';
 
+    // Get project
+    const projects = await db.query(
+      'SELECT id, title, description FROM projects WHERE id = ?',
+      [id]
+    );
+
+    if (projects.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Project not found'
+      });
+    }
+
+    const project = projects[0];
+
     // Admin bypass
     if (isAdmin) {
-      const projects = await db.query(
-        'SELECT description, title FROM projects WHERE id = ?',
-        [id]
-      );
-
-      if (projects.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Project not found',
-        });
-      }
-
-      let downloadUrl = null;
-      try {
-        const desc = JSON.parse(projects[0].description);
-        downloadUrl = desc.download_url;
-      } catch (e) {
-        downloadUrl = null;
-      }
-
+      const downloadUrl = extractDownloadUrl(project.description);
+      
+      logger.download(userId, id, 'admin_download');
+      
       return res.json({
         success: true,
         data: {
           downloadUrl: downloadUrl || '#',
-          fileName: `${projects[0].title.replace(/\s+/g, '_')}.zip`,
+          fileName: `${project.title.replace(/\s+/g, '_')}.zip`,
           message: 'Admin download'
-        },
+        }
       });
     }
 
-    // Check if user purchased this project
+    // Check purchase
     const orders = await db.query(
       `SELECT id, created_at FROM orders 
        WHERE user_id = ? AND project_id = ? AND status = 'paid'
-       ORDER BY created_at DESC
-       LIMIT 1`,
+       ORDER BY created_at DESC LIMIT 1`,
       [userId, id]
     );
 
@@ -271,103 +274,95 @@ const downloadProject = async (req, res) => {
     const orderId = orders[0].id;
 
     // Check/create download log
-    const [logs] = await db.query(
+    let logs = await db.query(
       `SELECT * FROM download_logs 
        WHERE user_id = ? AND project_id = ? AND order_id = ?`,
       [userId, id, orderId]
     );
 
-    let downloadLog;
     const MAX_DOWNLOADS = 5;
-    const EXPIRY_DAYS = 180; // 6 months
+    const EXPIRY_DAYS = 180;
+
+    let downloadLog;
 
     if (logs.length === 0) {
       // Create new download log
       const expiryDate = new Date();
       expiryDate.setDate(expiryDate.getDate() + EXPIRY_DAYS);
 
-      const [result] = await db.query(
+      const result = await db.query(
         `INSERT INTO download_logs 
          (user_id, project_id, order_id, download_count, max_downloads, expiry_date, last_downloaded_at)
-         VALUES (?, ?, ?, 1, ?, ?, NOW())`,
+         VALUES (?, ?, ?, 0, ?, ?, NOW())`,
         [userId, id, orderId, MAX_DOWNLOADS, expiryDate]
       );
 
       downloadLog = {
         id: result.insertId,
-        download_count: 1,
+        download_count: 0,
         max_downloads: MAX_DOWNLOADS,
         expiry_date: expiryDate
       };
     } else {
       downloadLog = logs[0];
-
-      // Check expiry
-      if (new Date(downloadLog.expiry_date) < new Date()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Download link has expired. Contact support to renew access.'
-        });
-      }
-
-      // Check download limit
-      if (downloadLog.download_count >= downloadLog.max_downloads) {
-        return res.status(403).json({
-          success: false,
-          message: `Download limit (${downloadLog.max_downloads}) reached. Contact support for additional downloads.`
-        });
-      }
-
-      // Increment download count
-      await db.query(
-        `UPDATE download_logs 
-         SET download_count = download_count + 1,
-             last_downloaded_at = NOW()
-         WHERE id = ?`,
-        [downloadLog.id]
-      );
-
-      downloadLog.download_count += 1;
     }
 
-    // Get project download URL
-    const projects = await db.query(
-      'SELECT title, description FROM projects WHERE id = ?',
-      [id]
-    );
-
-    if (projects.length === 0) {
-      return res.status(404).json({
+    // Check expiry
+    if (new Date(downloadLog.expiry_date) < new Date()) {
+      logger.download(userId, id, 'expired');
+      return res.status(403).json({
         success: false,
-        message: 'Project not found'
+        message: 'Download link has expired. Contact support to renew access.'
       });
     }
 
-    let downloadUrl = null;
-    try {
-      const desc = JSON.parse(projects[0].description);
-      downloadUrl = desc.download_url;
-    } catch (e) {
-      downloadUrl = null;
+    // Check download limit
+    if (downloadLog.download_count >= downloadLog.max_downloads) {
+      logger.download(userId, id, 'limit_reached');
+      return res.status(403).json({
+        success: false,
+        message: `Download limit (${downloadLog.max_downloads}) reached. Contact support for additional downloads.`
+      });
     }
 
-    if (!downloadUrl) {
+    // Increment download count
+    await db.query(
+      `UPDATE download_logs 
+       SET download_count = download_count + 1, last_downloaded_at = NOW()
+       WHERE id = ?`,
+      [downloadLog.id]
+    );
+
+    // Get actual download URL
+    const actualUrl = extractDownloadUrl(project.description);
+
+    if (!actualUrl || actualUrl === '#') {
       return res.status(404).json({
         success: false,
         message: 'Download link not available'
       });
     }
 
-    const downloadsRemaining = downloadLog.max_downloads - downloadLog.download_count;
+    // Generate signed URL
+    const { signedUrl, expiry } = generateSignedUrl(
+      id,
+      userId,
+      `/api/projects/${id}/secure-download`
+    );
+
+    const downloadsRemaining = downloadLog.max_downloads - downloadLog.download_count - 1;
     const daysUntilExpiry = Math.ceil(
       (new Date(downloadLog.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)
     );
 
+    logger.download(userId, id, 'download_initiated', downloadsRemaining);
+
     res.json({
       success: true,
       data: {
-        downloadUrl,
-        fileName: `${projects[0].title.replace(/\s+/g, '_')}.zip`,
+        // Return the actual URL for now (in production, would use signed URL proxy)
+        downloadUrl: actualUrl,
+        fileName: `${project.title.replace(/\s+/g, '_')}.zip`,
         downloads_remaining: downloadsRemaining,
         total_downloads: downloadLog.max_downloads,
         expiry_date: downloadLog.expiry_date,
@@ -377,7 +372,7 @@ const downloadProject = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Download project error:', error);
+    logger.error('Download project error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to process download'
@@ -386,7 +381,7 @@ const downloadProject = async (req, res) => {
 };
 
 /**
- * Get all categories with project counts
+ * Get all categories
  * GET /api/projects/categories
  */
 const getCategories = async (req, res) => {
@@ -404,13 +399,26 @@ const getCategories = async (req, res) => {
       data: categories
     });
   } catch (error) {
-    console.error('Get categories error:', error);
+    logger.error('Get categories error', { error: error.message });
     res.status(500).json({
       success: false,
       message: 'Failed to fetch categories'
     });
   }
 };
+
+/**
+ * Helper: Extract download URL from description JSON
+ */
+function extractDownloadUrl(description) {
+  try {
+    if (!description) return null;
+    const desc = typeof description === 'string' ? JSON.parse(description) : description;
+    return desc.download_url || null;
+  } catch (e) {
+    return null;
+  }
+}
 
 module.exports = {
   getAllProjects,

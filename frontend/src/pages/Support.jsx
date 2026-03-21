@@ -11,13 +11,13 @@ import {
 
 export default function Support() {
   return (
-    <div className="min-h-screen bg-secondary-50 fade-in">
+    <div className="min-h-screen bg-surface-lowest fade-in">
       
       {/* 1. Hero Section */}
-      <div className="bg-gradient-to-br from-primary-700 to-primary-900 text-white py-16">
+      <div className="bg-gradient-to-br from-primary/20 to-surface text-white py-16">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h1 className="text-4xl font-bold mb-4">How can we help you?</h1>
-          <p className="text-primary-100 text-lg max-w-2xl mx-auto">
+          <p className="text-outline text-lg max-w-2xl mx-auto">
             Whether you have a question about a project, pricing, or need technical assistance, our team is ready to answer all your questions.
           </p>
         </div>
@@ -28,12 +28,12 @@ export default function Support() {
         <div className="grid gap-6 md:grid-cols-3">
           
           {/* WhatsApp */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-secondary-100 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-14 h-14 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <HiChat className="w-7 h-7 text-green-600" />
+          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-14 h-14 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+              <HiChat className="w-7 h-7 text-green-500" />
             </div>
-            <h2 className="text-xl font-bold text-secondary-900 mb-2">Chat on WhatsApp</h2>
-            <p className="text-secondary-500 mb-6 text-sm">
+            <h2 className="text-xl font-bold text-white mb-2">Chat on WhatsApp</h2>
+            <p className="text-outline mb-6 text-sm">
               Fastest way to get answers. <br/>Available 9 AM - 9 PM.
             </p>
             <a
@@ -47,12 +47,12 @@ export default function Support() {
           </div>
 
           {/* Email */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-secondary-100 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-14 h-14 mx-auto bg-blue-100 rounded-full flex items-center justify-center mb-4">
-              <HiMail className="w-7 h-7 text-blue-600" />
+          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-14 h-14 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
+              <HiMail className="w-7 h-7 text-blue-500" />
             </div>
-            <h2 className="text-xl font-bold text-secondary-900 mb-2">Send an Email</h2>
-            <p className="text-secondary-500 mb-6 text-sm">
+            <h2 className="text-xl font-bold text-white mb-2">Send an Email</h2>
+            <p className="text-outline mb-6 text-sm">
               For detailed technical queries. <br/>Response within 24 hours.
             </p>
             <a
@@ -64,12 +64,12 @@ export default function Support() {
           </div>
 
           {/* Phone */}
-          <div className="bg-white rounded-2xl shadow-lg p-8 text-center border border-secondary-100 hover:-translate-y-1 transition-transform duration-300">
-            <div className="w-14 h-14 mx-auto bg-purple-100 rounded-full flex items-center justify-center mb-4">
-              <HiPhone className="w-7 h-7 text-purple-600" />
+          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300">
+            <div className="w-14 h-14 mx-auto bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
+              <HiPhone className="w-7 h-7 text-purple-500" />
             </div>
-            <h2 className="text-xl font-bold text-secondary-900 mb-2">Call Us</h2>
-            <p className="text-secondary-500 mb-6 text-sm">
+            <h2 className="text-xl font-bold text-white mb-2">Call Us</h2>
+            <p className="text-outline mb-6 text-sm">
               Speak directly to our team. <br/>Mon — Fri, 9 AM — 6 PM.
             </p>
             <a
@@ -84,8 +84,8 @@ export default function Support() {
         {/* 3. FAQ Section */}
         <div className="mt-20 max-w-3xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-secondary-900 flex items-center justify-center gap-2">
-              <HiQuestionMarkCircle className="text-primary-500" />
+            <h2 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
+              <HiQuestionMarkCircle className="text-primary" />
               Frequently Asked Questions
             </h2>
           </div>
@@ -111,9 +111,9 @@ export default function Support() {
         </div>
 
         {/* 4. Location Footer */}
-        <div className="mt-20 pt-10 border-t border-secondary-200 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-secondary-100 rounded-full text-secondary-600 text-sm font-medium">
-            <HiLocationMarker className="w-4 h-4 text-primary-600" />
+        <div className="mt-20 pt-10 border-t border-surface-variant text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-high rounded-full text-outline text-sm font-medium">
+            <HiLocationMarker className="w-4 h-4 text-primary" />
             Amaravathi, Andhra Pradesh, India
           </div>
         </div>
@@ -128,16 +128,16 @@ function FAQItem({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="bg-white border border-secondary-200 rounded-xl overflow-hidden">
+    <div className="bg-surface border border-surface-variant rounded-xl overflow-hidden">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-secondary-50 transition-colors"
+        className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-surface-high transition-colors"
       >
-        <span className="font-semibold text-secondary-900">{question}</span>
-        {isOpen ? <HiChevronUp className="text-primary-500" /> : <HiChevronDown className="text-secondary-400" />}
+        <span className="font-semibold text-white">{question}</span>
+        {isOpen ? <HiChevronUp className="text-primary" /> : <HiChevronDown className="text-outline" />}
       </button>
       {isOpen && (
-        <div className="px-6 pb-4 text-secondary-600 text-sm leading-relaxed border-t border-secondary-100 bg-secondary-50/50">
+        <div className="px-6 pb-4 text-outline text-sm leading-relaxed border-t border-surface-variant bg-surface-highest">
           {answer}
         </div>
       )}

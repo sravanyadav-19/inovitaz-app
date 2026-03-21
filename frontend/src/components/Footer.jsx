@@ -17,16 +17,16 @@ const Footer = () => {
   const { user } = useContext(AuthContext);
 
   return (
-    <footer className="bg-secondary-900 text-secondary-300 mt-auto border-t border-secondary-800">
+    <footer className="bg-surface-lowest text-outline mt-auto border-t border-surface-variant">
       
       {/* ========= CTA SECTION (For Visitors Only) ========= */}
       {!user && (
-        <div className="relative bg-secondary-800 border-b border-secondary-700">
+        <div className="relative bg-surface border-b border-surface-variant">
           <div className="max-w-7xl mx-auto px-6 py-10">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
               <div>
                 <h3 className="text-xl font-bold text-white mb-1">Need help choosing a project?</h3>
-                <p className="text-secondary-400 text-sm">Our engineering team is available 24/7 to assist you.</p>
+                <p className="text-outline text-sm">Our engineering team is available 24/7 to assist you.</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3">
                 <a
@@ -39,7 +39,7 @@ const Footer = () => {
                 </a>
                 <Link
                   to="/support"
-                  className="px-5 py-2.5 rounded-lg bg-secondary-700 hover:bg-secondary-600 text-white text-sm font-medium flex items-center gap-2 transition-all"
+                  className="px-5 py-2.5 rounded-lg bg-surface-high hover:bg-surface-highest text-white text-sm font-medium flex items-center gap-2 transition-all border border-surface-variant"
                 >
                   Contact Support <HiArrowRight />
                 </Link>
@@ -64,7 +64,7 @@ const Footer = () => {
   </div>
               <span className="text-2xl font-bold text-white tracking-tight">Inovitaz</span>
 </Link>
-            <p className="text-secondary-400 text-sm leading-relaxed">
+            <p className="text-outline text-sm leading-relaxed">
               India's #1 Marketplace for IoT, Embedded Systems, and Robotics projects. 
               Get production-ready code, circuit diagrams, and expert support.
             </p>
@@ -80,7 +80,7 @@ const Footer = () => {
                 <a 
                   key={idx}
                   href={social.link} 
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary-800 hover:bg-primary-600 text-secondary-400 hover:text-white transition-all duration-300"
+                  className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-high hover:bg-primary text-outline hover:text-white transition-all duration-300"
                 >
                   <social.icon className="w-4 h-4" />
                 </a>
@@ -93,9 +93,9 @@ const Footer = () => {
             <h3 className="text-white font-semibold text-lg mb-5">Explore</h3>
             <ul className="space-y-3 text-sm">
               <li><Link to="/projects" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span> Browse Projects</Link></li>
-              <li><Link to="/projects?category=IoT" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-secondary-600"></span> IoT Solutions</Link></li>
-              <li><Link to="/projects?category=Robotics" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-secondary-600"></span> Robotics</Link></li>
-              <li><Link to="/about" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-secondary-600"></span> About Us</Link></li>
+              <li><Link to="/projects?category=IoT" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> IoT Solutions</Link></li>
+              <li><Link to="/projects?category=Robotics" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> Robotics</Link></li>
+              <li><Link to="/about" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> About Us</Link></li>
             </ul>
           </div>
 
@@ -123,13 +123,13 @@ const Footer = () => {
           {/* 4. Newsletter & Contact */}
           <div>
             <h3 className="text-white font-semibold text-lg mb-5">Stay Updated</h3>
-            <div className="bg-secondary-800 p-1 rounded-lg flex mb-6 border border-secondary-700">
+            <div className="bg-surface p-1 rounded-lg flex mb-6 border border-surface-variant">
               <input 
                 type="email" 
                 placeholder="Enter your email" 
-                className="bg-transparent text-sm text-white px-3 py-2 w-full focus:outline-none placeholder-secondary-500"
+                className="bg-transparent text-sm text-white px-3 py-2 w-full focus:outline-none placeholder-outline"
               />
-              <button className="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+              <button className="bg-primary hover:bg-primary-dim text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                 Join
               </button>
             </div>
@@ -152,19 +152,19 @@ const Footer = () => {
         </div>
 
         {/* Footer Bottom */}
-        <div className="pt-8 border-t border-secondary-800 flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
-          <p className="text-secondary-500 text-center md:text-left">
+        <div className="pt-8 border-t border-surface-variant flex flex-col md:flex-row justify-between items-center gap-4 text-sm">
+          <p className="text-outline text-center md:text-left">
             © {currentYear} <span className="text-white font-medium">Inovitaz</span>. All Rights Reserved.
           </p>
           
           {/* Payment Trust Badges */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1 text-secondary-500 text-xs">
+            <div className="flex items-center gap-1 text-outline text-xs">
               <HiShieldCheck className="w-4 h-4 text-green-500" />
               <span>100% Secure Payment</span>
             </div>
-            <div className="h-4 w-px bg-secondary-700"></div>
-            <div className="flex items-center gap-2 text-secondary-400">
+            <div className="h-4 w-px bg-surface-variant"></div>
+            <div className="flex items-center gap-2 text-outline">
               <HiCreditCard className="w-6 h-6" title="Credit/Debit Card" />
               <span className="font-bold text-xs tracking-wider">UPI</span>
               <span className="font-bold text-xs tracking-wider">Razorpay</span>

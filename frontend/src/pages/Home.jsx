@@ -1,4 +1,8 @@
-﻿import React from "react";
+/**
+ * Home Page
+ * Landing page with hero, features, and featured projects
+ */
+
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { 
@@ -11,12 +15,12 @@ import {
 } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
 import { projectsAPI } from '../api/projects';
-import { AuthContext } from '../context/AuthContext'; // ← ADD THIS
+import { AuthContext } from '../context/AuthContext';
 
 const Home = () => {
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useContext(AuthContext); // ← ADD THIS
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -61,25 +65,21 @@ const Home = () => {
   return (
     <div className="fade-in">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          }}></div>
-        </div>
+      <section className="relative bg-surface text-white overflow-hidden border-b border-surface-variant/30">
+        {/* Hacker Grid Pattern */}
+        <div className="absolute inset-0 bg-hacker-grid bg-[size:40px_40px] opacity-20"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
-                <HiLightningBolt className="w-5 h-5 text-yellow-400" />
-                <span className="text-sm font-medium">Premium IoT Projects</span>
+              <div className="inline-flex items-center gap-2 bg-surface-lowest border border-primary-dim/30 rounded-full px-4 py-2 mb-6 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                <HiLightningBolt className="w-5 h-5 text-secondary-DEFAULT" />
+                <span className="text-sm font-medium text-primary-fixed uppercase tracking-wider">Premium IoT Modules</span>
               </div>
               
-              <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
+              <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight font-display tracking-tight text-white">
                 Build Amazing
-                <span className="block text-primary-200">IoT Projects</span>
+                <span className="block text-glow">IoT Projects</span>
               </h1>
               
               <p className="text-lg text-primary-100 mb-8 max-w-lg">
@@ -88,13 +88,13 @@ const Home = () => {
               </p>
               
               <div className="flex flex-wrap gap-4">
-                <Link to="/projects" className="btn btn-lg bg-white text-primary-700 hover:bg-primary-50">
-                  Browse Projects
+                <Link to="/projects" className="btn btn-lg btn-primary">
+                  Browse Fleet
                   <HiArrowRight className="w-5 h-5 ml-2" />
                 </Link>
                 {!user && (
-                  <Link to="/signup" className="btn btn-lg bg-primary-500 text-white hover:bg-primary-400 border-2 border-white/20">
-                    Get Started
+                  <Link to="/signup" className="btn btn-lg btn-secondary font-display uppercase tracking-widest">
+                    Initialize
                   </Link>
                 )}
               </div>
@@ -116,14 +116,18 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Hero Image */}
+            {/* Hero Image - Holographic HUD overlay */}
             <div className="hidden lg:block">
-              <div className="relative">
-                <div className="absolute -inset-4 bg-white/10 rounded-3xl blur-2xl"></div>
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-r from-primary-DEFAULT to-secondary-DEFAULT rounded-2xl blur opacity-30 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
                 <img
-                  src="/public/hero-iot.png"
-                  alt="IoT Projects"
-                  className="relative rounded-2xl shadow-2xl"
+                  src="/hero-iot.png"
+                  alt="IoT Projects Matrix"
+                  className="relative rounded-2xl border border-surface-variant/50 min-h-[400px] bg-surface-lowest w-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://via.placeholder.com/800x600/0c1324/4ae176?text=SYSTEM+ONLINE';
+                  }}
                 />
               </div>
             </div>
@@ -132,14 +136,14 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-surface-lowest relative border-b border-surface-variant/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-              Why Choose Inovitaz?
+            <h2 className="text-3xl lg:text-4xl font-display font-bold text-white mb-4">
+              System Capabilities
             </h2>
-            <p className="text-lg text-secondary-600 max-w-2xl mx-auto">
-              We provide everything you need to bring your IoT ideas to life.
+            <p className="text-lg text-outline max-w-2xl mx-auto">
+              We provide the core modules to compile your ideas into reality.
             </p>
           </div>
 
@@ -147,15 +151,15 @@ const Home = () => {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="text-center p-6 rounded-2xl bg-secondary-50 hover:bg-primary-50 transition-colors group"
+                className="text-center p-6 rounded glass-panel hover:bg-surface-variant/40 transition-colors group"
               >
-                <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary-200 transition-colors">
-                  <feature.icon className="w-7 h-7 text-primary-600" />
+                <div className="w-14 h-14 bg-surface-highest border border-primary-dim/20 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:border-primary-dim/60 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                  <feature.icon className="w-7 h-7 text-primary-dim" />
                 </div>
-                <h3 className="text-lg font-semibold text-secondary-900 mb-2">
+                <h3 className="text-lg font-display font-semibold text-white mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-secondary-600 text-sm">
+                <p className="text-outline text-sm">
                   {feature.description}
                 </p>
               </div>
@@ -165,15 +169,16 @@ const Home = () => {
       </section>
 
       {/* Featured Projects Section */}
-      <section className="py-20 bg-secondary-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 bg-surface relative">
+        <div className="absolute inset-0 bg-hacker-grid bg-[size:40px_40px] opacity-[0.03]"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-bold text-secondary-900 mb-4">
-                Featured Projects
+              <h2 className="text-3xl lg:text-4xl font-display font-bold text-white mb-4">
+                Telemetry & Modules
               </h2>
-              <p className="text-lg text-secondary-600">
-                Our most popular IoT and embedded systems projects
+              <p className="text-lg text-outline">
+                Our most requested IoT and embedded hardware configurations.
               </p>
             </div>
             <Link 
@@ -220,20 +225,21 @@ const Home = () => {
 
       {/* CTA Section - ONLY FOR VISITORS */}
       {!user && (
-        <section className="py-20 bg-secondary-900">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-              Ready to Start Building?
+        <section className="py-20 bg-surface-lowest border-t border-secondary-DEFAULT/20 relative overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary-DEFAULT/10 rounded-full blur-3xl"></div>
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h2 className="text-3xl lg:text-4xl font-display font-bold text-white mb-4">
+              Initialize Connection
             </h2>
-            <p className="text-lg text-secondary-300 mb-8">
-              Join thousands of developers and makers who trust Inovitaz for their IoT projects.
+            <p className="text-lg text-outline mb-8">
+              Join thousands of makers executing their IoT protocols with Inovitaz infrastructure.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link to="/signup" className="btn btn-lg btn-primary">
-                Create Free Account
+                Create Access Key
               </Link>
-              <Link to="/projects" className="btn btn-lg bg-secondary-800 text-white hover:bg-secondary-700">
-                Explore Projects
+              <Link to="/projects" className="btn btn-lg btn-secondary">
+                Explore Database
               </Link>
             </div>
           </div>

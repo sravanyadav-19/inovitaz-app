@@ -295,13 +295,13 @@ export default function ProjectDetails() {
   );
 
   const LockedOverlay = () => (
-    <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-center z-10 rounded-lg border border-secondary-200">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl border border-secondary-100 max-w-sm transform scale-100 transition-transform">
-        <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+    <div className="absolute inset-0 bg-surface-lowest/80 backdrop-blur-sm flex flex-col items-center justify-center text-center z-10 rounded-lg border border-surface-variant">
+      <div className="bg-surface-high p-8 rounded-2xl shadow-2xl border border-surface-variant max-w-sm transform scale-100 transition-transform">
+        <div className="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
           <HiLockClosed className="w-8 h-8" />
         </div>
-        <h3 className="text-xl font-bold text-secondary-900 mb-2">Premium Content Locked</h3>
-        <p className="text-secondary-500 mb-6 leading-relaxed">
+        <h3 className="text-xl font-bold text-white mb-2">Premium Content Locked</h3>
+        <p className="text-outline mb-6 leading-relaxed">
           Purchase this project to instantly access the full source code, circuit diagrams, and documentation.
         </p>
         <button 
@@ -316,7 +316,15 @@ export default function ProjectDetails() {
   );
 
   if (loading) return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner size="large" /></div>;
-  if (!project) return <div className="text-center py-20">Project not found.</div>;
+  if (!project) return (
+    <div className="min-h-screen bg-surface-lowest flex items-center justify-center">
+      <div className="text-center p-8 bg-surface rounded-2xl border border-surface-variant">
+        <h2 className="text-2xl font-bold text-white mb-2">Project Not Found</h2>
+        <p className="text-outline mb-6">The project you are looking for does not exist or has been removed.</p>
+        <Link to="/projects" className="btn btn-primary">Browse Projects</Link>
+      </div>
+    </div>
+  );
 
   const tabs = ['overview', 'components'];
   if (purchased) {
@@ -325,9 +333,9 @@ export default function ProjectDetails() {
   tabs.push('reviews');
 
   return (
-    <div className="min-h-screen bg-secondary-50 fade-in">
+    <div className="min-h-screen bg-surface-lowest fade-in">
       {/* Header */}
-      <div className="bg-white border-b border-secondary-200">
+      <div className="bg-surface border-b border-surface-variant">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid lg:grid-cols-2 gap-10">
             {/* Image */}
@@ -342,25 +350,25 @@ export default function ProjectDetails() {
 
             {/* Info */}
             <div className="flex flex-col justify-center">
-              <span className="text-primary-600 font-semibold tracking-wide text-sm mb-2 uppercase">{project.category}</span>
-              <h1 className="text-3xl font-bold text-secondary-900 mb-2 leading-tight">{project.title}</h1>
+              <span className="text-primary font-semibold tracking-wide text-sm mb-2 uppercase">{project.category}</span>
+              <h1 className="text-3xl font-bold text-white mb-2 leading-tight">{project.title}</h1>
               
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-1">
                   <StarRating rating={avgRating} />
-                  <span className="text-lg font-bold ml-1">{avgRating > 0 ? avgRating : "New"}</span>
-                  <span className="text-sm text-secondary-500">({reviews.length} reviews)</span>
+                  <span className="text-lg font-bold ml-1 text-white">{avgRating > 0 ? avgRating : "New"}</span>
+                  <span className="text-sm text-outline">({reviews.length} reviews)</span>
                 </div>
-                <button onClick={toggleWishlist} className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-red-50 transition-colors text-secondary-600 hover:text-red-500">
+                <button onClick={toggleWishlist} className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-red-500/20 transition-colors text-outline hover:text-red-400">
                   {isWishlisted ? <HiHeart className="w-6 h-6 text-red-500" /> : <HiOutlineHeart className="w-6 h-6" />}
                   <span className="text-sm font-medium">{isWishlisted ? 'Saved' : 'Save'}</span>
                 </button>
               </div>
 
               <div className="flex items-baseline gap-3 mb-8">
-                <span className="text-5xl font-bold text-primary-600">₹{displayPrice}</span>
-                <span className="text-xl text-secondary-400 line-through">₹{Math.round(displayPrice * 1.5)}</span>
-                <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">33% OFF</span>
+                <span className="text-5xl font-bold text-primary">₹{displayPrice}</span>
+                <span className="text-xl text-outline line-through">₹{Math.round(displayPrice * 1.5)}</span>
+                <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">33% OFF</span>
               </div>
 
               {!purchased ? (
@@ -374,7 +382,7 @@ export default function ProjectDetails() {
               )}
               
               {!purchased && (
-                <p className="text-center text-xs text-secondary-400 mt-3 flex items-center justify-center gap-1">
+                <p className="text-center text-xs text-outline mt-3 flex items-center justify-center gap-1">
                   <HiCheckCircle className="text-green-500" /> Secure payment via Razorpay
                 </p>
               )}
@@ -385,14 +393,14 @@ export default function ProjectDetails() {
 
       {/* Content Tabs */}
       <div className="max-w-7xl mx-auto px-4 py-10">
-        <div className="card overflow-hidden bg-white shadow-sm rounded-xl min-h-[400px]">
+        <div className="card overflow-hidden shadow-sm rounded-xl min-h-[400px]">
           {/* Tab Navigation */}
-          <div className="flex border-b bg-gray-50 overflow-x-auto">
+          <div className="flex border-b border-surface-variant bg-surface-highest overflow-x-auto">
             {tabs.map(tab => (
               <button 
                 key={tab} 
                 onClick={() => setActiveTab(tab)} 
-                className={`px-6 py-4 capitalize font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === tab ? 'border-primary-600 text-primary-700 bg-white' : 'border-transparent text-secondary-500 hover:text-secondary-800 hover:bg-gray-100'}`}
+                className={`px-6 py-4 capitalize font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === tab ? 'border-primary text-primary bg-surface' : 'border-transparent text-outline hover:text-white hover:bg-surface-high'}`}
               >
                 {tab}
               </button>
@@ -404,8 +412,8 @@ export default function ProjectDetails() {
             {/* OVERVIEW TAB */}
             {activeTab === 'overview' && (
               <div className="relative">
-                <div className={`prose max-w-none text-secondary-700 leading-relaxed ${!purchased ? 'max-h-40 overflow-hidden mask-fade-bottom' : ''}`}>
-                  <h3 className="text-xl font-bold text-secondary-900 mb-4">Project Overview</h3>
+                <div className={`prose max-w-none text-outline leading-relaxed ${!purchased ? 'max-h-40 overflow-hidden mask-fade-bottom' : ''}`}>
+                  <h3 className="text-xl font-bold text-white mb-4">Project Overview</h3>
                   <div style={{ whiteSpace: "pre-line" }}>
                     <Linkify componentDecorator={standardLinkDecorator}>
                       {overviewText}
@@ -421,19 +429,19 @@ export default function ProjectDetails() {
               <div className="relative min-h-[200px]">
                 {purchased ? (
                   <div>
-                    <h3 className="text-xl font-bold text-secondary-900 mb-6">Required Components</h3>
+                    <h3 className="text-xl font-bold text-white mb-6">Required Components</h3>
                     {components.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {components.map((c, i) => (
-                          <div key={i} className="flex items-center justify-between bg-secondary-50 p-4 rounded-xl border border-secondary-100 hover:shadow-md transition-all">
+                          <div key={i} className="flex items-center justify-between bg-surface p-4 rounded-xl border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-all">
                             {/* Left: Name and Quantity */}
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <HiChip className="text-primary-600 w-5 h-5" />
+                              <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <HiChip className="text-primary w-5 h-5" />
                               </div>
                               <div>
-                                <p className="font-semibold text-secondary-900">{c.name}</p>
-                                <p className="text-xs text-secondary-500 font-medium bg-secondary-200 px-2 py-0.5 rounded-full inline-block mt-1">
+                                <p className="font-semibold text-white">{c.name}</p>
+                                <p className="text-xs text-outline font-medium bg-surface-highest px-2 py-0.5 rounded-full inline-block mt-1">
                                   Qty: {c.quantity}
                                 </p>
                               </div>
@@ -445,7 +453,7 @@ export default function ProjectDetails() {
                                 href={c.link} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs font-bold text-primary-700 bg-white border border-primary-200 hover:bg-primary-50 px-3 py-1.5 rounded-lg transition-colors"
+                                className="flex items-center gap-1 text-xs font-bold text-primary bg-surface border border-primary/30 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
                               >
                                 <HiShoppingCart className="w-3 h-3" />
                                 Buy
@@ -455,18 +463,18 @@ export default function ProjectDetails() {
                         ))}
                       </div>
                     ) : (
-                      <p className="text-secondary-500 italic">No component list available.</p>
+                      <p className="text-outline italic">No component list available.</p>
                     )}
                   </div>
                 ) : (
                   // Blurred Dummy Content
                   <div className="filter blur-md select-none opacity-50">
-                    <h3 className="text-xl font-bold text-secondary-900 mb-4">Required Components</h3>
+                    <h3 className="text-xl font-bold text-white mb-4">Required Components</h3>
                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {[1,2,3,4].map((i) => (
-                          <li key={i} className="flex items-center gap-3 bg-secondary-50 p-3 rounded-lg border border-secondary-100">
-                            <div className="w-5 h-5 bg-gray-300 rounded-full"></div>
-                            <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+                          <li key={i} className="flex items-center gap-3 bg-surface p-3 rounded-lg border border-surface-variant">
+                            <div className="w-5 h-5 bg-surface-highest rounded-full"></div>
+                            <div className="h-4 bg-surface-highest rounded w-2/3"></div>
                           </li>
                         ))}
                     </ul>
@@ -479,21 +487,21 @@ export default function ProjectDetails() {
             {/* CIRCUIT TAB */}
             {activeTab === 'circuit' && (
               <div>
-                <h3 className="text-xl font-bold text-secondary-900 mb-4 flex items-center gap-2">
-                  <HiPhotograph className="text-primary-500" /> Circuit Diagram
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <HiPhotograph className="text-primary" /> Circuit Diagram
                 </h3>
                 {circuit.image ? (
                   <div className="mb-6">
-                    <img src={circuit.image} alt="Circuit" className="rounded-lg border border-secondary-200 shadow-sm max-w-full md:max-w-2xl" />
+                    <img src={circuit.image} alt="Circuit" className="rounded-lg border border-surface-variant shadow-[0_0_15px_rgba(59,130,246,0.2)] max-w-full md:max-w-2xl" />
                   </div>
                 ) : (
-                  <p className="text-secondary-500 italic mb-4">No diagram image available.</p>
+                  <p className="text-outline italic mb-4">No diagram image available.</p>
                 )}
                 
                 {circuit.text && (
-                  <div className="bg-secondary-50 p-4 rounded-lg border border-secondary-100">
-                    <h4 className="font-semibold text-secondary-900 mb-2">Wiring Instructions:</h4>
-                    <div className="text-secondary-700 whitespace-pre-line">
+                  <div className="bg-surface p-4 rounded-lg border border-surface-variant">
+                    <h4 className="font-semibold text-white mb-2">Wiring Instructions:</h4>
+                    <div className="text-outline whitespace-pre-line">
                       <Linkify componentDecorator={standardLinkDecorator}>
                         {circuit.text}
                       </Linkify>
@@ -506,10 +514,10 @@ export default function ProjectDetails() {
             {/* STEPS TAB */}
             {activeTab === 'steps' && (
               <div>
-                <h3 className="text-xl font-bold text-secondary-900 mb-4 flex items-center gap-2">
-                  <HiClipboardList className="text-primary-500" /> Step-by-Step Guide
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <HiClipboardList className="text-primary" /> Step-by-Step Guide
                 </h3>
-                <div className="prose max-w-none text-secondary-700">
+                <div className="prose max-w-none text-outline">
                   <div style={{ whiteSpace: "pre-line" }}>
                     <Linkify componentDecorator={standardLinkDecorator}>
                       {steps || "No steps provided."}
@@ -518,9 +526,9 @@ export default function ProjectDetails() {
                 </div>
 
                 {source && (
-                  <div className="mt-8 border-t border-secondary-200 pt-6">
-                    <h4 className="text-lg font-bold text-secondary-900 mb-3">Source Code / Notes</h4>
-                    <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                  <div className="mt-8 border-t border-surface-variant pt-6">
+                    <h4 className="text-lg font-bold text-white mb-3">Source Code / Notes</h4>
+                    <pre className="bg-[#000000] text-primary-100 p-4 rounded-lg overflow-x-auto text-sm border border-surface-variant">
                       {source}
                     </pre>
                   </div>
@@ -531,26 +539,26 @@ export default function ProjectDetails() {
             {/* REVIEWS TAB */}
             {activeTab === 'reviews' && (
               <div>
-                <h3 className="text-xl font-bold text-secondary-900 mb-6">Customer Reviews</h3>
+                <h3 className="text-xl font-bold text-white mb-6">Customer Reviews</h3>
 
                 {purchased ? (
-                  <div className="bg-blue-50 p-6 rounded-lg mb-8 border border-blue-100">
-                    <h4 className="font-bold text-secondary-800 mb-3">Leave a Review</h4>
+                  <div className="bg-surface-high p-6 rounded-lg mb-8 border border-surface-variant">
+                    <h4 className="font-bold text-white mb-3">Leave a Review</h4>
                     <form onSubmit={handleSubmitReview}>
                       <div className="flex items-center gap-2 mb-4">
-                        <span className="text-sm font-medium text-secondary-600">Rating:</span>
+                        <span className="text-sm font-medium text-outline">Rating:</span>
                         <div className="flex gap-1 cursor-pointer">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <HiStar 
                               key={star} 
                               onClick={() => setNewReview({...newReview, rating: star})}
-                              className={`w-7 h-7 hover:scale-110 transition-transform ${star <= newReview.rating ? 'text-yellow-400' : 'text-gray-300'}`} 
+                              className={`w-7 h-7 hover:scale-110 transition-transform ${star <= newReview.rating ? 'text-yellow-400' : 'text-surface-variant'}`} 
                             />
                           ))}
                         </div>
                       </div>
                       <textarea
-                        className="w-full p-3 border border-secondary-200 rounded-md focus:ring-2 focus:ring-primary-500 focus:outline-none mb-3"
+                        className="w-full p-3 bg-surface-lowest border border-surface-variant rounded-md focus:ring-2 focus:ring-primary focus:outline-none mb-3 text-white placeholder-outline"
                         rows="3"
                         placeholder="Share your experience..."
                         value={newReview.comment}
@@ -565,39 +573,39 @@ export default function ProjectDetails() {
                     </form>
                   </div>
                 ) : user ? (
-                  <div className="bg-gray-50 p-4 rounded-lg mb-8 text-center border border-dashed border-gray-300">
-                    <p className="text-secondary-500">You must purchase this project to leave a review.</p>
+                  <div className="bg-surface-high p-4 rounded-lg mb-8 text-center border border-dashed border-surface-variant">
+                    <p className="text-outline">You must purchase this project to leave a review.</p>
                   </div>
                 ) : (
-                  <div className="bg-gray-50 p-4 rounded-lg mb-8 text-center border border-dashed border-gray-300">
-                    <p className="text-secondary-500">Please <Link to="/login" className="text-primary-600 underline">login</Link> and purchase to leave a review.</p>
+                  <div className="bg-surface-high p-4 rounded-lg mb-8 text-center border border-dashed border-surface-variant">
+                    <p className="text-outline">Please <Link to="/login" className="text-primary underline">login</Link> and purchase to leave a review.</p>
                   </div>
                 )}
 
                 {reviews.length > 0 ? (
                   <div className="space-y-6">
                     {reviews.map((review, idx) => (
-                      <div key={review.id || idx} className="border-b border-secondary-100 pb-6 last:border-0">
+                      <div key={review.id || idx} className="border-b border-surface-variant pb-6 last:border-0">
                         <div className="flex items-start gap-4">
-                           <div className="bg-gray-200 rounded-full p-2">
-                             <HiUserCircle className="w-8 h-8 text-gray-500"/>
+                           <div className="bg-surface-highest rounded-full p-2">
+                             <HiUserCircle className="w-8 h-8 text-outline"/>
                            </div>
                            <div className="flex-1">
                               <div className="flex items-center justify-between mb-1">
-                                <h5 className="font-bold text-secondary-900">{review.user_name || "Verified Buyer"}</h5>
-                                <span className="text-xs text-secondary-400">
+                                <h5 className="font-bold text-white">{review.user_name || "Verified Buyer"}</h5>
+                                <span className="text-xs text-outline">
                                   {review.created_at ? new Date(review.created_at).toLocaleDateString() : "Recent"}
                                 </span>
                               </div>
                               <StarRating rating={review.rating} />
-                              <p className="text-secondary-700 mt-2 leading-relaxed">{review.comment}</p>
+                              <p className="text-outline mt-2 leading-relaxed">{review.comment}</p>
                            </div>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-secondary-500 italic text-center py-4">No reviews yet. Be the first to review!</p>
+                  <p className="text-outline italic text-center py-4">No reviews yet. Be the first to review!</p>
                 )}
               </div>
             )}

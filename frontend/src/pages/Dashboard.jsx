@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   HiShoppingBag, 
@@ -157,17 +157,17 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-secondary-50 fade-in">
+    <div className="min-h-screen bg-surface-lowest fade-in">
       {/* Header */}
-      <div className="bg-white border-b border-secondary-200">
+      <div className="bg-surface border-b border-surface-variant">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-secondary-900">Welcome back, {user?.name}!</h1>
-              <p className="text-secondary-600">{user?.email}</p>
+              <h1 className="text-2xl font-bold text-white">Welcome back, {user?.name}!</h1>
+              <p className="text-outline">{user?.email}</p>
             </div>
           </div>
         </div>
@@ -177,32 +177,32 @@ const Dashboard = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary-100 rounded-xl flex items-center justify-center text-primary-600"><HiShoppingBag className="w-6 h-6" /></div>
-            <div><p className="text-sm text-secondary-600">Orders</p><p className="text-2xl font-bold">{orders.length}</p></div>
+            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary"><HiShoppingBag className="w-6 h-6" /></div>
+            <div><p className="text-sm text-outline">Orders</p><p className="text-2xl font-bold text-white">{orders.length}</p></div>
           </div>
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600"><HiCheckCircle className="w-6 h-6" /></div>
-            <div><p className="text-sm text-secondary-600">Completed</p><p className="text-2xl font-bold">{orders.filter(o => o.status === 'paid').length}</p></div>
+            <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-green-400"><HiCheckCircle className="w-6 h-6" /></div>
+            <div><p className="text-sm text-outline">Completed</p><p className="text-2xl font-bold text-white">{orders.filter(o => o.status === 'paid').length}</p></div>
           </div>
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600"><HiDownload className="w-6 h-6" /></div>
-            <div><p className="text-sm text-secondary-600">Downloads</p><p className="text-2xl font-bold">{purchasedProjects.length}</p></div>
+            <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400"><HiDownload className="w-6 h-6" /></div>
+            <div><p className="text-sm text-outline">Downloads</p><p className="text-2xl font-bold text-white">{purchasedProjects.length}</p></div>
           </div>
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center text-pink-600"><HiHeart className="w-6 h-6" /></div>
-            <div><p className="text-sm text-secondary-600">Wishlist</p><p className="text-2xl font-bold">{wishlist.length}</p></div>
+            <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center text-pink-400"><HiHeart className="w-6 h-6" /></div>
+            <div><p className="text-sm text-outline">Wishlist</p><p className="text-2xl font-bold text-white">{wishlist.length}</p></div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="card">
-          <div className="border-b border-secondary-200">
+          <div className="border-b border-surface-variant">
             <nav className="flex gap-8 px-6">
               {['orders', 'downloads', 'wishlist'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${activeTab === tab ? 'border-primary-500 text-primary-600' : 'border-transparent text-secondary-500 hover:text-secondary-800'}`}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${activeTab === tab ? 'border-primary text-primary' : 'border-transparent text-outline hover:text-white'}`}
                 >
                   {tab}
                 </button>
@@ -216,28 +216,28 @@ const Dashboard = () => {
               orders.length === 0 ? <EmptyState title="No orders yet" /> : (
                 <div className="space-y-4">
                   {orders.map((order) => (
-                    <div key={order.id} className="border border-secondary-200 rounded-lg hover:shadow-sm transition-shadow cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
+                    <div key={order.id} className="border border-surface-variant rounded-lg hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-shadow cursor-pointer" onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}>
                       <div className="p-4 flex items-center justify-between">
                         <div className="flex items-center gap-4">
                           <img src={order.project_thumbnail || 'https://via.placeholder.com/64'} className="w-16 h-16 rounded-lg object-cover" />
                           <div>
-                            <h3 className="font-medium text-secondary-900">{order.project_title}</h3>
-                            <p className="text-sm text-secondary-500">Order #{order.id}</p>
-                            <p className="text-sm text-secondary-500">{formatDate(order.created_at)}</p>
+                            <h3 className="font-medium text-white">{order.project_title}</h3>
+                            <p className="text-sm text-outline">Order #{order.id}</p>
+                            <p className="text-sm text-outline">{formatDate(order.created_at)}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-secondary-900">{formatPrice(order.amount)}</p>
+                          <p className="font-semibold text-white">{formatPrice(order.amount)}</p>
                           <div className="mt-1">{getStatusBadge(order.status)}</div>
                         </div>
                       </div>
                       
                       {/* Expanded Details */}
                       {expandedOrder === order.id && (
-                        <div className="border-t border-secondary-200 bg-secondary-50 p-4 text-sm grid md:grid-cols-2 gap-4 fade-in">
+                        <div className="border-t border-surface-variant bg-surface-high p-4 text-sm grid md:grid-cols-2 gap-4 fade-in">
                           <div>
-                            <p><span className="text-secondary-600">Payment ID:</span> {order.razorpay_payment_id || 'N/A'}</p>
-                            <p><span className="text-secondary-600">Category:</span> {order.project_category}</p>
+                            <p><span className="text-outline">Payment ID:</span> {order.razorpay_payment_id || 'N/A'}</p>
+                            <p><span className="text-outline">Category:</span> {order.project_category}</p>
                           </div>
                           <div className="flex justify-end gap-2">
                             <Link to={`/projects/${order.project_id}`} className="btn btn-secondary btn-sm">View Project</Link>
@@ -256,17 +256,17 @@ const Dashboard = () => {
               purchasedProjects.length === 0 ? <EmptyState title="No downloads available" /> : (
                 <div className="grid md:grid-cols-2 gap-4">
                   {purchasedProjects.map((project) => (
-                    <div key={project.id} className="card p-4 border border-secondary-200 hover:shadow-md transition-shadow">
+                    <div key={project.id} className="card p-4 border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-shadow">
                       <div className="flex gap-4">
                         <img src={project.thumbnail || 'https://via.placeholder.com/80'} className="w-20 h-20 rounded-lg object-cover" />
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-secondary-900 truncate">{project.title}</h3>
+                          <h3 className="font-medium text-white truncate">{project.title}</h3>
                           <div className="mt-2 space-y-1 text-sm">
-                            <div className="flex items-center gap-2 text-secondary-600">
+                            <div className="flex items-center gap-2 text-outline">
                               <HiDownload className="w-4 h-4" />
                               <span>{project.downloads_remaining} downloads left</span>
                             </div>
-                            <div className="flex items-center gap-2 text-secondary-600">
+                            <div className="flex items-center gap-2 text-outline">
                               <HiCalendar className="w-4 h-4" />
                               <span>Expires: {formatDate(project.expiry_date)}</span>
                             </div>
@@ -294,8 +294,8 @@ const Dashboard = () => {
               wishlist.length === 0 ? <EmptyState title="Your wishlist is empty" /> : (
                 <div className="grid md:grid-cols-3 gap-6">
                   {wishlist.map((item) => (
-                    <div key={item.id} className="card p-4 text-center border border-secondary-200">
-                      <div className="w-full h-32 bg-secondary-100 rounded-lg mb-3 flex items-center justify-center text-secondary-400">
+                    <div key={item.id} className="card p-4 text-center border border-surface-variant">
+                      <div className="w-full h-32 bg-surface-high rounded-lg mb-3 flex items-center justify-center text-outline">
                         <HiHeart className="w-8 h-8" />
                       </div>
                       <Link to={`/projects/${item.id}`} className="btn btn-primary btn-sm w-full">View Project</Link>
@@ -314,10 +314,10 @@ const Dashboard = () => {
 
 const EmptyState = ({ title }) => (
   <div className="text-center py-12">
-    <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4 text-secondary-400">
+    <div className="w-16 h-16 bg-surface-high rounded-full flex items-center justify-center mx-auto mb-4 text-outline">
       <HiExclamationCircle className="w-8 h-8" />
     </div>
-    <h3 className="text-lg font-medium text-secondary-900">{title}</h3>
+    <h3 className="text-lg font-medium text-white">{title}</h3>
     <Link to="/projects" className="btn btn-primary mt-4 inline-block">Browse Projects</Link>
   </div>
 );

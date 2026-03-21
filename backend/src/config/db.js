@@ -1,9 +1,11 @@
-﻿const mysql = require('mysql2/promise');
+const mysql = require('mysql2/promise');
 
 // Load .env only for LOCAL development
 if (process.env.NODE_ENV !== 'production') {
   require('dotenv').config();
 }
+
+const logger = require('../utils/logger');
 
 const poolConfig = {
   host: process.env.DB_HOST,
@@ -16,7 +18,7 @@ const poolConfig = {
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  // 👇 THIS IS THE CRITICAL CHANGE 👇
+  // Enforce SSL for Cloud DB
   ssl: {
     rejectUnauthorized: false 
   }
@@ -28,11 +30,11 @@ const pool = mysql.createPool(poolConfig);
 const testConnection = async () => {
   try {
     const connection = await pool.getConnection();
-    console.log('Database connection established');
+    logger.info('Database connection established');
     connection.release();
     return true;
   } catch (error) {
-    console.error('Database connection failed:', error.message);
+    logger.error('Database connection failed:', { message: error.message });
     throw error;
   }
 };
@@ -43,9 +45,7 @@ const query = async (sql, params = []) => {
     const [results] = await pool.query(sql, params);
     return results;
   } catch (error) {
-    console.error('Query error:', error.message);
-    console.error('SQL:', sql);
-    console.error('Params:', params);
+    logger.error('Query error:', { message: error.message, sql, params });
     throw error;
   }
 };

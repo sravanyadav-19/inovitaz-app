@@ -1,4 +1,4 @@
-﻿import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { 
   HiShoppingCart, 
@@ -90,7 +90,7 @@ const ProjectCard = ({ project }) => {
   const StarRating = ({ rating }) => (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
-        <HiStar key={star} className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`} />
+        <HiStar key={star} className={`w-4 h-4 ${star <= rating ? 'text-yellow-400' : 'text-slate-600'}`} />
       ))}
     </div>
   );
@@ -98,15 +98,15 @@ const ProjectCard = ({ project }) => {
   return (
     // FIX: 'relative' here stops the blue hover border from jumping out
     <Link to={`/projects/${id}`} className="group relative block h-full">
-      <div className="bg-white rounded-xl shadow-sm border border-secondary-200 overflow-hidden hover:shadow-lg hover:border-primary-300 transition-all duration-300 h-full flex flex-col relative z-10">
+      <div className="card hover:-translate-y-1 transition-all duration-300 h-full flex flex-col relative z-10 group-hover:border-primary-dim/30 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
         
         {/* Image Section */}
-        <div className="relative h-48 overflow-hidden bg-secondary-100">
+        <div className="relative h-48 overflow-hidden bg-surface-lowest border-b border-outline-variant/20">
           <img
             src={displayImage}
             alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=No+Image'; }}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+            onError={(e) => { e.target.src = 'https://placehold.co/400x300/0c1324/3b82f6?text=No+Image'; }}
           />
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -114,17 +114,17 @@ const ProjectCard = ({ project }) => {
           {/* Badges */}
           <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
             <div className="flex flex-col gap-2">
-              <span className="inline-block bg-primary-600 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm">
+              <span className="inline-block bg-primary-dim/20 text-primary-fixed border border-primary-dim/30 backdrop-blur-md text-xs font-medium px-3 py-1 rounded-full shadow-sm">
                 {category || 'IoT'}
               </span>
               {isNew && (
-                <span className="inline-block bg-green-500 text-white text-xs font-medium px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+                <span className="inline-block bg-secondary/20 text-secondary border border-secondary/30 backdrop-blur-md text-xs font-medium px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
                   <HiClock className="w-3 h-3" /> New
                 </span>
               )}
             </div>
-            <button onClick={toggleWishlist} disabled={wishlistLoading} className="p-2 bg-white/90 backdrop-blur-sm hover:bg-white rounded-full shadow-sm transition-all duration-200 hover:scale-110">
-              {isWishlisted ? <HiHeart className="w-5 h-5 text-red-500" /> : <HiOutlineHeart className="w-5 h-5 text-secondary-600 group-hover:text-red-500" />}
+            <button onClick={toggleWishlist} disabled={wishlistLoading} className="p-2 bg-surface-highest/80 backdrop-blur-md border border-outline-variant/30 text-outline hover:text-white rounded-full shadow-sm transition-all duration-200 hover:scale-110">
+              {isWishlisted ? <HiHeart className="w-5 h-5 text-red-400" /> : <HiOutlineHeart className="w-5 h-5 group-hover:text-red-400" />}
             </button>
           </div>
 
@@ -137,35 +137,35 @@ const ProjectCard = ({ project }) => {
 
         {/* Content Section */}
         <div className="p-5 flex-1 flex flex-col">
-          <h3 className="text-lg font-semibold text-secondary-900 mb-2 line-clamp-1 group-hover:text-primary-600 transition-colors">
+          <h3 className="text-lg font-display font-semibold text-white mb-2 line-clamp-1 group-hover:text-primary-dim transition-colors">
             {title}
           </h3>
 
-          <p className="text-secondary-600 text-sm mb-3 line-clamp-2 flex-1 leading-relaxed">
+          <p className="text-outline text-sm mb-3 line-clamp-2 flex-1 leading-relaxed">
             {cleanDescription || 'Complete IoT project with source code and documentation.'}
           </p>
 
           <div className="flex items-center gap-2 mb-4">
             <StarRating rating={rating} />
-            <span className="text-sm font-medium text-secondary-900">{rating ? Number(rating).toFixed(1) : '0.0'}</span>
-            <span className="text-xs text-secondary-500">({reviews_count || 0})</span>
+            <span className="text-sm font-medium text-white">{rating ? Number(rating).toFixed(1) : '0.0'}</span>
+            <span className="text-xs text-outline">({reviews_count || 0})</span>
           </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-secondary-100 mt-auto">
+          <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20 mt-auto">
             <div className="flex flex-col">
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-primary-600">₹{displayPrice}</span>
-                <span className="text-sm text-secondary-500 line-through">₹{Math.round(displayPrice * 1.5)}</span>
+                <span className="text-2xl font-display font-bold text-primary-dim text-glow">₹{displayPrice}</span>
+                <span className="text-sm text-outline opacity-70 line-through">₹{Math.round(displayPrice * 1.5)}</span>
               </div>
-              <span className="text-xs text-green-600 font-medium">33% OFF</span>
+              <span className="text-xs text-secondary font-medium">33% OFF</span>
             </div>
 
             <div className="flex gap-2">
-              <div className="p-2.5 bg-secondary-100 rounded-lg hover:bg-secondary-200 transition-colors">
-                <HiEye className="w-5 h-5 text-secondary-600" />
+              <div className="p-2.5 bg-surface-highest border border-outline-variant/30 rounded-lg hover:bg-surface-variant hover:border-outline-variant transition-colors">
+                <HiEye className="w-5 h-5 text-outline group-hover:text-white" />
               </div>
               {!isPurchased && (
-                <div className="p-2.5 bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors">
+                <div className="p-2.5 bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] rounded-lg transition-all">
                   <HiShoppingCart className="w-5 h-5 text-white" />
                 </div>
               )}
@@ -174,7 +174,7 @@ const ProjectCard = ({ project }) => {
         </div>
         
         {/* Hover Border Effect (Fixed z-index) */}
-        <div className="absolute inset-0 border-2 border-primary-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20" />
+        <div className="absolute inset-0 border border-primary-dim/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20" />
       </div>
     </Link>
   );

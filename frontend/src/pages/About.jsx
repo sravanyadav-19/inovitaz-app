@@ -2,20 +2,20 @@ import { HiLightBulb, HiAcademicCap, HiChip, HiUserGroup } from "react-icons/hi"
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-white fade-in">
+    <div className="min-h-screen bg-surface-lowest fade-in">
       
       {/* Hero */}
-      <div className="bg-secondary-900 text-white py-20 text-center px-6">
+      <div className="bg-surface text-white py-20 text-center px-6">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Building the Future of Engineering</h1>
-        <p className="text-primary-100 text-lg max-w-2xl mx-auto">
+        <p className="text-outline text-lg max-w-2xl mx-auto">
           Empowering students, makers, and innovators with premium IoT resources.
         </p>
       </div>
 
       {/* Mission */}
       <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="prose max-w-none text-secondary-700">
-          <h2 className="text-2xl font-bold text-secondary-900 mb-4">Our Mission</h2>
+        <div className="prose max-w-none text-outline">
+          <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>
           <p className="text-lg leading-relaxed mb-8">
             Inovitaz Innovations Pvt. Ltd. was built with a single mission — to make high-quality
             engineering and IoT project resources accessible, affordable, and ready for real-world implementation.
@@ -53,12 +53,12 @@ export default function About() {
 
 function ValueCard({ icon: Icon, title, desc }) {
   return (
-    <div className="p-6 bg-secondary-50 rounded-xl border border-secondary-100 hover:shadow-md transition-all">
-      <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-primary-600" />
+    <div className="p-6 bg-surface rounded-xl border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-all">
+      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
+        <Icon className="w-6 h-6 text-primary" />
       </div>
-      <h3 className="text-xl font-semibold text-secondary-900 mb-2">{title}</h3>
-      <p className="text-secondary-600">{desc}</p>
+      <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
+      <p className="text-outline">{desc}</p>
     </div>
   );
 }

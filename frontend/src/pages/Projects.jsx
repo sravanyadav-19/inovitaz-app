@@ -1,5 +1,9 @@
-﻿// src/pages/Projects.jsx
-import { useState, useEffect } from 'react';
+/**
+ * Projects Page
+ * Browse projects with filters and search
+ */
+
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { HiSearch, HiFilter, HiX } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
@@ -19,18 +23,12 @@ const Projects = () => {
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
-  
-  // ADDED: New filter states
   const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '999');
   const [technology, setTechnology] = useState(searchParams.get('technology') || '');
 
-  useEffect(() => {
-    fetchProjects();
-    fetchCategories();
-  }, [category, sort, page, difficulty, maxPrice, technology]); // MODIFIED: Added new dependencies
-
-  const fetchProjects = async () => {
+  // Fetch projects when filters change
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
       const response = await projectsAPI.getAll({
@@ -39,7 +37,6 @@ const Projects = () => {
         sort,
         page,
         limit: 12,
-        // ADDED: New filter parameters
         difficulty,
         maxPrice,
         technology,
@@ -54,7 +51,15 @@ const Projects = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [search, category, sort, page, difficulty, maxPrice, technology]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -67,36 +72,62 @@ const Projects = () => {
     }
   };
 
+  // Handle search form submit
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1);
-    fetchProjects();
+    setPage(1); // Reset pagination
     updateSearchParams();
   };
 
+  // Update URL search params
   const updateSearchParams = () => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (category) params.set('category', category);
     if (sort !== 'newest') params.set('sort', sort);
     if (page > 1) params.set('page', page.toString());
-    // ADDED: New params
     if (difficulty) params.set('difficulty', difficulty);
     if (maxPrice !== '999') params.set('maxPrice', maxPrice);
     if (technology) params.set('technology', technology);
     setSearchParams(params);
   };
 
+  // Clear all filters
   const clearFilters = () => {
     setSearch('');
     setCategory('');
     setSort('newest');
     setPage(1);
-    // ADDED: Clear new filters
     setDifficulty('');
     setMaxPrice('999');
     setTechnology('');
     setSearchParams({});
+  };
+
+  // Filter change handlers - ALWAYS reset page to 1
+  const handleCategoryChange = (value) => {
+    setCategory(value);
+    setPage(1);
+  };
+
+  const handleDifficultyChange = (value) => {
+    setDifficulty(value);
+    setPage(1);
+  };
+
+  const handleTechnologyChange = (value) => {
+    setTechnology(value);
+    setPage(1);
+  };
+
+  const handleMaxPriceChange = (value) => {
+    setMaxPrice(value);
+    setPage(1);
+  };
+
+  const handleSortChange = (value) => {
+    setSort(value);
+    setPage(1);
   };
 
   const sortOptions = [
@@ -104,19 +135,17 @@ const Projects = () => {
     { value: 'oldest', label: 'Oldest First' },
     { value: 'price_asc', label: 'Price: Low to High' },
     { value: 'price_desc', label: 'Price: High to Low' },
-    { value: 'popular', label: 'Most Popular' }, // ADDED
-    { value: 'rating', label: 'Highest Rated' }, // ADDED
+    { value: 'popular', label: 'Most Popular' },
+    { value: 'rating', label: 'Highest Rated' },
   ];
 
-  // ADDED: Difficulty options
   const difficultyOptions = [
     { value: '', label: 'All Levels' },
-    { value: 'beginner', label: 'Beginner' },
-    { value: 'intermediate', label: 'Intermediate' },
-    { value: 'advanced', label: 'Advanced' },
+    { value: 'Beginner', label: 'Beginner' },
+    { value: 'Intermediate', label: 'Intermediate' },
+    { value: 'Advanced', label: 'Advanced' },
   ];
 
-  // ADDED: Technology options
   const technologyOptions = [
     { value: '', label: 'All Technologies' },
     { value: 'arduino', label: 'Arduino' },
@@ -124,38 +153,42 @@ const Projects = () => {
     { value: 'esp8266', label: 'ESP8266' },
     { value: 'raspberry-pi', label: 'Raspberry Pi' },
     { value: 'stm32', label: 'STM32' },
-    { value: 'pic', label: 'PIC' },
     { value: 'nodemcu', label: 'NodeMCU' },
   ];
 
+  const hasActiveFilters = category || difficulty || technology || maxPrice !== '999';
+
   return (
-    <div className="min-h-screen bg-secondary-50 fade-in">
+    <div className="min-h-screen bg-surface fade-in">
       {/* Header */}
-      <div className="bg-white border-b border-secondary-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold text-secondary-900 mb-2">
-            Browse Projects
+      <div className="bg-surface-lowest border-b border-surface-variant/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative overflow-hidden">
+          {/* Subtle glow behind header */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-DEFAULT/5 rounded-full blur-3xl"></div>
+          
+          <h1 className="text-3xl lg:text-4xl font-display font-bold text-white mb-2 relative z-10">
+            Database querying <span className="animate-pulse text-secondary-DEFAULT">_</span>
           </h1>
-          <p className="text-secondary-600">
-            Explore our collection of premium IoT and embedded systems projects
+          <p className="text-outline relative z-10">
+            Explore our repository of premium IoT and embedded systems modules.
           </p>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-secondary-200 p-4 mb-8">
+        <div className="glass-panel rounded-xl p-5 mb-8">
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <form onSubmit={handleSearch} className="flex-1">
               <div className="relative">
-                <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
+                <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-outline" />
                 <input
                   type="text"
-                  placeholder="Search projects..."
+                  placeholder="Search metadata..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="input pl-10"
+                  className="input pl-10 bg-surface text-white placeholder-outline-variant font-medium tracking-wide"
                 />
               </div>
             </form>
@@ -166,19 +199,15 @@ const Projects = () => {
               className="lg:hidden btn btn-secondary"
             >
               <HiFilter className="w-5 h-5 mr-2" />
-              Filters {(category || difficulty || technology || maxPrice !== '999') && '•'}
+              Filters {hasActiveFilters && '•'}
             </button>
 
-            {/* Filters (Desktop) - ENHANCED */}
+            {/* Filters (Desktop) */}
             <div className="hidden lg:flex items-center gap-3 flex-wrap">
-              {/* Category */}
               <select
                 value={category}
-                onChange={(e) => {
-                  setCategory(e.target.value);
-                  setPage(1);
-                }}
-                className="input w-auto text-sm"
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="input w-auto text-sm bg-surface text-white"
               >
                 <option value="">All Categories</option>
                 {categories.map((cat) => (
@@ -188,14 +217,10 @@ const Projects = () => {
                 ))}
               </select>
 
-              {/* ADDED: Difficulty */}
               <select
                 value={difficulty}
-                onChange={(e) => {
-                  setDifficulty(e.target.value);
-                  setPage(1);
-                }}
-                className="input w-auto text-sm"
+                onChange={(e) => handleDifficultyChange(e.target.value)}
+                className="input w-auto text-sm bg-surface text-white"
               >
                 {difficultyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -204,14 +229,10 @@ const Projects = () => {
                 ))}
               </select>
 
-              {/* ADDED: Technology */}
               <select
                 value={technology}
-                onChange={(e) => {
-                  setTechnology(e.target.value);
-                  setPage(1);
-                }}
-                className="input w-auto text-sm"
+                onChange={(e) => handleTechnologyChange(e.target.value)}
+                className="input w-auto text-sm bg-surface text-white"
               >
                 {technologyOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -220,32 +241,24 @@ const Projects = () => {
                 ))}
               </select>
 
-              {/* ADDED: Price Range */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-secondary-600">Max:</span>
+                <span className="text-sm text-outline font-medium">MAX:</span>
                 <select
                   value={maxPrice}
-                  onChange={(e) => {
-                    setMaxPrice(e.target.value);
-                    setPage(1);
-                  }}
-                  className="input w-auto text-sm"
+                  onChange={(e) => handleMaxPriceChange(e.target.value)}
+                  className="input w-auto text-sm bg-surface text-white"
                 >
                   <option value="299">₹299</option>
                   <option value="499">₹499</option>
                   <option value="699">₹699</option>
-                  <option value="999">Any Price</option>
+                  <option value="999">Any</option>
                 </select>
               </div>
 
-              {/* Sort */}
               <select
                 value={sort}
-                onChange={(e) => {
-                  setSort(e.target.value);
-                  setPage(1);
-                }}
-                className="input w-auto text-sm"
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="input w-auto text-sm bg-surface text-white"
               >
                 {sortOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -254,8 +267,7 @@ const Projects = () => {
                 ))}
               </select>
 
-              {/* Clear Filters */}
-              {(search || category || sort !== 'newest' || difficulty || technology || maxPrice !== '999') && (
+              {(search || hasActiveFilters || sort !== 'newest') && (
                 <button
                   onClick={clearFilters}
                   className="btn btn-secondary btn-sm"
@@ -267,7 +279,7 @@ const Projects = () => {
             </div>
           </div>
 
-          {/* Mobile Filters - ENHANCED */}
+          {/* Mobile Filters */}
           {showFilters && (
             <div className="lg:hidden mt-4 pt-4 border-t border-secondary-200 space-y-4 fade-in">
               <div>
@@ -276,10 +288,7 @@ const Projects = () => {
                 </label>
                 <select
                   value={category}
-                  onChange={(e) => {
-                    setCategory(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
                   className="input"
                 >
                   <option value="">All Categories</option>
@@ -291,17 +300,13 @@ const Projects = () => {
                 </select>
               </div>
 
-              {/* ADDED: Difficulty for mobile */}
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-1">
                   Difficulty Level
                 </label>
                 <select
                   value={difficulty}
-                  onChange={(e) => {
-                    setDifficulty(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => handleDifficultyChange(e.target.value)}
                   className="input"
                 >
                   {difficultyOptions.map((option) => (
@@ -312,17 +317,13 @@ const Projects = () => {
                 </select>
               </div>
 
-              {/* ADDED: Technology for mobile */}
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-1">
                   Technology
                 </label>
                 <select
                   value={technology}
-                  onChange={(e) => {
-                    setTechnology(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => handleTechnologyChange(e.target.value)}
                   className="input"
                 >
                   {technologyOptions.map((option) => (
@@ -333,17 +334,13 @@ const Projects = () => {
                 </select>
               </div>
 
-              {/* ADDED: Price range for mobile */}
               <div>
                 <label className="block text-sm font-medium text-secondary-700 mb-1">
                   Maximum Price
                 </label>
                 <select
                   value={maxPrice}
-                  onChange={(e) => {
-                    setMaxPrice(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => handleMaxPriceChange(e.target.value)}
                   className="input"
                 >
                   <option value="299">Under ₹299</option>
@@ -359,10 +356,7 @@ const Projects = () => {
                 </label>
                 <select
                   value={sort}
-                  onChange={(e) => {
-                    setSort(e.target.value);
-                    setPage(1);
-                  }}
+                  onChange={(e) => handleSortChange(e.target.value)}
                   className="input"
                 >
                   {sortOptions.map((option) => (
@@ -373,7 +367,7 @@ const Projects = () => {
                 </select>
               </div>
 
-              {(search || category || sort !== 'newest' || difficulty || technology || maxPrice !== '999') && (
+              {(search || hasActiveFilters || sort !== 'newest') && (
                 <button
                   onClick={clearFilters}
                   className="w-full btn btn-secondary"
@@ -386,38 +380,38 @@ const Projects = () => {
           )}
         </div>
 
-        {/* ADDED: Active Filters Display */}
-        {(category || difficulty || technology || maxPrice !== '999') && (
+        {/* Active Filters Display */}
+        {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-sm text-secondary-600">Active filters:</span>
+            <span className="text-sm text-outline font-medium tracking-wide">ACTIVE_FILTERS:</span>
             {category && (
-              <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm flex items-center gap-1">
+              <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 {category}
-                <button onClick={() => setCategory('')} className="hover:text-primary-900">
+                <button aria-label="Remove category filter" onClick={() => handleCategoryChange('')} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
             )}
             {difficulty && (
-              <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm flex items-center gap-1">
+              <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 {difficulty}
-                <button onClick={() => setDifficulty('')} className="hover:text-primary-900">
+                <button onClick={() => handleDifficultyChange('')} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
             )}
             {technology && (
-              <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm flex items-center gap-1">
+              <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 {technology}
-                <button onClick={() => setTechnology('')} className="hover:text-primary-900">
+                <button onClick={() => handleTechnologyChange('')} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
             )}
             {maxPrice !== '999' && (
-              <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-sm flex items-center gap-1">
+              <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 Max ₹{maxPrice}
-                <button onClick={() => setMaxPrice('999')} className="hover:text-primary-900">
+                <button onClick={() => handleMaxPriceChange('999')} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
@@ -427,9 +421,9 @@ const Projects = () => {
 
         {/* Results Count */}
         {!loading && (
-          <p className="text-secondary-600 mb-6">
-            Showing {projects.length} of {pagination.total || 0} projects
-            {search && ` for "${search}"`}
+          <p className="text-outline mb-6 text-sm font-mono opacity-80">
+            &gt; FOUND_MODULES: {projects.length} OF {pagination.total || 0}
+            {search && ` FOR QUERY [${search}]`}
           </p>
         )}
 
@@ -439,17 +433,17 @@ const Projects = () => {
             <LoadingSpinner size="large" text="Loading projects..." />
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-24 h-24 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HiSearch className="w-12 h-12 text-secondary-400" />
+          <div className="text-center py-12 bg-surface-lowest border border-surface-variant rounded-xl glass-panel">
+            <div className="w-24 h-24 bg-surface-highest rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+              <HiSearch className="w-12 h-12 text-primary" />
             </div>
-            <h3 className="text-lg font-semibold text-secondary-900 mb-2">
+            <h3 className="text-xl font-display font-semibold text-white mb-2">
               No projects found
             </h3>
-            <p className="text-secondary-600 mb-4">
+            <p className="text-outline mb-6">
               Try adjusting your search or filter criteria
             </p>
-            <button onClick={clearFilters} className="btn btn-primary">
+            <button onClick={clearFilters} className="btn btn-primary px-6 py-2">
               Clear Filters
             </button>
           </div>
@@ -473,38 +467,30 @@ const Projects = () => {
                 </button>
 
                 <div className="flex gap-1">
-                  {[...Array(Math.min(5, pagination.pages))].map((_, i) => {
-                    // Show first 5 pages or less
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                          page === pageNum
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  {pagination.pages > 5 && (
-                    <>
-                      <span className="px-2">...</span>
-                      <button
-                        onClick={() => setPage(pagination.pages)}
-                        className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                          page === pagination.pages
-                            ? 'bg-primary-600 text-white'
-                            : 'bg-secondary-100 text-secondary-700 hover:bg-secondary-200'
-                        }`}
-                      >
-                        {pagination.pages}
-                      </button>
-                    </>
-                  )}
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === pagination.pages || Math.abs(page - p) <= 1)
+                    .reduce((acc, p, i, arr) => {
+                      if (i > 0 && arr[i - 1] !== p - 1) acc.push('...');
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((pageNum, i) => 
+                      pageNum === '...' ? (
+                        <span key={`ellipsis-${i}`} className="px-2 self-end mb-2 text-outline">...</span>
+                      ) : (
+                        <button
+                          key={pageNum}
+                          onClick={() => setPage(pageNum)}
+                          className={`w-10 h-10 rounded font-medium transition-colors ${
+                            page === pageNum
+                              ? 'bg-primary-DEFAULT text-white shadow-[0_0_10px_rgba(59,130,246,0.3)]'
+                              : 'bg-surface-lowest text-outline border border-outline-variant/30 hover:bg-surface-highest hover:text-white'
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      )
+                    )}
                 </div>
 
                 <button
