@@ -17,7 +17,8 @@ import {
   HiClipboardList,
   HiLink,
   HiUserCircle,
-  HiExternalLink
+  HiExternalLink,
+  HiDocumentDuplicate
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -527,8 +528,19 @@ export default function ProjectDetails() {
 
                 {source && (
                   <div className="mt-8 border-t border-surface-variant pt-6">
-                    <h4 className="text-lg font-bold text-white mb-3">Source Code / Notes</h4>
-                    <pre className="bg-[#000000] text-primary-100 p-4 rounded-lg overflow-x-auto text-sm border border-surface-variant">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-lg font-bold text-white">Source Code / Notes</h4>
+                      <button 
+                        onClick={() => {
+                          navigator.clipboard.writeText(source);
+                          toast.success("Source code copied to clipboard!");
+                        }}
+                        className="flex items-center gap-1.5 text-xs font-semibold text-outline bg-surface-high hover:bg-surface-highest hover:text-white px-3 py-1.5 rounded-lg border border-surface-variant transition-colors"
+                      >
+                        <HiDocumentDuplicate className="w-4 h-4" /> Copy Code
+                      </button>
+                    </div>
+                    <pre className="bg-[#000000] text-emerald-400 p-4 rounded-lg overflow-x-auto text-sm border border-surface-variant">
                       {source}
                     </pre>
                   </div>
