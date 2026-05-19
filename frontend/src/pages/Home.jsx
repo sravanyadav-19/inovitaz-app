@@ -86,7 +86,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="fade-in">
+    <div className="min-h-screen bg-surface-lowest fade-in">
       {/* Hero Section */}
       <section className="relative bg-surface text-white overflow-hidden border-b border-surface-variant/30">
         {/* Hacker Grid Pattern */}
@@ -105,7 +105,7 @@ const Home = () => {
                 <span className="block text-glow">IoT Projects</span>
               </h1>
               
-              <p className="text-lg text-primary-100 mb-8 max-w-lg">
+              <p className="text-lg text-primary-fixed mb-8 max-w-lg">
                 Get instant access to production-ready IoT and embedded systems projects. 
                 Complete source code, documentation, and support included.
               </p>
@@ -126,15 +126,15 @@ const Home = () => {
               <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/20">
                 <div>
                   <div className="text-3xl font-bold">50+</div>
-                  <div className="text-primary-200 text-sm">Projects</div>
+                  <div className="text-outline text-sm">Projects</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold">1000+</div>
-                  <div className="text-primary-200 text-sm">Customers</div>
+                  <div className="text-outline text-sm">Customers</div>
                 </div>
                 <div>
                   <div className="text-3xl font-bold">4.9</div>
-                  <div className="text-primary-200 text-sm">Rating</div>
+                  <div className="text-outline text-sm">Rating</div>
                 </div>
               </div>
             </div>
@@ -206,7 +206,7 @@ const Home = () => {
             </div>
             <Link 
               to="/projects"
-              className="hidden md:inline-flex items-center gap-2 text-primary-600 font-medium hover:text-primary-700 transition-colors"
+              className="hidden md:inline-flex items-center gap-2 text-primary-dim font-medium hover:text-primary-fixed transition-colors"
             >
               View All Projects
               <HiArrowRight className="w-5 h-5" />

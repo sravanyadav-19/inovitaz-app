@@ -194,7 +194,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-2xl shadow-xl max-w-md w-full fade-in">
+        <div className="relative bg-surface-lowest border border-surface-variant rounded-2xl shadow-xl max-w-md w-full fade-in">
           {/* Close button */}
           <button
             aria-label="Close payment modal"
@@ -209,7 +209,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             {/* Header */}
             <div className="text-center mb-6">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <HiCreditCard className="w-8 h-8 text-primary-600" />
+                <HiCreditCard className="w-8 h-8 text-primary-dim" />
               </div>
               <h2 className="text-xl font-bold text-secondary-900">Complete Purchase</h2>
               <p className="text-secondary-600 text-sm mt-1">Secure payment powered by Razorpay</p>
@@ -238,7 +238,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
 
             {/* Coupon Section */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-secondary-700 mb-2">
+              <label className="block text-sm font-medium text-outline mb-2">
                 Have a coupon code?
               </label>
               
@@ -303,7 +303,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             </div>
 
             {/* Price Breakdown */}
-            <div className="space-y-3 py-4 border-t border-b border-secondary-200 mb-6">
+            <div className="space-y-3 py-4 border-t border-b border-surface-variant mb-6">
               <div className="flex justify-between items-center text-secondary-600">
                 <span>Original Price</span>
                 <span>{formatPrice(project.price)}</span>
@@ -319,10 +319,10 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                 </div>
               )}
 
-              <div className="flex justify-between items-center pt-3 border-t border-secondary-200">
+              <div className="flex justify-between items-center pt-3 border-t border-surface-variant">
                 <span className="font-semibold text-secondary-900">Total Amount</span>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-primary-600">
+                  <div className="text-2xl font-bold text-primary-dim">
                     {formatPrice(finalPrice)}
                   </div>
                   {appliedCoupon && discount > 0 && (
@@ -373,7 +373,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             {/* Terms */}
             <p className="text-xs text-center text-secondary-500 mt-4">
               By proceeding, you agree to our{' '}
-              <a href="/terms" target="_blank" className="text-primary-600 hover:underline">
+              <a href="/terms" target="_blank" className="text-primary-dim hover:text-primary-fixed hover:underline">
                 Terms & Conditions
               </a>
             </p>

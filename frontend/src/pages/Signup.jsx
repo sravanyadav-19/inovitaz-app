@@ -105,7 +105,7 @@ const Signup = () => {
               <label className="block text-sm font-medium text-outline mb-1">Full Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiUser className="h-5 w-5 text-surface-variant" />
+                  <HiUser className="h-5 w-5 text-outline" />
                 </div>
                 <input
                   name="name"
@@ -123,7 +123,7 @@ const Signup = () => {
               <label className="block text-sm font-medium text-outline mb-1">Email Address</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiMail className="h-5 w-5 text-surface-variant" />
+                  <HiMail className="h-5 w-5 text-outline" />
                 </div>
                 <input
                   name="email"
@@ -141,7 +141,7 @@ const Signup = () => {
               <label className="block text-sm font-medium text-outline mb-1">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiLockClosed className="h-5 w-5 text-surface-variant" />
+                  <HiLockClosed className="h-5 w-5 text-outline" />
                 </div>
                 <input
                   name="password"
@@ -153,7 +153,7 @@ const Signup = () => {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-surface-variant hover:text-white"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}
@@ -166,7 +166,7 @@ const Signup = () => {
               <label className="block text-sm font-medium text-outline mb-1">Confirm Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiLockClosed className="h-5 w-5 text-surface-variant" />
+                  <HiLockClosed className="h-5 w-5 text-outline" />
                 </div>
                 <input
                   name="confirmPassword"
@@ -178,7 +178,7 @@ const Signup = () => {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-surface-variant hover:text-white"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}

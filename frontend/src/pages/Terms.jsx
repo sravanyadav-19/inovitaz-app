@@ -5,7 +5,7 @@ export default function Terms() {
         <h1 className="text-3xl font-bold text-white mb-2">Terms & Conditions</h1>
         <p className="text-outline text-sm mb-8">Last updated: {new Date().toLocaleDateString()}</p>
 
-        <div className="space-y-8 text-outline">
+        <div className="space-y-8 text-outline [&_strong]:text-white">
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Intellectual Property</h2>
             <p className="leading-relaxed">

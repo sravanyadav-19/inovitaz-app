@@ -82,7 +82,7 @@ const AdminStats = () => {
                 {formatPrice(stats?.totalRevenue || 0)}
               </p>
             </div>
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600">
+            <div className="icon-tile icon-tile-green">
               <HiCurrencyRupee className="w-6 h-6" />
             </div>
           </div>
@@ -95,7 +95,7 @@ const AdminStats = () => {
                 {stats?.totalOrders || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+            <div className="icon-tile icon-tile-blue">
               <HiShoppingCart className="w-6 h-6" />
             </div>
           </div>
@@ -108,7 +108,7 @@ const AdminStats = () => {
                 {stats?.totalUsers || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+            <div className="icon-tile icon-tile-purple">
               <HiUsers className="w-6 h-6" />
             </div>
           </div>
@@ -121,7 +121,7 @@ const AdminStats = () => {
                 {stats?.totalProjects || 0}
               </p>
             </div>
-            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center text-orange-600">
+            <div className="icon-tile icon-tile-orange">
               <HiCollection className="w-6 h-6" />
             </div>
           </div>
@@ -147,7 +147,7 @@ const AdminStats = () => {
                     <p className="font-medium text-white">
                       {order.project_title}
                     </p>
-                    <p className="text-sm text-surface-variant">
+                    <p className="text-sm text-outline">
                       {order.user_email}
                     </p>
                   </div>
@@ -155,7 +155,7 @@ const AdminStats = () => {
                     <p className="font-medium text-white">
                       {formatPrice(order.amount)}
                     </p>
-                    <p className="text-sm text-surface-variant">
+                    <p className="text-sm text-outline">
                       {new Date(order.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -163,7 +163,7 @@ const AdminStats = () => {
               ))}
             </div>
           ) : (
-            <p className="text-surface-variant text-center py-4">
+            <p className="text-outline text-center py-4">
               No recent orders
             </p>
           )}
@@ -493,25 +493,25 @@ const AdminProjects = () => {
                         <p className="font-medium text-white">
                           {project.title}
                         </p>
-                        <p className="text-sm text-surface-variant truncate max-w-xs">
+                        <p className="text-sm text-outline truncate max-w-xs">
                           {getShortDescription(project)}
                         </p>
                       </div>
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium">
+                    <span className="badge badge-primary">
                       {project.category}
                     </span>
                   </td>
                   <td className="py-4 px-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      className={`badge ${
                         project.difficulty === "Beginner"
-                          ? "bg-green-100 text-green-700"
+                          ? "badge-success"
                           : project.difficulty === "Intermediate"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                          ? "badge-warning"
+                          : "badge-danger"
                       }`}
                     >
                       {project.difficulty || "Beginner"}
@@ -525,7 +525,7 @@ const AdminProjects = () => {
                           ? Number(project.average_rating).toFixed(1)
                           : "0.0"}
                       </span>
-                      <span className="text-xs text-surface-variant">
+                      <span className="text-xs text-outline">
                         ({project.reviews_count || 0})
                       </span>
                     </div>
@@ -537,13 +537,13 @@ const AdminProjects = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEdit(project)}
-                        className="p-2 text-outline hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                        className="p-2 text-outline hover:text-primary-dim hover:bg-primary/10 rounded-lg transition-colors"
                       >
                         <HiPencil className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(project.id)}
-                        className="p-2 text-outline hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-outline hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                       >
                         <HiTrash className="w-5 h-5" />
                       </button>
@@ -555,7 +555,7 @@ const AdminProjects = () => {
                 <tr>
                   <td
                     colSpan={6}
-                    className="py-8 text-center text-surface-variant"
+                    className="py-8 text-center text-outline"
                   >
                     No projects found.
                   </td>
@@ -579,14 +579,14 @@ const AdminProjects = () => {
                 <h3 className="text-xl font-semibold text-white">
                   {editingProject ? "Edit Project" : "Add New Project"}
                 </h3>
-                <p className="text-sm text-surface-variant mt-1">
+                <p className="text-sm text-outline mt-1">
                   Add complete project information.
                 </p>
               </div>
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Basic Info */}
                 <div className="grid md:grid-cols-2 gap-4 bg-surface border border-surface-variant rounded-xl p-4">
-                  <h4 className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-surface-variant mb-2">
+                  <h4 className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     Project Info
                   </h4>
                   <div className="md:col-span-2">
@@ -707,7 +707,7 @@ const AdminProjects = () => {
 
                 {/* Overview */}
                 <div className="bg-surface border border-surface-variant rounded-xl p-4">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-surface-variant mb-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     1. Overview
                   </h4>
                   <textarea
@@ -728,13 +728,13 @@ const AdminProjects = () => {
                 {/* Components */}
                 <div className="bg-surface border border-surface-variant rounded-xl p-4">
                   <div className="flex justify-between items-center mb-2">
-                    <h4 className="text-xs font-semibold uppercase tracking-wide text-surface-variant">
+                    <h4 className="text-xs font-semibold uppercase tracking-wide text-outline">
                       2. Components & Quantity
                     </h4>
                     <button
                       type="button"
                       onClick={handleAddComponentRow}
-                      className="text-xs font-medium text-primary-700 hover:text-primary-800"
+                      className="text-xs font-medium text-primary-dim hover:text-primary-fixed"
                     >
                       + Add Component
                     </button>
@@ -827,7 +827,7 @@ const AdminProjects = () => {
 
                 {/* Circuit Diagram */}
                 <div className="bg-surface border border-surface-variant rounded-xl p-4 space-y-3">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-surface-variant mb-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     3. Circuit Diagram
                   </h4>
                   <div>
@@ -868,7 +868,7 @@ const AdminProjects = () => {
 
                 {/* Steps */}
                 <div className="bg-surface border border-surface-variant rounded-xl p-4">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-surface-variant mb-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     4. Step-by-Step Process
                   </h4>
                   <textarea
@@ -887,7 +887,7 @@ const AdminProjects = () => {
 
                 {/* Source Code */}
                 <div className="bg-surface border border-surface-variant rounded-xl p-4">
-                  <h4 className="text-xs font-semibold uppercase tracking-wide text-surface-variant mb-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     5. Source Code & Extra Notes
                   </h4>
                   <textarea
@@ -906,7 +906,7 @@ const AdminProjects = () => {
 
                 {/* Extras */}
                 <div className="grid md:grid-cols-2 gap-4 bg-surface border border-surface-variant rounded-xl p-4">
-                  <h4 className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-surface-variant mb-2">
+                  <h4 className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     Extras
                   </h4>
                   <div className="md:col-span-2">
@@ -1046,7 +1046,7 @@ const AdminOrders = () => {
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-8 text-center text-surface-variant"
+                    className="py-8 text-center text-outline"
                   >
                     No orders found
                   </td>
@@ -1065,7 +1065,7 @@ const AdminOrders = () => {
                         <p className="font-medium text-white">
                           {order.user_name}
                         </p>
-                        <p className="text-sm text-surface-variant">
+                        <p className="text-sm text-outline">
                           {order.user_email}
                         </p>
                       </div>
@@ -1087,7 +1087,7 @@ const AdminOrders = () => {
                     </td>
                     <td className="py-4 px-4">
                       {order.coupon_code ? (
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                        <span className="badge badge-purple">
                           {order.coupon_code}
                         </span>
                       ) : (
@@ -1096,12 +1096,12 @@ const AdminOrders = () => {
                     </td>
                     <td className="py-4 px-4">
                       <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        className={`badge ${
                           order.status === "paid"
-                            ? "bg-green-100 text-green-700"
-                            : order.status === "pending"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
+                            ? "badge-success"
+                            : order.status === "created" || order.status === "pending"
+                            ? "badge-warning"
+                            : "badge-danger"
                         }`}
                       >
                         {order.status}
@@ -1196,11 +1196,7 @@ const AdminUsers = () => {
                   <td className="py-4 px-4 text-outline">{user.email}</td>
                   <td className="py-4 px-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        user.role === "admin"
-                          ? "bg-purple-100 text-purple-700"
-                          : "bg-surface-high text-outline"
-                      }`}
+                      className={`badge ${coupon.is_active ? "badge-success" : "badge-danger"}`}
                     >
                       {user.role}
                     </span>
@@ -1214,7 +1210,7 @@ const AdminUsers = () => {
                 <tr>
                   <td
                     colSpan={4}
-                    className="py-8 text-center text-surface-variant"
+                    className="py-8 text-center text-outline"
                   >
                     No users found.
                   </td>
@@ -1414,7 +1410,7 @@ const AdminCoupons = () => {
                       <p className="font-mono font-medium text-white">
                         {coupon.code}
                       </p>
-                      <p className="text-xs text-surface-variant">
+                      <p className="text-xs text-outline">
                         {coupon.description}
                       </p>
                     </div>
@@ -1426,7 +1422,7 @@ const AdminCoupons = () => {
                         : formatPrice(coupon.discount_value)}
                     </span>
                     {coupon.max_discount_amount && (
-                      <p className="text-xs text-surface-variant">
+                      <p className="text-xs text-outline">
                         Max: {formatPrice(coupon.max_discount_amount)}
                       </p>
                     )}
@@ -1446,11 +1442,7 @@ const AdminCoupons = () => {
                   </td>
                   <td className="py-4 px-4">
                     <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        coupon.is_active
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                      className={`badge ${coupon.is_active ? "badge-success" : "badge-danger"}`}
                     >
                       {coupon.is_active ? "Active" : "Inactive"}
                     </span>
@@ -1461,8 +1453,8 @@ const AdminCoupons = () => {
                         onClick={() => handleToggle(coupon.id)}
                         className={`p-2 rounded-lg transition-colors ${
                           coupon.is_active
-                            ? "text-red-600 hover:bg-red-50"
-                            : "text-green-600 hover:bg-green-50"
+                            ? "text-red-400 hover:bg-red-500/10"
+                            : "text-green-400 hover:bg-green-500/10"
                         }`}
                         title={coupon.is_active ? "Deactivate" : "Activate"}
                       >
@@ -1474,7 +1466,7 @@ const AdminCoupons = () => {
                       </button>
                       <button
                         onClick={() => handleDelete(coupon.id)}
-                        className="p-2 text-outline hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="p-2 text-outline hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Delete"
                       >
                         <HiTrash className="w-5 h-5" />
@@ -1487,7 +1479,7 @@ const AdminCoupons = () => {
                 <tr>
                   <td
                     colSpan={7}
-                    className="py-8 text-center text-surface-variant"
+                    className="py-8 text-center text-outline"
                   >
                     No coupons found.
                   </td>

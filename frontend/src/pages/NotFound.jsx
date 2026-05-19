@@ -7,7 +7,7 @@ const NotFound = () => {
       <div className="text-center">
         {/* 404 Illustration */}
         <div className="relative">
-          <h1 className="text-[150px] md:text-[200px] font-bold text-surface-variant leading-none select-none">
+          <h1 className="text-[150px] md:text-[200px] font-bold text-outline leading-none select-none">
             404
           </h1>
           <div className="absolute inset-0 flex items-center justify-center">
@@ -52,21 +52,21 @@ const NotFound = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/projects"
-              className="text-primary hover:text-primary-dim text-shadow-glow font-medium transition-colors"
+              className="text-primary hover:text-primary-dim text-glow font-medium transition-colors"
             >
               Browse Projects
             </Link>
-            <span className="text-surface-variant">•</span>
+            <span className="text-outline">•</span>
             <Link
               to="/login"
-              className="text-primary hover:text-primary-dim text-shadow-glow font-medium transition-colors"
+              className="text-primary hover:text-primary-dim text-glow font-medium transition-colors"
             >
               Login
             </Link>
-            <span className="text-surface-variant">•</span>
+            <span className="text-outline">•</span>
             <Link
               to="/signup"
-              className="text-primary hover:text-primary-dim text-shadow-glow font-medium transition-colors"
+              className="text-primary hover:text-primary-dim text-glow font-medium transition-colors"
             >
               Sign Up
             </Link>

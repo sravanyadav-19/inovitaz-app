@@ -51,7 +51,7 @@ class ErrorBoundary extends React.Component {
         <div className="min-h-screen bg-secondary-50 flex items-center justify-center px-4">
           <div className="max-w-md w-full text-center">
             {/* Error Icon */}
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="w-20 h-20 bg-red-500/15 border border-red-500/25 rounded-full flex items-center justify-center mx-auto mb-6">
               <HiExclamationCircle className="w-12 h-12 text-red-500" />
             </div>
 

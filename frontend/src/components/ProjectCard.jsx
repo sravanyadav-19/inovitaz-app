@@ -69,10 +69,11 @@ const ProjectCard = ({ project }) => {
 
   const diffStyle =
     {
-      Beginner: "bg-green-100 text-green-800",
-      Intermediate: "bg-yellow-100 text-yellow-800",
-      Advanced: "bg-red-100 text-red-800",
-    }[difficulty] || "bg-gray-100 text-gray-800";
+      Beginner: "bg-green-500/15 text-green-400 border border-green-500/25",
+      Intermediate: "bg-yellow-500/15 text-yellow-300 border border-yellow-500/25",
+      Advanced: "bg-red-500/15 text-red-400 border border-red-500/25",
+    }[difficulty] ||
+    "bg-surface-highest text-outline border border-outline-variant/30";
 
   const isNew =
     created_at &&

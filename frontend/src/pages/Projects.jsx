@@ -281,9 +281,9 @@ const Projects = () => {
 
           {/* Mobile Filters */}
           {showFilters && (
-            <div className="lg:hidden mt-4 pt-4 border-t border-secondary-200 space-y-4 fade-in">
+            <div className="lg:hidden mt-4 pt-4 border-t border-surface-variant space-y-4 fade-in">
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                <label className="block text-sm font-medium text-outline mb-1">
                   Category
                 </label>
                 <select
@@ -301,7 +301,7 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                <label className="block text-sm font-medium text-outline mb-1">
                   Difficulty Level
                 </label>
                 <select
@@ -318,7 +318,7 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                <label className="block text-sm font-medium text-outline mb-1">
                   Technology
                 </label>
                 <select
@@ -335,7 +335,7 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                <label className="block text-sm font-medium text-outline mb-1">
                   Maximum Price
                 </label>
                 <select
@@ -351,7 +351,7 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-secondary-700 mb-1">
+                <label className="block text-sm font-medium text-outline mb-1">
                   Sort By
                 </label>
                 <select

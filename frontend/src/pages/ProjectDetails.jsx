@@ -25,6 +25,19 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { formatINRFromPaise, paiseToRupees } from "../utils/price";
 
+const PROJECT_DETAIL_FALLBACK_IMAGE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400">
+      <rect width="600" height="400" fill="#0c1324"/>
+      <rect x="28" y="28" width="544" height="344" rx="24" fill="#151b2d" stroke="#3b82f6" stroke-width="3"/>
+      <circle cx="300" cy="170" r="56" fill="#23293c" stroke="#4ae176" stroke-width="3"/>
+      <path d="M275 170h50M300 145v50" stroke="#4ae176" stroke-width="7" stroke-linecap="round"/>
+      <text x="300" y="265" fill="#d8e2ff" font-family="Arial" font-size="30" font-weight="700" text-anchor="middle">Project Preview</text>
+      <text x="300" y="300" fill="#8c909f" font-family="Arial" font-size="16" text-anchor="middle">No Image Available</text>
+    </svg>
+  `);
+
 export default function ProjectDetails() {
   const { id } = useParams();
   const { user, logout } = useContext(AuthContext);
@@ -340,7 +353,7 @@ export default function ProjectDetails() {
 
   // --- LINK DECORATORS ---
   const standardLinkDecorator = (href, text, key) => (
-    <a href={href} key={key} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 break-words z-20 relative">
+    <a href={href} key={key} target="_blank" rel="noopener noreferrer" className="text-primary-dim underline hover:text-primary-fixed break-words z-20 relative">
       {text}
     </a>
   );
@@ -348,7 +361,7 @@ export default function ProjectDetails() {
   const StarRating = ({ rating }) => (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
-        <HiStar key={star} className={`w-5 h-5 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`} />
+        <HiStar key={star} className={`w-5 h-5 ${star <= rating ? 'text-yellow-400' : 'text-outline-variant'}`} />
       ))}
     </div>
   );
@@ -399,11 +412,14 @@ export default function ProjectDetails() {
           <div className="grid lg:grid-cols-2 gap-10">
             {/* Image */}
             <div className="relative">
-              <img 
-                src={project.thumbnail || 'https://via.placeholder.com/600x400'} 
-                alt={project.title} 
-                className="w-full rounded-xl shadow-lg object-cover aspect-video"
-                onError={(e) => e.target.src = 'https://via.placeholder.com/600x400'}
+              <img
+                src={project.thumbnail || PROJECT_DETAIL_FALLBACK_IMAGE}
+                alt={project.title}
+                className="w-full rounded-xl shadow-lg object-cover aspect-video border border-surface-variant"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = PROJECT_DETAIL_FALLBACK_IMAGE;
+                }}
               />
             </div>
 
@@ -425,7 +441,9 @@ export default function ProjectDetails() {
               </div>
 
               <div className="flex items-baseline gap-3 mb-8">
-                <span className="text-5xl font-bold text-primary">₹{displayPrice}</span>
+                <span className="text-5xl font-bold text-primary">
+  {formatINRFromPaise(project.price)}
+</span>
                 <span className="text-xl text-outline line-through">₹{Math.round(displayPrice * 1.5)}</span>
                 <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">33% OFF</span>
               </div>
@@ -622,7 +640,7 @@ export default function ProjectDetails() {
                             <HiStar 
                               key={star} 
                               onClick={() => setNewReview({...newReview, rating: star})}
-                              className={`w-7 h-7 hover:scale-110 transition-transform ${star <= newReview.rating ? 'text-yellow-400' : 'text-surface-variant'}`} 
+                              className={`w-7 h-7 hover:scale-110 transition-transform ${star <= newReview.rating ? 'text-yellow-400' : 'text-outline'}`} 
                             />
                           ))}
                         </div>

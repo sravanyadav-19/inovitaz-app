@@ -5,7 +5,7 @@ export default function Privacy() {
         <h1 className="text-3xl font-bold text-white mb-2">Privacy Policy</h1>
         <p className="text-outline text-sm mb-8">Last updated: {new Date().toLocaleDateString()}</p>
 
-        <div className="space-y-8 text-outline">
+        <div className="space-y-8 text-outline [&_strong]:text-white">
           <p>
             At <strong>Inovitaz</strong>, we respect your privacy. This policy explains how we handle your data.
           </p>
@@ -36,7 +36,12 @@ export default function Privacy() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">Contact Us</h2>
             <p>
-              If you have questions about this policy, please contact our support team at <span className="font-medium text-primary">inovitaz.help@gmail.com</span>.
+              If you have questions about this policy, please contact our support team at <a
+  href="mailto:inovitaz.help@gmail.com"
+  className="font-medium text-primary-dim hover:text-primary-fixed underline"
+>
+  inovitaz.help@gmail.com
+</a>.
             </p>
           </section>
         </div>

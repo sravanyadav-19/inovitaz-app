@@ -23,7 +23,7 @@ export default function Refund() {
             </div>
           </div>
 
-          <div className="space-y-6 text-outline">
+          <div className="space-y-6 text-outline [&_strong]:text-white">
             <section>
               <h2 className="text-xl font-semibold text-white mb-3">Exceptions</h2>
               <p className="leading-relaxed">
@@ -39,7 +39,12 @@ export default function Refund() {
               <div className="bg-surface-high p-4 rounded-lg border border-surface-variant">
                 <div className="flex items-center gap-3 mb-2">
                   <HiMail className="text-primary" />
-                  <a href="mailto:inovitaz.help@gmail.com" className="hover:underline font-medium">inovitaz.help@gmail.com</a>
+                  <a
+                    href="mailto:inovitaz.help@gmail.com"
+                    className="hover:underline font-medium text-primary-dim hover:text-primary-fixed"
+                  >
+                    inovitaz.help@gmail.com
+                  </a>
                 </div>
                 <div className="flex items-center gap-3">
                   <HiPhone className="text-primary" />

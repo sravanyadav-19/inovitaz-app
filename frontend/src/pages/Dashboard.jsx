@@ -12,7 +12,16 @@ import { ordersAPI } from '../api/payments';
 import { projectsAPI, wishlistAPI } from '../api/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
 
-const FALLBACK_IMG = 'https://placehold.co/80x80/1a1a2e/white?text=P';
+const FALLBACK_IMG =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120">
+      <rect width="120" height="120" rx="16" fill="#0c1324"/>
+      <rect x="20" y="20" width="80" height="80" rx="14" fill="#151b2d" stroke="#3b82f6" stroke-width="3"/>
+      <path d="M45 60h30M60 45v30" stroke="#4ae176" stroke-width="6" stroke-linecap="round"/>
+      <text x="60" y="102" fill="#8c909f" font-family="Arial" font-size="10" text-anchor="middle">PROJECT</text>
+    </svg>
+  `);
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -127,16 +136,14 @@ const Dashboard = () => {
 
   const getStatusBadge = (status) => {
     const badges = {
-      paid:    { className: 'bg-green-100 text-green-700',  text: 'Paid' },
-      created: { className: 'bg-yellow-100 text-yellow-700', text: 'Pending' },
-      failed:  { className: 'bg-red-100 text-red-700',      text: 'Failed' },
+      paid: { className: "badge badge-success", text: "Paid" },
+      created: { className: "badge badge-warning", text: "Pending" },
+      failed: { className: "badge badge-danger", text: "Failed" },
     };
+  
     const badge = badges[status] || badges.created;
-    return (
-      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${badge.className}`}>
-        {badge.text}
-      </span>
-    );
+  
+    return <span className={badge.className}>{badge.text}</span>;
   };
 
   if (loading) {
@@ -154,7 +161,7 @@ const Dashboard = () => {
       <div className="bg-surface border-b border-surface-variant">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+            <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -255,7 +262,10 @@ const Dashboard = () => {
                             <img
                               src={order.project_thumbnail || FALLBACK_IMG}
                               className="w-16 h-16 rounded-lg object-cover"
-                              onError={(e) => { e.target.src = FALLBACK_IMG; }}
+                              onError={(e) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = FALLBACK_IMG;
+}}
                               alt={order.project_title}
                             />
                             <div>
@@ -327,7 +337,10 @@ const Dashboard = () => {
                           <img
                             src={project.thumbnail || FALLBACK_IMG}
                             className="w-20 h-20 rounded-lg object-cover"
-                            onError={(e) => { e.target.src = FALLBACK_IMG; }}
+                            onError={(e) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = FALLBACK_IMG;
+}}
                             alt={project.title}
                           />
                           <div className="flex-1 min-w-0">
@@ -387,7 +400,10 @@ const Dashboard = () => {
                         <img
                           src={item.thumbnail || FALLBACK_IMG}
                           className="w-full h-32 object-cover rounded-lg mb-3"
-                          onError={(e) => { e.target.src = FALLBACK_IMG; }}
+                          onError={(e) => {
+  e.currentTarget.onerror = null;
+  e.currentTarget.src = FALLBACK_IMG;
+}}
                           alt={item.title}
                         />
                         <h3 className="font-medium text-white text-sm mb-2 truncate">
