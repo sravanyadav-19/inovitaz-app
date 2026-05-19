@@ -17,6 +17,29 @@ import ProjectCard from '../components/ProjectCard';
 import { projectsAPI } from '../api/projects';
 import { AuthContext } from '../context/AuthContext';
 
+const HERO_FALLBACK_IMAGE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+      <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#070d1f"/>
+          <stop offset="100%" stop-color="#0c1324"/>
+        </linearGradient>
+      </defs>
+      <rect width="800" height="600" fill="url(#bg)"/>
+      <g stroke="#424754" stroke-width="1" opacity="0.35">
+        ${Array.from({ length: 21 }, (_, i) => `<line x1="${i * 40}" y1="0" x2="${i * 40}" y2="600"/>`).join("")}
+        ${Array.from({ length: 16 }, (_, i) => `<line x1="0" y1="${i * 40}" x2="800" y2="${i * 40}"/>`).join("")}
+      </g>
+      <circle cx="400" cy="260" r="90" fill="#151b2d" stroke="#3b82f6" stroke-width="4"/>
+      <rect x="340" y="200" width="120" height="120" rx="18" fill="#23293c" stroke="#4ae176" stroke-width="4"/>
+      <path d="M370 260h60M400 230v60" stroke="#4ae176" stroke-width="8" stroke-linecap="round"/>
+      <text x="400" y="395" fill="#d8e2ff" font-family="Arial, sans-serif" font-size="42" font-weight="700" text-anchor="middle">SYSTEM ONLINE</text>
+      <text x="400" y="435" fill="#8c909f" font-family="Arial, sans-serif" font-size="20" text-anchor="middle">IoT / Arduino Project Marketplace</text>
+    </svg>
+  `);
+
 const Home = () => {
   const [featuredProjects, setFeaturedProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -125,8 +148,8 @@ const Home = () => {
                   alt="IoT Projects Matrix"
                   className="relative rounded-2xl border border-surface-variant/50 min-h-[400px] bg-surface-lowest w-full object-cover"
                   onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'https://via.placeholder.com/800x600/0c1324/4ae176?text=SYSTEM+ONLINE';
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = HERO_FALLBACK_IMAGE;
                   }}
                 />
               </div>

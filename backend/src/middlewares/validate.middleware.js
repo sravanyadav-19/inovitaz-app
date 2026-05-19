@@ -73,55 +73,86 @@ const projectValidation = {
 
 const couponValidation = {
   create: validate([
-    body('code')
+    body("code")
       .trim()
-      .notEmpty().withMessage('Coupon code is required')
-      .isLength({ min: 3, max: 50 }).withMessage('Code must be 3-50 characters')
-      .matches(/^[A-Z0-9]+$/).withMessage('Code must be uppercase alphanumeric'),
-    body('discount_type')
-      .isIn(['percentage', 'fixed']).withMessage('Invalid discount type'),
-    body('discount_value')
-      .isFloat({ min: 0.01 }).withMessage('Discount value must be positive'),
-    body('min_purchase_amount')
-      .optional()
-      .isInt({ min: 0 }).withMessage('Min purchase must be non-negative'),
-    body('max_discount_amount')
-      .optional()
-      .isInt({ min: 0 }).withMessage('Max discount must be non-negative'),
-    body('usage_limit')
-      .optional()
-      .isInt({ min: 1 }).withMessage('Usage limit must be at least 1'),
+      .notEmpty()
+      .withMessage("Coupon code is required")
+      .isLength({ min: 3, max: 50 })
+      .withMessage("Code must be 3-50 characters")
+      .matches(/^[A-Z0-9]+$/)
+      .withMessage("Code must be uppercase alphanumeric"),
+
+    body("discount_type")
+      .isIn(["percentage", "fixed"])
+      .withMessage("Invalid discount type"),
+
+    body("discount_value")
+      .isFloat({ min: 0.01 })
+      .withMessage("Discount value must be positive"),
+
+    body("min_purchase_amount")
+      .optional({ nullable: true, checkFalsy: true })
+      .isInt({ min: 0 })
+      .withMessage("Min purchase must be non-negative"),
+    
+    body("max_discount_amount")
+      .optional({ nullable: true, checkFalsy: true })
+      .isInt({ min: 0 })
+      .withMessage("Max discount must be non-negative"),
+    
+    body("usage_limit")
+      .optional({ nullable: true, checkFalsy: true })
+      .isInt({ min: 1 })
+      .withMessage("Usage limit must be at least 1"),
+    
+    body("valid_until")
+      .optional({ nullable: true, checkFalsy: true })
+      .isISO8601()
+      .withMessage("Valid until must be a valid date"),
   ]),
 
   validate: validate([
-    body('code')
+    body("code")
       .trim()
-      .notEmpty().withMessage('Coupon code is required'),
-    body('amount')
-      .isFloat({ min: 0 }).withMessage('Amount is required'),
-  ])
+      .notEmpty()
+      .withMessage("Coupon code is required"),
+
+    body("amount")
+      .isFloat({ min: 0 })
+      .withMessage("Amount is required"),
+  ]),
 };
 
 const paymentValidation = {
   createOrder: validate([
-    body('projectId')
-      .isInt({ min: 1 }).withMessage('Valid project ID is required'),
-    body('couponCode')
-      .optional()
+    body("projectId")
+      .isInt({ min: 1 })
+      .withMessage("Valid project ID is required"),
+
+    body("couponCode")
+      .optional({ nullable: true, checkFalsy: true })
       .trim()
-      .isLength({ min: 3, max: 50 }).withMessage('Invalid coupon code'),
+      .isLength({ min: 3, max: 50 })
+      .withMessage("Invalid coupon code"),
   ]),
 
   verify: validate([
-    body('projectId')
-      .isInt({ min: 1 }).withMessage('Valid project ID is required'),
-    body('razorpay_order_id')
-      .notEmpty().withMessage('Razorpay order ID is required'),
-    body('razorpay_payment_id')
-      .notEmpty().withMessage('Razorpay payment ID is required'),
-    body('razorpay_signature')
-      .notEmpty().withMessage('Razorpay signature is required'),
-  ])
+    body("projectId")
+      .isInt({ min: 1 })
+      .withMessage("Valid project ID is required"),
+
+    body("razorpay_order_id")
+      .notEmpty()
+      .withMessage("Razorpay order ID is required"),
+
+    body("razorpay_payment_id")
+      .notEmpty()
+      .withMessage("Razorpay payment ID is required"),
+
+    body("razorpay_signature")
+      .notEmpty()
+      .withMessage("Razorpay signature is required"),
+  ]),
 };
 
 const reviewValidation = {

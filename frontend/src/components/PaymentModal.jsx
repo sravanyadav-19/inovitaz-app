@@ -15,6 +15,19 @@ import {
 import toast from 'react-hot-toast';
 import { paymentsAPI, couponsAPI } from '../api/payments';
 import { useAuth } from '../hooks/useAuth';
+import { formatINRFromPaise } from "../utils/price";
+
+const PAYMENT_FALLBACK_IMAGE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+      <rect width="80" height="80" rx="12" fill="#0c1324"/>
+      <rect x="14" y="14" width="52" height="52" rx="10" fill="#151b2d" stroke="#3b82f6" stroke-width="2"/>
+      <path d="M30 40h20M40 30v20" stroke="#4ae176" stroke-width="4" stroke-linecap="round"/>
+    </svg>
+  `);
+
+const paiseToRupees = (amount) => Number(amount || 0) / 100;
 
 const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
@@ -26,13 +39,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-    }).format(price);
-  };
+  const formatPrice = formatINRFromPaise;
 
   // Calculate final price with discount
   const calculateFinalPrice = () => {
@@ -211,11 +218,15 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             {/* Project Info */}
             <div className="bg-secondary-50 rounded-xl p-4 mb-6">
               <div className="flex gap-4">
-                <img
-                  src={project.thumbnail || 'https://via.placeholder.com/80'}
-                  alt={project.title}
-                  className="w-20 h-20 object-cover rounded-lg"
-                />
+              <img
+                src={project.thumbnail || PAYMENT_FALLBACK_IMAGE}
+                alt={project.title}
+                className="w-20 h-20 object-cover rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = PAYMENT_FALLBACK_IMAGE;
+                }}
+              />
                 <div className="flex-1">
                   <h3 className="font-semibold text-secondary-900 line-clamp-2">
                     {project.title}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { HiMail, HiLockClosed, HiArrowRight, HiEye, HiEyeOff } from 'react-icons/hi';
@@ -8,16 +8,18 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/dashboard';
 
-  if (isAuthenticated) {
-    navigate('/dashboard', { replace: true });
-    return null;
-  }
+  // Fix: use useEffect instead of calling navigate during render
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +37,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex bg-surface-lowest fade-in">
-      
+
       {/* Left Side - Form */}
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="w-full max-w-md space-y-8">
@@ -54,7 +56,6 @@ const Login = () => {
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
-              {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-outline mb-1">Email address</label>
                 <div className="relative">
@@ -72,7 +73,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-outline mb-1">Password</label>
                 <div className="relative">
@@ -100,11 +100,19 @@ const Login = () => {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
-                <input id="remember-me" type="checkbox" className="h-4 w-4 text-primary bg-surface-lowest border-surface-variant rounded focus:ring-primary focus:ring-offset-surface-lowest" />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-white">Remember me</label>
+                <input
+                  id="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-primary bg-surface-lowest border-surface-variant rounded focus:ring-primary focus:ring-offset-surface-lowest"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-white">
+                  Remember me
+                </label>
               </div>
               <div className="text-sm">
-                <Link to="/support" className="font-medium text-primary hover:text-primary-dim transition-colors">Forgot password?</Link>
+                <Link to="/support" className="font-medium text-primary hover:text-primary-dim transition-colors">
+                  Forgot password?
+                </Link>
               </div>
             </div>
 
@@ -130,13 +138,23 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Side - Art */}
+      {/* Right Side */}
       <div className="hidden lg:flex flex-1 bg-surface relative overflow-hidden items-center justify-center">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-surface opacity-90" />
-        <div className="absolute inset-0" style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80")', backgroundSize: 'cover', backgroundPosition: 'center', mixBlendMode: 'overlay' }}></div>
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: 'url("https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1600&q=80")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            mixBlendMode: 'overlay'
+          }}
+        />
         <div className="relative z-10 text-center px-8">
           <h2 className="text-4xl font-bold text-white mb-4">Build the Future</h2>
-          <p className="text-outline text-lg max-w-md mx-auto">Join thousands of developers building amazing IoT projects.</p>
+          <p className="text-outline text-lg max-w-md mx-auto">
+            Join thousands of developers building amazing IoT projects.
+          </p>
         </div>
       </div>
     </div>

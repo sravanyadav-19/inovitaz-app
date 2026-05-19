@@ -8,21 +8,17 @@ module.exports = async function authOptional(req, res, next) {
 
     if (authHeader && authHeader.startsWith("Bearer ")) {
       const token = authHeader.split(" ")[1];
-      
+
       try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
-        // FIX: Removed array destructuring [users] -> users
+
         const users = await db.query(
-          'SELECT id, email, name, role FROM users WHERE id = ?',
+          'SELECT id, email, name, role FROM users WHERE id = $1',
           [decoded.id]
         );
-        
-        if (users && users.length > 0) {
-          req.user = users[0]; // Correctly attach user
-        } else {
-          req.user = null;
-        }
+
+        req.user = (users && users.length > 0) ? users[0] : null;
+
       } catch (jwtError) {
         req.user = null;
       }

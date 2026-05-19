@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
-import { projectsAPI } from "../api/projects";
+import { projectsAPI, wishlistAPI } from "../api/projects";
+import { paymentsAPI } from "../api/payments";
 import { AuthContext } from "../context/AuthContext";
 import Linkify from 'react-linkify'; 
 import { 
@@ -22,6 +23,7 @@ import {
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { formatINRFromPaise, paiseToRupees } from "../utils/price";
 
 export default function ProjectDetails() {
   const { id } = useParams();
@@ -43,7 +45,7 @@ export default function ProjectDetails() {
     loadProject();
     loadReviews();
     checkWishlist();
-  }, [id]);
+  }, [id, user]);
 
   async function loadProject() {
     try {
@@ -58,72 +60,99 @@ export default function ProjectDetails() {
 
   async function loadReviews() {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects/${id}/reviews`);
-      const data = await res.json();
-      if (data.success) {
-        setReviews(data.data.reviews || []);
+      const response = await projectsAPI.getReviews(id);
+  
+      if (response.success) {
+        setReviews(response.data?.reviews || []);
+      } else {
+        setReviews([]);
       }
     } catch (err) {
       console.error("Failed to load reviews", err);
+      setReviews([]);
     }
   }
 
   async function handleSubmitReview(e) {
     e.preventDefault();
-    if (!newReview.comment.trim()) return toast.error("Please write a comment");
-    
+  
+    if (!user) {
+      toast.error("Please login to submit a review");
+      navigate("/login");
+      return;
+    }
+  
+    if (!newReview.comment.trim()) {
+      toast.error("Please write a comment");
+      return;
+    }
+  
     setSubmittingReview(true);
+  
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ 
-          project_id: id,
-          rating: newReview.rating, 
-          comment: newReview.comment 
-        }),
+      const response = await projectsAPI.submitReview({
+        project_id: Number(id),
+        rating: Number(newReview.rating),
+        comment: newReview.comment.trim(),
       });
-
-      const data = await res.json();
-      if (data.success) {
+  
+      if (response.success) {
         toast.success("Review submitted!");
         setNewReview({ rating: 5, comment: "" });
-        loadReviews();
+        await loadReviews();
+        await loadProject();
       } else {
-        toast.error(data.message || "Failed to submit review");
+        toast.error(response.message || "Failed to submit review");
       }
     } catch (err) {
-      toast.error("Something went wrong");
+      toast.error(err.message || "Something went wrong");
     } finally {
       setSubmittingReview(false);
     }
   }
 
-  function checkWishlist() {
-    const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-    setIsWishlisted(wishlist.includes(id));
+  async function checkWishlist() {
+    if (!user) {
+      setIsWishlisted(false);
+      return;
+    }
+  
+    try {
+      const response = await wishlistAPI.getAll();
+  
+      if (response.success && Array.isArray(response.data)) {
+        const exists = response.data.some(
+          (item) => String(item.id || item.project_id) === String(id)
+        );
+        setIsWishlisted(exists);
+      } else {
+        setIsWishlisted(false);
+      }
+    } catch {
+      setIsWishlisted(false);
+    }
   }
 
   async function toggleWishlist() {
     if (!user) {
-      toast.error('Please login to add to wishlist');
+      toast.error("Please login to add to wishlist");
+      navigate("/login");
       return;
     }
+  
     try {
-      if (isWishlisted) {
-        await projectsAPI.removeFromWishlist(id);
-        toast.success('Removed from wishlist');
-        setIsWishlisted(false);
+      const response = isWishlisted
+        ? await projectsAPI.removeFromWishlist(id)
+        : await projectsAPI.addToWishlist(id);
+  
+      if (response.success) {
+        setIsWishlisted((prev) => !prev);
+        toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
       } else {
-        await projectsAPI.addToWishlist(id);
-        toast.success('Added to wishlist');
-        setIsWishlisted(true);
+        toast.error(response.message || "Failed to update wishlist");
       }
-    } catch (error) {
-      toast.error('Failed to update wishlist');
+    } catch {
+      toast.error("Failed to update wishlist");
     }
   }
 
@@ -182,7 +211,7 @@ export default function ProjectDetails() {
     }
   }
 
-  const displayPrice = project ? (project.price > 10000 ? project.price / 100 : project.price) : 0;
+  const displayPrice = project ? paiseToRupees(project.price) : 0;
   
   const avgRating = reviews.length > 0 
     ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) 
@@ -193,76 +222,99 @@ export default function ProjectDetails() {
   async function handleBuy() {
     if (!user) {
       toast.error("Please log in to buy.");
-      navigate('/login');
+      navigate("/login");
       return;
     }
-
-    if (!window.Razorpay) {
-      toast.error("Payment system loading... please refresh.");
-      return;
-    }
-
+  
     setProcessing(true);
-
+  
     try {
-      const orderRes = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/payment/create-order`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify({ projectId: project.id }),
+      const orderResponse = await paymentsAPI.createOrder(project.id);
+  
+      if (!orderResponse.success) {
+        throw new Error(orderResponse.message || "Failed to create payment order");
+      }
+  
+      const orderPayload = orderResponse.data || orderResponse;
+  
+      const orderId = orderPayload.orderId || orderPayload.razorpay_order_id;
+      const amount = orderPayload.amount;
+      const keyId =
+        orderPayload.keyId ||
+        orderPayload.key_id ||
+        import.meta.env.VITE_RAZORPAY_KEY_ID;
+      const isMockPayment = Boolean(orderPayload.isMockPayment);
+  
+      if (!orderId) {
+        throw new Error("Invalid payment order response");
+      }
+  
+      // Development/mock payment mode
+      if (isMockPayment) {
+        const verifyResponse = await paymentsAPI.verifyPayment({
+          projectId: project.id,
+          razorpay_order_id: orderId,
+          razorpay_payment_id: `pay_mock_${Date.now()}`,
+          razorpay_signature: "mock_signature",
+        });
+  
+        if (verifyResponse.success) {
+          toast.success("Payment successful! Project unlocked.");
+          await loadProject();
+          window.location.reload();
+        } else {
+          throw new Error(verifyResponse.message || "Mock payment verification failed");
         }
-      );
-
-      if (orderRes.status === 401) {
-        toast.error("Session expired. Please login again.");
-        logout(); 
-        navigate('/login');
+  
         return;
       }
-
-      const orderData = await orderRes.json();
-      if (!orderData.success) { throw new Error(orderData.message); }
-
+  
+      // Real Razorpay mode
+      if (!window.Razorpay) {
+        toast.error("Payment system loading... please refresh.");
+        return;
+      }
+  
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: orderData.amount,
+        key: keyId,
+        amount,
         currency: "INR",
         name: "Inovitaz",
         description: project.title,
-        order_id: orderData.orderId,
+        order_id: orderId,
+  
         handler: async function (response) {
           try {
-            const verifyRes = await fetch(
-              `${import.meta.env.VITE_API_BASE_URL}/payment/verify`,
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({
-                  projectId: project.id,
-                  razorpay_order_id: response.razorpay_order_id,
-                  razorpay_payment_id: response.razorpay_payment_id,
-                  razorpay_signature: response.razorpay_signature,
-                }),
-              }
-            );
-            const verifyData = await verifyRes.json();
-            if (verifyData.success) {
-              toast.success("Payment Successful! Project Unlocked.");
+            const verifyResponse = await paymentsAPI.verifyPayment({
+              projectId: project.id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+  
+            if (verifyResponse.success) {
+              toast.success("Payment successful! Project unlocked.");
+              await loadProject();
               window.location.reload();
             } else {
-              toast.error("Payment verification failed.");
+              toast.error(verifyResponse.message || "Payment verification failed.");
             }
-          } catch (e) {
-            toast.error("Verification error.");
+          } catch (error) {
+            toast.error(error.message || "Verification error.");
+          } finally {
+            setProcessing(false);
           }
         },
+  
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+        },
+  
+        theme: {
+          color: "#3b82f6",
+        },
+  
         modal: {
           ondismiss: function () {
             setProcessing(false);
@@ -270,12 +322,18 @@ export default function ProjectDetails() {
           },
         },
       };
-
+  
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Payment initialization failed.");
+  
+      if (err.message?.toLowerCase().includes("session")) {
+        logout();
+        navigate("/login");
+      }
+    } finally {
       setProcessing(false);
     }
   }

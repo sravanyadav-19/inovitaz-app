@@ -23,6 +23,19 @@ import {
 import toast from "react-hot-toast";
 import { adminProjectsAPI, projectsAPI } from "../api/projects";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { formatINRFromPaise, rupeesToPaise, paiseToRupees } from "../utils/price";
+
+const ADMIN_PROJECT_FALLBACK_IMAGE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+      <rect width="48" height="48" rx="10" fill="#0c1324"/>
+      <rect x="9" y="9" width="30" height="30" rx="6" fill="#151b2d" stroke="#3b82f6" stroke-width="2"/>
+      <path d="M18 24h12M24 18v12" stroke="#4ae176" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+  `);
+
+const formatPaiseToINR = formatINRFromPaise;
 
 // ================== Admin Stats ==================
 const AdminStats = () => {
@@ -47,12 +60,7 @@ const AdminStats = () => {
     }
   };
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 0,
-    }).format(Number(price || 0));
+  const formatPrice = formatPaiseToINR;
 
   if (loading) {
     return (
@@ -286,7 +294,7 @@ const AdminProjects = () => {
     setEditingProject(project);
     setFormData({
       title: project.title,
-      price: project.price != null ? String(project.price) : "",
+      price: project.price != null ? String(paiseToRupees(project.price)) : "",
       thumbnail: project.thumbnail || "",
       content_url: project.content_url || jsonDownloadUrl || "",
       category: project.category || "IoT",
@@ -372,7 +380,7 @@ const AdminProjects = () => {
 
       const data = {
         title: formData.title,
-        price: parseFloat(formData.price),
+        price: rupeesToPaise(formData.price),
         thumbnail: formData.thumbnail,
         content_url: formData.content_url,
         category: formData.category,
@@ -408,12 +416,7 @@ const AdminProjects = () => {
     }
   };
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 0,
-    }).format(Number(price || 0));
+  const formatPrice = formatPaiseToINR;
 
   const getShortDescription = (project) => {
     if (!project.description) return "";
@@ -478,9 +481,13 @@ const AdminProjects = () => {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
                       <img
-                        src={project.thumbnail || "https://via.placeholder.com/48"}
+                        src={project.thumbnail || ADMIN_PROJECT_FALLBACK_IMAGE}
                         alt={project.title}
                         className="w-12 h-12 rounded-lg object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = ADMIN_PROJECT_FALLBACK_IMAGE;
+                        }}
                       />
                       <div>
                         <p className="font-medium text-white">
@@ -991,12 +998,7 @@ const AdminOrders = () => {
     }
   };
 
-  const formatPrice = (price) =>
-    new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 0,
-    }).format(Number(price || 0));
+  const formatPrice = formatPaiseToINR;
 
   if (loading) {
     return (
@@ -1283,7 +1285,10 @@ const AdminCoupons = () => {
         code: formData.code.toUpperCase(),
         description: formData.description,
         discount_type: formData.discount_type,
-        discount_value: parseFloat(formData.discount_value),
+        discount_value:
+          formData.discount_type === "fixed"
+            ? rupeesToPaise(formData.discount_value)
+            : parseFloat(formData.discount_value),
         min_purchase_amount: formData.min_purchase_amount
           ? parseFloat(formData.min_purchase_amount) * 100
           : 0,
@@ -1343,14 +1348,7 @@ const AdminCoupons = () => {
     }
   };
 
-  const formatPrice = (paise) => {
-    if (!paise) return "₹0";
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      minimumFractionDigits: 0,
-    }).format(paise / 100);
-  };
+  const formatPrice = formatPaiseToINR;
 
   if (loading) {
     return (
@@ -1425,7 +1423,7 @@ const AdminCoupons = () => {
                     <span className="text-white font-medium">
                       {coupon.discount_type === "percentage"
                         ? `${coupon.discount_value}%`
-                        : `₹${coupon.discount_value}`}
+                        : formatPrice(coupon.discount_value)}
                     </span>
                     {coupon.max_discount_amount && (
                       <p className="text-xs text-surface-variant">

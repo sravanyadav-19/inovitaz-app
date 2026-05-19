@@ -24,7 +24,7 @@ const Projects = () => {
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
   const [difficulty, setDifficulty] = useState(searchParams.get('difficulty') || '');
-  const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '999');
+  const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "99900");
   const [technology, setTechnology] = useState(searchParams.get('technology') || '');
 
   // Fetch projects when filters change
@@ -87,7 +87,7 @@ const Projects = () => {
     if (sort !== 'newest') params.set('sort', sort);
     if (page > 1) params.set('page', page.toString());
     if (difficulty) params.set('difficulty', difficulty);
-    if (maxPrice !== '999') params.set('maxPrice', maxPrice);
+    if (maxPrice !== "99900") params.set("maxPrice", maxPrice);
     if (technology) params.set('technology', technology);
     setSearchParams(params);
   };
@@ -99,7 +99,7 @@ const Projects = () => {
     setSort('newest');
     setPage(1);
     setDifficulty('');
-    setMaxPrice('999');
+    setMaxPrice("99900");
     setTechnology('');
     setSearchParams({});
   };
@@ -156,7 +156,7 @@ const Projects = () => {
     { value: 'nodemcu', label: 'NodeMCU' },
   ];
 
-  const hasActiveFilters = category || difficulty || technology || maxPrice !== '999';
+  const hasActiveFilters = category || difficulty || technology || maxPrice !== "99900";
 
   return (
     <div className="min-h-screen bg-surface fade-in">
@@ -248,10 +248,10 @@ const Projects = () => {
                   onChange={(e) => handleMaxPriceChange(e.target.value)}
                   className="input w-auto text-sm bg-surface text-white"
                 >
-                  <option value="299">₹299</option>
-                  <option value="499">₹499</option>
-                  <option value="699">₹699</option>
-                  <option value="999">Any</option>
+                  <option value="29900">₹299</option>
+                  <option value="49900">₹499</option>
+                  <option value="69900">₹699</option>
+                  <option value="99900">Any</option>
                 </select>
               </div>
 
@@ -343,10 +343,10 @@ const Projects = () => {
                   onChange={(e) => handleMaxPriceChange(e.target.value)}
                   className="input"
                 >
-                  <option value="299">Under ₹299</option>
-                  <option value="499">Under ₹499</option>
-                  <option value="699">Under ₹699</option>
-                  <option value="999">Any Price</option>
+                  <option value="29900">Under ₹299</option>
+                  <option value="49900">Under ₹499</option>
+                  <option value="69900">Under ₹699</option>
+                  <option value="99900">Any Price</option>
                 </select>
               </div>
 
@@ -408,10 +408,10 @@ const Projects = () => {
                 </button>
               </span>
             )}
-            {maxPrice !== '999' && (
+            {maxPrice !== "99900" && (
               <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
-                Max ₹{maxPrice}
-                <button onClick={() => handleMaxPriceChange('999')} className="hover:text-white transition-colors">
+                Max ₹{Math.round(Number(maxPrice || 0) / 100)}
+                <button onClick={() => handleMaxPriceChange("99900")} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>

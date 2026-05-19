@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { useContext } from "react";
+import { useContext, useState } from "react";
+import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
 import { 
   HiMail, 
@@ -15,6 +16,26 @@ import { FaInstagram, FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   const { user } = useContext(AuthContext);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+  
+    const email = newsletterEmail.trim();
+  
+    if (!email) {
+      toast.error("Please enter your email");
+      return;
+    }
+  
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+  
+    toast.success("Thanks! Newsletter signup will be available soon.");
+    setNewsletterEmail("");
+  };
 
   return (
     <footer className="bg-surface-lowest text-outline mt-auto border-t border-surface-variant">
@@ -123,16 +144,24 @@ const Footer = () => {
           {/* 4. Newsletter & Contact */}
           <div>
             <h3 className="text-white font-semibold text-lg mb-5">Stay Updated</h3>
-            <div className="bg-surface p-1 rounded-lg flex mb-6 border border-surface-variant">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="bg-surface p-1 rounded-lg flex mb-6 border border-surface-variant"
+            >
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 className="bg-transparent text-sm text-white px-3 py-2 w-full focus:outline-none placeholder-outline"
               />
-              <button className="bg-primary hover:bg-primary-dim text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+              <button
+                type="submit"
+                className="bg-primary hover:bg-primary-dim text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+              >
                 Join
               </button>
-            </div>
+            </form>
 
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">

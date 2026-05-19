@@ -1,106 +1,159 @@
-﻿/**
- * Payment Controller
- * Handles Razorpay order creation and verification
- */
-
-const crypto = require('crypto');
-const db = require('../config/db');
-const razorpay = require('../services/razorpay');
-const logger = require('../utils/logger');
+const db = require("../config/db");
+const razorpay = require("../services/razorpay");
+const logger = require("../utils/logger");
 
 /**
- * Create Razorpay Order
- * POST /api/payment/create-order
+ * Payment controller
+ *
+ * MONEY STANDARD:
+ * - projects.price is PAISE
+ * - orders.amount is PAISE
+ * - orders.original_amount is PAISE
+ * - orders.discount_amount is PAISE
+ * - coupons fixed discount_value is PAISE
+ * - coupons min/max amounts are PAISE
+ * - Razorpay expects PAISE
+ *
+ * Therefore: DO NOT multiply project price/finalAmount by 100 here.
  */
+
 exports.createOrder = async (req, res) => {
   try {
     const { projectId, couponCode } = req.body;
     const userId = req.user.id;
 
     if (!projectId) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Project ID is required' 
+      return res.status(400).json({
+        success: false,
+        message: "Project ID is required",
       });
     }
 
-    // Get project price
     const projects = await db.query(
-      'SELECT id, price, title FROM projects WHERE id = ? LIMIT 1',
+      `SELECT id, price, title
+       FROM projects
+       WHERE id = $1
+       LIMIT 1`,
       [projectId]
     );
 
     if (projects.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Project not found' 
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
       });
     }
 
     const project = projects[0];
-    let originalAmount = Number(project.price);
+
+    const existingPaidOrders = await db.query(
+      `SELECT id
+       FROM orders
+       WHERE user_id = $1
+         AND project_id = $2
+         AND status = 'paid'
+       LIMIT 1`,
+      [userId, projectId]
+    );
+
+    if (existingPaidOrders.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already purchased this project",
+      });
+    }
+
+    const originalAmount = Math.round(Number(project.price || 0)); // already paise
     let discountAmount = 0;
     let appliedCouponCode = null;
 
-    // Validate and apply coupon if provided
-    if (couponCode) {
+    if (couponCode && String(couponCode).trim()) {
       const couponResult = await validateCouponInternal(
-        couponCode, 
-        userId, 
+        couponCode,
+        userId,
         originalAmount
       );
 
-      if (couponResult.valid) {
-        discountAmount = couponResult.discountAmount;
-        appliedCouponCode = couponResult.code;
+      if (!couponResult.valid) {
+        return res.status(400).json({
+          success: false,
+          message: couponResult.message || "Invalid coupon",
+        });
       }
-      // If coupon is invalid, we proceed without discount (don't fail the order)
+
+      discountAmount = couponResult.discountAmount;
+      appliedCouponCode = couponResult.code;
     }
 
-    const finalAmount = Math.max(0, originalAmount - discountAmount);
-    const amountInPaise = Math.round(finalAmount * 100);
+    const finalAmount = Math.max(0, originalAmount - discountAmount); // already paise
 
-    // Create Razorpay order
     const order = await razorpay.createOrder({
-      amount: amountInPaise,
-      currency: 'INR',
+      amount: finalAmount, // ✅ already paise
+      currency: "INR",
       receipt: `order_${projectId}_${userId}_${Date.now()}`,
       notes: {
-        projectId: projectId.toString(),
-        userId: userId.toString(),
-        couponCode: appliedCouponCode || ''
-      }
+        projectId: String(projectId),
+        userId: String(userId),
+        couponCode: appliedCouponCode || "",
+      },
     });
 
-    logger.payment('Order created', order.id, amountInPaise, 'created');
+    /**
+     * Store created order immediately.
+     * verifyPayment will update this order to paid.
+     */
+    await db.query(
+      `INSERT INTO orders
+        (
+          user_id,
+          project_id,
+          razorpay_order_id,
+          amount,
+          original_amount,
+          discount_amount,
+          coupon_code,
+          currency,
+          status,
+          created_at,
+          updated_at
+        )
+       VALUES
+        ($1, $2, $3, $4, $5, $6, $7, $8, 'created', NOW(), NOW())`,
+      [
+        userId,
+        projectId,
+        order.id,
+        finalAmount,
+        originalAmount,
+        discountAmount,
+        appliedCouponCode,
+        order.currency || "INR",
+      ]
+    );
 
-    res.json({
+    return res.json({
       success: true,
       data: {
         orderId: order.id,
-        amount: order.amount,
-        currency: order.currency,
+        amount: finalAmount, // ✅ already paise
+        currency: order.currency || "INR",
         keyId: razorpay.getPublicKey(),
         originalAmount,
         discountAmount,
         couponCode: appliedCouponCode,
-        isMockPayment: razorpay.isMock()
-      }
+        isMockPayment: razorpay.isMock(),
+      },
     });
-
   } catch (error) {
-    logger.error('Create order error', { error: error.message });
-    res.status(500).json({
+    logger.error("Create order error", { error: error.message });
+
+    return res.status(500).json({
       success: false,
-      message: error.message || 'Failed to create order'
+      message: error.message || "Failed to create order",
     });
   }
 };
 
-/**
- * Verify Payment
- * POST /api/payment/verify
- */
 exports.verifyPayment = async (req, res) => {
   try {
     const {
@@ -108,204 +161,274 @@ exports.verifyPayment = async (req, res) => {
       razorpay_order_id,
       razorpay_payment_id,
       razorpay_signature,
-      couponCode,
-      discountAmount: clientDiscount
     } = req.body;
 
     const userId = req.user.id;
 
-    // Validate required fields
-    if (!projectId || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Missing required payment fields' 
+    if (
+      !projectId ||
+      !razorpay_order_id ||
+      !razorpay_payment_id ||
+      !razorpay_signature
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required payment fields",
       });
     }
 
-    // CRITICAL: Verify signature
     const isValid = razorpay.verifyPaymentSignature({
       order_id: razorpay_order_id,
       payment_id: razorpay_payment_id,
-      signature: razorpay_signature
+      signature: razorpay_signature,
     });
 
     if (!isValid) {
-      logger.payment('Verification failed', razorpay_order_id, null, 'invalid_signature');
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Payment verification failed - invalid signature' 
+      return res.status(400).json({
+        success: false,
+        message: "Payment verification failed",
       });
     }
 
-    // Get project details
-    const projects = await db.query(
-      'SELECT price, title FROM projects WHERE id = ? LIMIT 1',
-      [projectId]
+    const orderRows = await db.query(
+      `SELECT *
+       FROM orders
+       WHERE razorpay_order_id = $1
+         AND user_id = $2
+         AND project_id = $3
+       LIMIT 1`,
+      [razorpay_order_id, userId, projectId]
     );
 
-    if (projects.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Project not found' 
+    if (orderRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
       });
     }
 
-    const originalAmount = Number(projects[0].price);
-    
-    // Re-validate coupon server-side (don't trust client discount)
-    let discountAmount = 0;
-    let validCouponCode = null;
+    const existingOrder = orderRows[0];
 
-    if (couponCode) {
-      const couponResult = await validateCouponInternal(couponCode, userId, originalAmount);
-      if (couponResult.valid) {
-        discountAmount = couponResult.discountAmount;
-        validCouponCode = couponResult.code;
-      }
+    if (existingOrder.status === "paid") {
+      return res.json({
+        success: true,
+        message: "Payment already verified",
+        data: { orderId: existingOrder.id },
+      });
     }
 
-    const finalAmount = originalAmount - discountAmount;
-
-    // Save order
-    const orderResult = await db.query(
-      `INSERT INTO orders 
-       (user_id, project_id, razorpay_order_id, razorpay_payment_id, 
-        amount, original_amount, discount_amount, coupon_code, status, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'paid', NOW())`,
-      [
-        userId,
-        projectId,
-        razorpay_order_id,
-        razorpay_payment_id,
-        finalAmount,
-        originalAmount,
-        discountAmount,
-        validCouponCode
-      ]
+    const updatedOrders = await db.query(
+      `UPDATE orders
+       SET razorpay_payment_id = $1,
+           status = 'paid',
+           updated_at = NOW()
+       WHERE id = $2
+       RETURNING id, coupon_code, discount_amount`,
+      [razorpay_payment_id, existingOrder.id]
     );
 
-    const orderId = orderResult.insertId;
+    const paidOrder = updatedOrders[0];
+    const orderId = paidOrder.id;
 
-    // Record coupon usage
-    if (validCouponCode) {
+    if (paidOrder.coupon_code) {
       const coupons = await db.query(
-        'SELECT id FROM coupons WHERE code = ?',
-        [validCouponCode]
+        `SELECT id
+         FROM coupons
+         WHERE code = $1
+         LIMIT 1`,
+        [paidOrder.coupon_code]
       );
 
       if (coupons.length > 0) {
-        await db.query(
-          `INSERT INTO coupon_usage (coupon_id, user_id, order_id, discount_amount, created_at)
-           VALUES (?, ?, ?, ?, NOW())`,
-          [coupons[0].id, userId, orderId, Math.round(discountAmount * 100)]
+        const existingUsage = await db.query(
+          `SELECT id
+           FROM coupon_usage
+           WHERE coupon_id = $1
+             AND user_id = $2
+             AND order_id = $3
+           LIMIT 1`,
+          [coupons[0].id, userId, orderId]
         );
 
-        // Increment used_count
-        await db.query(
-          'UPDATE coupons SET used_count = used_count + 1 WHERE id = ?',
-          [coupons[0].id]
-        );
+        if (existingUsage.length === 0) {
+          await db.query(
+            `INSERT INTO coupon_usage
+              (coupon_id, user_id, order_id, discount_amount)
+             VALUES
+              ($1, $2, $3, $4)`,
+            [
+              coupons[0].id,
+              userId,
+              orderId,
+              Math.round(Number(paidOrder.discount_amount || 0)), // already paise
+            ]
+          );
+        }
       }
     }
 
-    // Create download log (6 months expiry, 5 downloads max)
     const expiryDate = new Date();
     expiryDate.setMonth(expiryDate.getMonth() + 6);
 
-    await db.query(
-      `INSERT INTO download_logs 
-       (user_id, project_id, order_id, download_count, max_downloads, expiry_date, created_at)
-       VALUES (?, ?, ?, 0, 5, ?, NOW())`,
-      [userId, projectId, orderId, expiryDate]
+    const existingDownloadLog = await db.query(
+      `SELECT id
+       FROM download_logs
+       WHERE user_id = $1
+         AND project_id = $2
+         AND order_id = $3
+       LIMIT 1`,
+      [userId, projectId, orderId]
     );
 
-    logger.payment('Payment verified', razorpay_order_id, finalAmount, 'paid');
+    if (existingDownloadLog.length === 0) {
+      await db.query(
+        `INSERT INTO download_logs
+          (
+            user_id,
+            project_id,
+            order_id,
+            download_count,
+            max_downloads,
+            expiry_date
+          )
+         VALUES
+          ($1, $2, $3, 0, 5, $4)`,
+        [userId, projectId, orderId, expiryDate]
+      );
+    }
 
-    res.json({
+    return res.json({
       success: true,
-      message: 'Payment verified successfully',
-      data: { orderId }
+      message: "Payment verified successfully",
+      data: { orderId },
     });
-
   } catch (error) {
-    logger.error('Verify payment error', { error: error.message });
-    res.status(500).json({
+    logger.error("Verify payment error", { error: error.message });
+
+    return res.status(500).json({
       success: false,
-      message: 'Payment verification failed'
+      message: "Payment verification failed",
     });
   }
 };
 
-/**
- * Internal coupon validation helper
- */
 async function validateCouponInternal(code, userId, amount) {
   try {
-    const couponCode = code.trim().toUpperCase();
+    const couponCode = String(code || "").trim().toUpperCase();
+
+    if (!couponCode) {
+      return {
+        valid: false,
+        message: "Coupon code is required",
+      };
+    }
 
     const coupons = await db.query(
-      `SELECT * FROM coupons 
-       WHERE code = ? AND is_active = TRUE`,
+      `SELECT *
+       FROM coupons
+       WHERE code = $1
+         AND is_active = TRUE
+       LIMIT 1`,
       [couponCode]
     );
 
     if (coupons.length === 0) {
-      return { valid: false, reason: 'Invalid code' };
+      return {
+        valid: false,
+        message: "Invalid coupon",
+      };
     }
 
     const coupon = coupons[0];
 
-    // Check expiry
+    if (coupon.valid_from && new Date(coupon.valid_from) > new Date()) {
+      return {
+        valid: false,
+        message: "Coupon is not active yet",
+      };
+    }
+
     if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
-      return { valid: false, reason: 'Expired' };
+      return {
+        valid: false,
+        message: "Coupon has expired",
+      };
     }
 
-    // Check usage limit
-    if (coupon.usage_limit !== null && coupon.used_count >= coupon.usage_limit) {
-      return { valid: false, reason: 'Usage limit reached' };
+    if (
+      coupon.usage_limit !== null &&
+      Number(coupon.used_count || 0) >= Number(coupon.usage_limit)
+    ) {
+      return {
+        valid: false,
+        message: "Coupon usage limit reached",
+      };
     }
 
-    // Check min purchase (stored in paise)
-    const amountInPaise = Math.round(amount * 100);
-    if (coupon.min_purchase_amount && amountInPaise < coupon.min_purchase_amount) {
-      return { valid: false, reason: 'Min purchase not met' };
+    const purchaseAmount = Math.round(Number(amount || 0)); // already paise
+
+    if (
+      coupon.min_purchase_amount &&
+      purchaseAmount < Number(coupon.min_purchase_amount)
+    ) {
+      return {
+        valid: false,
+        message: `Minimum purchase amount is ₹${Math.round(
+          Number(coupon.min_purchase_amount || 0) / 100
+        )}`,
+      };
     }
 
-    // Check user usage
     const usage = await db.query(
-      'SELECT id FROM coupon_usage WHERE coupon_id = ? AND user_id = ?',
+      `SELECT id
+       FROM coupon_usage
+       WHERE coupon_id = $1
+         AND user_id = $2
+       LIMIT 1`,
       [coupon.id, userId]
     );
 
     if (usage.length > 0) {
-      return { valid: false, reason: 'Already used' };
+      return {
+        valid: false,
+        message: "You have already used this coupon",
+      };
     }
 
-    // Calculate discount
     let discountAmount = 0;
-    if (coupon.discount_type === 'percentage') {
-      discountAmount = (amount * coupon.discount_value) / 100;
+
+    if (coupon.discount_type === "percentage") {
+      discountAmount = Math.floor(
+        (purchaseAmount * Number(coupon.discount_value || 0)) / 100
+      );
     } else {
-      discountAmount = coupon.discount_value;
+      /**
+       * Fixed discount_value is already paise.
+       * Example: ₹50 => 5000
+       */
+      discountAmount = Math.floor(Number(coupon.discount_value || 0));
     }
 
-    // Apply max discount
     if (coupon.max_discount_amount) {
-      const maxDiscount = coupon.max_discount_amount / 100;
-      discountAmount = Math.min(discountAmount, maxDiscount);
+      discountAmount = Math.min(
+        discountAmount,
+        Number(coupon.max_discount_amount)
+      );
     }
 
-    discountAmount = Math.min(discountAmount, amount);
-    discountAmount = Math.round(discountAmount * 100) / 100;
+    discountAmount = Math.max(0, Math.min(discountAmount, purchaseAmount));
 
     return {
       valid: true,
       code: coupon.code,
-      discountAmount
+      discountAmount,
     };
-
   } catch (error) {
-    logger.error('Internal coupon validation error', { error: error.message });
-    return { valid: false, reason: 'Validation error' };
+    logger.error("Internal coupon validation error", { error: error.message });
+
+    return {
+      valid: false,
+      message: "Coupon validation failed",
+    };
   }
 }

@@ -1,68 +1,75 @@
-const mysql = require('mysql2/promise');
+/**
+ * PostgreSQL Database Configuration
+ * Using pg (node-postgres)
+ */
 
-// Load .env only for LOCAL development
-if (process.env.NODE_ENV !== 'production') {
-  require('dotenv').config();
-}
+const { Pool } = require("pg");
+require("dotenv").config();
 
-const logger = require('../utils/logger');
+const logger = require("../utils/logger");
 
 const poolConfig = {
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
+  host: process.env.DB_HOST || "localhost",
+  port: Number(process.env.DB_PORT) || 5432,
+  user: process.env.DB_USER || "postgres",
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  // Enforce SSL for Cloud DB
-  ssl: {
-    rejectUnauthorized: false 
-  }
+  database: process.env.DB_NAME || "inovitaz_db",
+  max: 10,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
 };
 
-const pool = mysql.createPool(poolConfig);
+if (process.env.NODE_ENV === "production") {
+  poolConfig.ssl = {
+    rejectUnauthorized: false,
+  };
+}
 
-// Test connection
+const pool = new Pool(poolConfig);
+
 const testConnection = async () => {
   try {
-    const connection = await pool.getConnection();
-    logger.info('Database connection established');
-    connection.release();
+    const client = await pool.connect();
+    const result = await client.query("SELECT NOW()");
+    logger.info(`Database connected - Server time: ${result.rows[0].now}`);
+    client.release();
     return true;
   } catch (error) {
-    logger.error('Database connection failed:', { message: error.message });
+    logger.error("Database connection failed", { message: error.message });
     throw error;
   }
 };
 
-// Query helper with error handling
+/**
+ * IMPORTANT:
+ * This helper returns result.rows directly, not the full pg result.
+ */
 const query = async (sql, params = []) => {
   try {
-    const [results] = await pool.query(sql, params);
-    return results;
+    const result = await pool.query(sql, params);
+    return result.rows;
   } catch (error) {
-    logger.error('Query error:', { message: error.message, sql, params });
+    logger.error("Query error", {
+      message: error.message,
+      sql,
+    });
     throw error;
   }
 };
 
-// Transaction helper
 const transaction = async (callback) => {
-  const connection = await pool.getConnection();
+  const client = await pool.connect();
+
   try {
-    await connection.beginTransaction();
-    const result = await callback(connection);
-    await connection.commit();
+    await client.query("BEGIN");
+    const result = await callback(client);
+    await client.query("COMMIT");
     return result;
   } catch (error) {
-    await connection.rollback();
+    await client.query("ROLLBACK");
     throw error;
   } finally {
-    connection.release();
+    client.release();
   }
 };
 
@@ -70,5 +77,5 @@ module.exports = {
   pool,
   query,
   transaction,
-  testConnection
+  testConnection,
 };
