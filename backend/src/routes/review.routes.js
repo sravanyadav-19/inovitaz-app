@@ -1,15 +1,22 @@
-// src/routes/review.routes.js
 const express = require('express');
 const router = express.Router();
-const reviewController = require('../controllers/review.controller');
 const { authRequired } = require('../middlewares/auth.middleware');
-const authOptional = require('../middlewares/authOptional');
+const { reviewValidation } = require('../utils/validationSchemas');
+const { validate } = require('../middlewares/validate.middleware');
 
-// Public routes (optional auth)
-router.get('/:projectId', authOptional, reviewController.getProjectReviews);
+// Create Review (placeholder)
+router.post('/:projectId', authRequired, reviewValidation, validate, (req, res) => {
+  res.status(501).json({ success: false, message: 'Create review not implemented yet' });
+});
 
-// Protected routes
-router.post('/', authRequired, reviewController.submitReview);
-router.delete('/:id', authRequired, reviewController.deleteReview);
+// Get Reviews (placeholder)
+router.get('/:projectId', (req, res) => {
+  res.status(501).json({ success: false, message: 'Get reviews not implemented yet' });
+});
+
+// Delete Review (placeholder)
+router.delete('/:id', authRequired, (req, res) => {
+  res.status(501).json({ success: false, message: 'Delete review not implemented yet' });
+});
 
 module.exports = router;
