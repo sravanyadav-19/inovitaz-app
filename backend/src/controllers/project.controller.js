@@ -183,7 +183,7 @@ const downloadProject = async (req, res) => {
     const isAdmin = req.user.role === "admin";
 
     const projects = await db.query(
-      `SELECT id, title, description, content_url, user_id FROM projects WHERE id = $1`, [id]
+      `SELECT id, title, description, content_url FROM projects WHERE id = $1`, [id]
     );
 
     if (projects.length === 0) {
@@ -192,8 +192,8 @@ const downloadProject = async (req, res) => {
 
     const project = projects[0];
 
-    // Ownership check (from Day 1)
-    if (!isAdmin && project.user_id !== userId) {
+    // Corrected access check: Only admins or users with a 'paid' order can download
+    if (!isAdmin) {
       const orders = await db.query(
         `SELECT id FROM orders WHERE user_id = $1 AND project_id = $2 AND status = 'paid'`,
         [userId, id]
@@ -208,7 +208,6 @@ const downloadProject = async (req, res) => {
       return res.status(404).json({ success: false, message: "Download link not available" });
     }
 
-    // === DAY 2: Generate Signed URL ===
     const signedData = generateSignedUrl(id, userId, baseUrl);
 
     return res.json({
