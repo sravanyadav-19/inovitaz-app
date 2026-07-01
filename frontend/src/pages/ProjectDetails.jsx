@@ -23,6 +23,7 @@ import {
 } from "react-icons/hi";
 import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
+import DownloadButton from '../components/DownloadButton';
 import { formatINRFromPaise, paiseToRupees } from "../utils/price";
 
 const PROJECT_DETAIL_FALLBACK_IMAGE =
@@ -449,13 +450,20 @@ export default function ProjectDetails() {
               </div>
 
               {!purchased ? (
-                <button onClick={handleBuy} disabled={processing} className="w-full btn btn-primary btn-lg text-lg py-4 shadow-lg hover:shadow-xl transition-all">
+                <button 
+                  onClick={handleBuy} 
+                  disabled={processing} 
+                  className="w-full btn btn-primary btn-lg text-lg py-4 shadow-lg hover:shadow-xl transition-all"
+                >
                   {processing ? "Processing Payment..." : "Buy Now & Unlock Full Access"}
                 </button>
               ) : (
-                <a href={downloadUrl} target="_blank" rel="noopener noreferrer" className="w-full btn btn-success btn-lg text-lg py-4 text-center block shadow-lg bg-green-600 hover:bg-green-700 text-white rounded-lg">
-                  Download Project Files (ZIP)
-                </a>
+                <div className="mt-2">
+                  <DownloadButton 
+                    projectId={project.id} 
+                    isPurchased={true} 
+                  />
+                </div>
               )}
               
               {!purchased && (
