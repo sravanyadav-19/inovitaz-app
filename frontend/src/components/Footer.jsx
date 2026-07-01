@@ -93,14 +93,14 @@ const Footer = () => {
             {/* Social Icons */}
             <div className="flex gap-4 pt-2">
               {[
-                { icon: FaInstagram, link: "#" },
+                { icon: FaInstagram, link: "https://www.instagram.com/inovitaz/" },
                 { icon: FaFacebook, link: "#" },
                 { icon: FaLinkedin, link: "#" },
-                { icon: FaYoutube, link: "#" }
+                { icon: FaYoutube, link: "https://www.youtube.com/@inovitaz/" }
               ].map((social, idx) => (
                 <a 
                   key={idx}
-                  href={social.link} 
+                  href={social.link}
                   className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-high hover:bg-primary text-outline hover:text-white transition-all duration-300"
                 >
                   <social.icon className="w-4 h-4" />
@@ -127,7 +127,7 @@ const Footer = () => {
               {user ? (
                 <>
                   <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">My Dashboard</Link></li>
-                  <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">Order History</Link></li>
+                  {/* <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">Order History</Link></li> */}
                 </>
               ) : (
                 <>
@@ -166,7 +166,7 @@ const Footer = () => {
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
                 <HiLocationMarker className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
-                <span>Amaravati, Andhra Pradesh,<br />India - 522020</span>
+                <span>Thullur, Andhra Pradesh,<br />India - 522237</span>
               </div>
               <div className="flex items-center gap-3">
                 <HiPhone className="w-5 h-5 text-primary-500 flex-shrink-0" />

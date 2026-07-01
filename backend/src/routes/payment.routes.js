@@ -1,20 +1,21 @@
-﻿/**
- * Payment Routes
- */
-
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
-const { authRequired } = require('../middlewares/auth.middleware');
-const { paymentValidation } = require('../middlewares/validate.middleware');
 const paymentController = require('../controllers/payment.controller');
+const { authRequired } = require('../middlewares/auth.middleware');
 
-// All payment routes require authentication
-router.use(authRequired);
+// Create Order (placeholder)
+router.post('/create-order', authRequired, (req, res) => {
+  res.status(501).json({ success: false, message: 'Payment create-order not implemented yet' });
+});
 
-// Create order
-router.post('/create-order', paymentValidation.createOrder, paymentController.createOrder);
+// Verify Payment (placeholder)
+router.post('/verify', authRequired, (req, res) => {
+  res.status(501).json({ success: false, message: 'Payment verification not implemented yet' });
+});
 
-// Verify payment
-router.post('/verify', paymentValidation.verify, paymentController.verifyPayment);
+// Get Payment Status
+router.get('/status/:orderId', authRequired, (req, res) => {
+  res.status(501).json({ success: false, message: 'Not implemented yet' });
+});
 
 module.exports = router;
