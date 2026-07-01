@@ -225,3 +225,6 @@ export const adminProjectsAPI = {
     return response.data;
   },
 };
+export const downloadProject = (projectId) => {
+  return api.get(`/projects/${projectId}/download`);
+};

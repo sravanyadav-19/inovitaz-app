@@ -1,14 +1,8 @@
 {
-  "redirects": [
+  "rewrites": [
     {
-      "source": "/",
-      "destination": "/maintenance.html",
-      "statusCode": 302
-    },
-    {
-      "source": "/((?!maintenance.html).*)",
-      "destination": "/maintenance.html",
-      "statusCode": 302
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
