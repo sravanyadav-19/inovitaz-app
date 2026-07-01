@@ -3,15 +3,11 @@ const router = express.Router();
 const paymentController = require('../controllers/payment.controller');
 const { authRequired } = require('../middlewares/auth.middleware');
 
-// Create Order (placeholder)
-router.post('/create-order', authRequired, (req, res) => {
-  res.status(501).json({ success: false, message: 'Payment create-order not implemented yet' });
-});
+// Create Order
+router.post('/create-order', authRequired, paymentController.createOrder);
 
-// Verify Payment (placeholder)
-router.post('/verify', authRequired, (req, res) => {
-  res.status(501).json({ success: false, message: 'Payment verification not implemented yet' });
-});
+// Verify Payment
+router.post('/verify', authRequired, paymentController.verifyPayment);
 
 // Get Payment Status
 router.get('/status/:orderId', authRequired, (req, res) => {
