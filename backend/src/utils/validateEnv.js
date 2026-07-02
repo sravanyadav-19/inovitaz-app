@@ -15,6 +15,7 @@ const validateEnv = () => {
   const productionRequired = [
     'RAZORPAY_KEY_ID',
     'RAZORPAY_KEY_SECRET',
+    'RAZORPAY_WEBHOOK_SECRET',
     'FRONTEND_URL',
   ];
 

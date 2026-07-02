@@ -104,7 +104,86 @@ const verifyPayment = async (req, res) => {
   }
 };
 
+const handleWebhook = async (req, res) => {
+  try {
+    const signature = req.headers['x-razorpay-signature'];
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    
+    // USE RAW BODY FOR SIGNATURE VERIFICATION
+    const rawBody = req.rawBody;
+    const payload = req.body;
+
+    if (!signature || !rawBody) {
+      logger.payment('WEBHOOK_FAILED', null, null, 'missing_signature_or_body');
+      return res.status(400).json({ success: false, message: 'Missing signature or raw body' });
+    }
+
+    // Verify signature: HMAC SHA256 of raw request body using secret
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(rawBody)
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      logger.payment('WEBHOOK_FAILED', null, null, 'invalid_signature');
+      return res.status(400).json({ success: false, message: 'Invalid signature' });
+    }
+
+    const event = payload.event;
+    const paymentEntity = payload.payload?.payment?.entity;
+    const orderEntity = payload.payload?.order?.entity;
+
+    if (event === 'payment.captured') {
+      const razorpayOrderId = orderEntity?.id || paymentEntity?.order_id;
+      const razorpayPaymentId = paymentEntity?.id;
+
+      if (!razorpayOrderId || !razorpayPaymentId) {
+        logger.payment('WEBHOOK_FAILED', razorpayOrderId, null, 'missing_entity_data');
+        return res.status(400).json({ success: false, message: 'Missing order or payment data' });
+      }
+
+      // Idempotency Check: Is order already paid?
+      const order = await db.query(
+        'SELECT status FROM orders WHERE razorpay_order_id = $1',
+        [razorpayOrderId]
+      );
+
+      if (order.length === 0) {
+        logger.payment('WEBHOOK_FAILED', razorpayOrderId, null, 'order_not_found');
+        return res.status(404).json({ success: false, message: 'Order not found' });
+      }
+
+      if (order[0].status === 'paid') {
+        logger.payment('WEBHOOK_DUPLICATE', razorpayOrderId, null, 'already_paid');
+        return res.json({ success: true, message: 'Order already processed' });
+      }
+
+      // Update to paid
+      await db.query(
+        `UPDATE orders 
+         SET razorpay_payment_id = $1, 
+             status = 'paid', 
+             paid_at = NOW() 
+         WHERE razorpay_order_id = $2`,
+        [razorpayPaymentId, razorpayOrderId]
+      );
+
+      logger.payment('WEBHOOK_SUCCESS', razorpayOrderId, null, 'paid');
+      return res.json({ success: true, message: 'Payment captured successfully' });
+    }
+
+    // Other events are ignored but acknowledged
+    logger.payment('WEBHOOK_IGNORED', null, null, event);
+    return res.json({ success: true, message: `Event ${event} ignored` });
+
+  } catch (error) {
+    logger.error('Webhook error', { error: error.message });
+    return res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
 module.exports = {
   createOrder,
   verifyPayment,
+  handleWebhook,
 };

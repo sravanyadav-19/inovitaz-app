@@ -9,6 +9,9 @@ router.post('/create-order', authRequired, paymentController.createOrder);
 // Verify Payment
 router.post('/verify', authRequired, paymentController.verifyPayment);
 
+// Webhook (Public - No authRequired)
+router.post('/webhook', paymentController.handleWebhook);
+
 // Get Payment Status
 router.get('/status/:orderId', authRequired, (req, res) => {
   res.status(501).json({ success: false, message: 'Not implemented yet' });
