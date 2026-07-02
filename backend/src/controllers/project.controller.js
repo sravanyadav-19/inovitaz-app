@@ -192,15 +192,61 @@ const downloadProject = async (req, res) => {
 
     const project = projects[0];
 
-    // Corrected access check: Only admins or users with a 'paid' order can download
     if (!isAdmin) {
+      // Find the most recent paid order for this project to tie tracking to a specific purchase
       const orders = await db.query(
-        `SELECT id FROM orders WHERE user_id = $1 AND project_id = $2 AND status = 'paid'`,
+        `SELECT id FROM orders 
+         WHERE user_id = $1 AND project_id = $2 AND status = 'paid' 
+         ORDER BY created_at DESC LIMIT 1`,
         [userId, id]
       );
+
       if (orders.length === 0) {
         return res.status(403).json({ success: false, message: "You do not own this project" });
       }
+
+      const orderId = orders[0].id;
+
+      // Check if tracking record exists for this order
+      let log = await db.query(
+        `SELECT download_count, max_downloads, expiry_date FROM download_logs WHERE order_id = $1`,
+        [orderId]
+      );
+
+      if (log.length === 0) {
+        // Initialize tracking on first download
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() + 180); // 180 days validity
+
+        await db.query(
+          `INSERT INTO download_logs (user_id, project_id, order_id, download_count, max_downloads, expiry_date)
+           VALUES ($1, $2, $3, 0, 5, $4)`,
+          [userId, id, orderId, expiryDate]
+        );
+        
+        log = [{ download_count: 0, max_downloads: 5, expiry_date: expiryDate }];
+      }
+
+      const { download_count, max_downloads, expiry_date } = log[0];
+
+      // Check if access has expired
+      if (new Date() > new Date(expiry_date)) {
+        return res.status(403).json({ success: false, message: "Your download access has expired" });
+      }
+
+      // Check if download limit reached
+      if (download_count >= max_downloads) {
+        return res.status(403).json({ success: false, message: "You have reached the maximum number of downloads for this project" });
+      }
+
+      // Increment download count and update timestamp
+      await db.query(
+        `UPDATE download_logs 
+         SET download_count = download_count + 1, 
+             last_downloaded_at = CURRENT_TIMESTAMP 
+         WHERE order_id = $1`,
+        [orderId]
+      );
     }
 
     const baseUrl = project.content_url || extractDownloadUrl(project);
