@@ -65,6 +65,7 @@ CREATE TABLE orders (
   project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   razorpay_order_id VARCHAR(255),
   razorpay_payment_id VARCHAR(255),
+  razorpay_signature VARCHAR(255),
   amount INTEGER NOT NULL,
   original_amount INTEGER DEFAULT NULL,
   discount_amount INTEGER DEFAULT 0,
@@ -72,6 +73,7 @@ CREATE TABLE orders (
   currency VARCHAR(10) DEFAULT 'INR',
   status VARCHAR(20) DEFAULT 'created'
     CHECK (status IN ('created', 'paid', 'failed')),
+  paid_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
