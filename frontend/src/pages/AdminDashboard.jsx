@@ -1196,7 +1196,7 @@ const AdminUsers = () => {
                   <td className="py-4 px-4 text-outline">{user.email}</td>
                   <td className="py-4 px-4">
                     <span
-                      className={`badge ${coupon.is_active ? "badge-success" : "badge-danger"}`}
+                      className={`badge ${user.role === 'admin' ? "badge-success" : "badge-danger"}`}
                     >
                       {user.role}
                     </span>
