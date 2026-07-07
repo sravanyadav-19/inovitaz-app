@@ -23,15 +23,12 @@ const DownloadButton = ({ projectId, isPurchased }) => {
       });
 
       if (response.data.success) {
-        const { downloadUrl, fileName } = response.data.data;
-
-        // Trigger download
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = fileName || 'project.zip';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const { downloadUrl } = response.data.data;
+        
+        // Redirect the browser to the proxy endpoint.
+        // Because the endpoint returns 'attachment' headers, 
+        // the browser will trigger a download instead of navigating away.
+        window.location.href = `${import.meta.env.VITE_API_URL}${downloadUrl}`;
       }
     } catch (err) {
       const message = err.response?.data?.message || 'Download failed. Please try again.';

@@ -5,10 +5,13 @@ const { authRequired, authOptional, adminOnly } = require('../middlewares/auth.m
 const { projectValidation } = require('../utils/validationSchemas');
 const { validate } = require('../middlewares/validate.middleware');
 
-// Public Routes (Optional Auth to show personalized state like isPurchased/isWishlisted)
+// Public Routes
 router.get('/', authOptional, projectController.getAllProjects);
 router.get('/categories', projectController.getCategories);
 router.get('/:id', authOptional, projectController.getProjectById);
+
+// File Delivery (Public - validated via signed token)
+router.get('/stream/:token', projectController.streamProjectFile);
 
 // Protected Routes
 router.get('/:id/download', authRequired, projectController.downloadProject);
