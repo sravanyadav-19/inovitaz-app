@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const projectController = require('../controllers/project.controller');
-const { authRequired, adminOnly } = require('../middlewares/auth.middleware');
+const { authRequired, authOptional, adminOnly } = require('../middlewares/auth.middleware');
 const { projectValidation } = require('../utils/validationSchemas');
 const { validate } = require('../middlewares/validate.middleware');
 
-// Public Routes
-router.get('/', projectController.getAllProjects);
+// Public Routes (Optional Auth to show personalized state like isPurchased/isWishlisted)
+router.get('/', authOptional, projectController.getAllProjects);
 router.get('/categories', projectController.getCategories);
-router.get('/:id', projectController.getProjectById);
+router.get('/:id', authOptional, projectController.getProjectById);
 
 // Protected Routes
 router.get('/:id/download', authRequired, projectController.downloadProject);
