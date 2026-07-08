@@ -265,7 +265,8 @@ const downloadProject = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        downloadUrl: `/api/projects/stream/${token}`,
+        // FIX: Remove leading /api to prevent duplication with VITE_API_BASE_URL
+        downloadUrl: `/projects/stream/${token}`,
         fileName: `${project.title.replace(/\s+/g, "_")}.zip`,
         expires_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
         message: "Secure download session initialized.",

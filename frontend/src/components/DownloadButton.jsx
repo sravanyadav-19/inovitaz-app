@@ -26,9 +26,8 @@ const DownloadButton = ({ projectId, isPurchased }) => {
         const { downloadUrl } = response.data.data;
         
         // Redirect the browser to the proxy endpoint.
-        // Because the endpoint returns 'attachment' headers, 
-        // the browser will trigger a download instead of navigating away.
-        window.location.href = `${import.meta.env.VITE_API_URL}${downloadUrl}`;
+        // Using VITE_API_BASE_URL to match the configured environment variable.
+        window.location.href = `${import.meta.env.VITE_API_BASE_URL}${downloadUrl}`;
       }
     } catch (err) {
       const message = err.response?.data?.message || 'Download failed. Please try again.';
