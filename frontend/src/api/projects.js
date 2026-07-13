@@ -64,7 +64,9 @@ export const projectsAPI = {
 
   getReviews: async (projectId) => {
     try {
-      const response = await api.get(`/projects/${projectId}/reviews`);
+      // FIX: Changed from /projects/${projectId}/reviews to /reviews/${projectId}
+      // to match the actual backend route definition in review.routes.js
+      const response = await api.get(`/reviews/${projectId}`);
       return response.data;
     } catch (error) {
       return {
