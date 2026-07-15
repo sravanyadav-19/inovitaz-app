@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const { body } = require('express-validator');
 const router = express.Router();
 const authController = require('../controllers/auth.controller');
@@ -32,6 +32,8 @@ const loginValidation = [
 // Routes
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
+router.get('/verify-email', authController.verifyEmail);
+router.post('/resend-verification', authController.resendVerification);
 router.get('/me', authRequired, authController.getMe);
 router.put('/profile', authRequired, authController.updateProfile);
 router.put('/password', authRequired, authController.changePassword);

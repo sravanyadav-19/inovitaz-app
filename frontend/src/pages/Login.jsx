@@ -29,7 +29,8 @@ const Login = () => {
       toast.success('Welcome back!');
       navigate(from, { replace: true });
     } catch (error) {
-      toast.error(error.message || 'Login failed. Check credentials.');
+      const errorMessage = error.message || 'Login failed. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

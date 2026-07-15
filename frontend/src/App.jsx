@@ -1,4 +1,4 @@
-﻿import { Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -20,6 +20,7 @@ import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Refund from "./pages/Refund";
+import VerifyEmail from "./pages/VerifyEmail";
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
             <Route path="/projects/:id" element={<ProjectDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/support" element={<Support />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />

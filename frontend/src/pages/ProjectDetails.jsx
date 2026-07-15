@@ -1,4 +1,4 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { projectsAPI, wishlistAPI } from "../api/projects";
 import { paymentsAPI } from "../api/payments";
@@ -43,6 +43,7 @@ export default function ProjectDetails() {
   const { id } = useParams();
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,19 @@ export default function ProjectDetails() {
     loadReviews();
     checkWishlist();
   }, [id, user]);
+
+  // Auto-trigger buy flow when ?action=buy is in URL
+  useEffect(() => {
+    if (searchParams.get('action') === 'buy' && project && !loading) {
+      // Remove the action param from URL
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('action');
+      setSearchParams(newParams, { replace: true });
+      
+      // Trigger the buy flow
+      handleBuy();
+    }
+  }, [searchParams, project, loading]);
 
   async function loadProject() {
     try {
