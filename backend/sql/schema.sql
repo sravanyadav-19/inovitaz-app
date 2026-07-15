@@ -1,4 +1,4 @@
-﻿-- ============================================
+-- ============================================
 -- InovitaZ Database Schema - PostgreSQL
 -- ============================================
 
@@ -27,12 +27,16 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,
   name VARCHAR(255) NOT NULL,
   role VARCHAR(20) DEFAULT 'user' CHECK (role IN ('user', 'admin')),
+  is_verified BOOLEAN DEFAULT FALSE,
+  verification_token VARCHAR(255),
+  verification_token_expires TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_role ON users(role);
+CREATE INDEX idx_users_verification_token ON users(verification_token);
 
 -- Projects Table
 CREATE TABLE projects (

@@ -188,8 +188,21 @@ const Projects = () => {
                   placeholder="Search metadata..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="input pl-10 bg-surface text-white placeholder-outline-variant font-medium tracking-wide"
+                  className="input pl-10 pr-10 bg-surface text-white placeholder-outline-variant font-medium tracking-wide"
                 />
+                {search && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearch('');
+                      setPage(1);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-highest rounded-full transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <HiX className="w-5 h-5 text-outline hover:text-white" />
+                  </button>
+                )}
               </div>
             </form>
 

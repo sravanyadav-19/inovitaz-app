@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   HiShoppingCart,
@@ -29,6 +29,7 @@ const FALLBACK_IMAGE =
 
 const ProjectCard = ({ project }) => {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const {
     id,
@@ -207,14 +208,32 @@ const ProjectCard = ({ project }) => {
             </div>
 
             <div className="flex gap-2">
-              <div className="p-2.5 bg-surface-highest border border-outline-variant/30 rounded-lg hover:bg-surface-variant hover:border-outline-variant transition-colors">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(`/projects/${id}`);
+                }}
+                aria-label="View project details"
+                className="p-2.5 bg-surface-highest border border-outline-variant/30 rounded-lg hover:bg-surface-variant hover:border-outline-variant transition-colors"
+              >
                 <HiEye className="w-5 h-5 text-outline group-hover:text-white" />
-              </div>
+              </button>
 
               {!isPurchased && (
-                <div className="p-2.5 bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] rounded-lg transition-all">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    navigate(`/projects/${id}?action=buy`);
+                  }}
+                  aria-label="Buy project"
+                  className="p-2.5 bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] rounded-lg transition-all"
+                >
                   <HiShoppingCart className="w-5 h-5 text-white" />
-                </div>
+                </button>
               )}
             </div>
           </div>
