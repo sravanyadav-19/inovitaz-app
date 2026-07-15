@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -68,6 +69,7 @@ function App() {
           </Routes>
         </main>
         <Footer />
+        <SpeedInsights />
       </div>
     </ErrorBoundary>
   );
