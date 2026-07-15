@@ -49,8 +49,16 @@ const generalLimiter = rateLimit({
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: 20,
   skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    // Combine IP + email to scope rate limiting per-account
+    const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+    const email = req.body?.email?.toLowerCase() || 'no-email';
+    return `${ip}:${email}`;
+  },
   message: { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
 });
 

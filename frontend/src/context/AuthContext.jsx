@@ -64,15 +64,7 @@ export const AuthProvider = ({ children }) => {
       throw new Error(json.message || 'Registration failed');
     }
 
-    const u = json.data.user;
-    const t = json.data.token;
-
-    setUser(u);
-    setToken(t);
-
-    localStorage.setItem('token', t);
-    localStorage.setItem('user', JSON.stringify(u));
-
+    // Don't auto-login — user needs to verify email first
     return json;
   };
 

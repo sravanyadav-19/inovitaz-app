@@ -73,8 +73,8 @@ const Signup = () => {
         password: formData.password,
       });
       if (result.success) {
-        toast.success('Account created successfully!');
-        navigate('/dashboard', { replace: true });
+        toast.success('Account created! Please check your email to verify your account.');
+        navigate('/login', { replace: true });
       }
     } catch (error) {
       toast.error(error.message || 'Registration failed');
