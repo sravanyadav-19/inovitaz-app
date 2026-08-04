@@ -30,6 +30,11 @@ CREATE TABLE users (
   is_verified BOOLEAN DEFAULT FALSE,
   verification_token VARCHAR(255),
   verification_token_expires TIMESTAMP,
+  -- Password reset (Fix 6)
+  reset_password_token VARCHAR(255),
+  reset_password_expires TIMESTAMP,
+  -- Session invalidation: bumping this invalidates all previously-issued JWTs
+  token_version INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

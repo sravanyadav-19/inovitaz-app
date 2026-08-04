@@ -39,9 +39,78 @@ const getTransporter = () => {
   return transporter;
 };
 
-/**
- * Send verification email
- */
+const sendPasswordResetEmail = async (email, name, token) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const resetLink = `${frontendUrl}/reset-password/${token}`;
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"Inovitaz" <noreply@inovitaz.com>',
+    to: email,
+    subject: 'Reset your Inovitaz password',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: linear-gradient(135deg, #2563eb, #4f46e5); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header h1 { color: white; margin: 0; }
+          .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
+          .button { display: inline-block; padding: 12px 30px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Reset Your Password</h1>
+          </div>
+          <div class="content">
+            <p>Hi ${name},</p>
+            <p>We received a request to reset the password for your Inovitaz account. Click the button below to choose a new password.</p>
+            <p style="text-align: center;">
+              <a href="${resetLink}" class="button">Reset Password</a>
+            </p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #2563eb;">${resetLink}</p>
+            <p>This link will expire in 1 hour.</p>
+            <p>If you didn't request a password reset, you can safely ignore this email — your password will not be changed.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} Inovitaz. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  };
+
+  const transport = getTransporter();
+
+  if (!transport) {
+    logger.info('📧 PASSWORD RESET EMAIL (not sent - SMTP not configured)', {
+      to: email,
+      name,
+      resetLink,
+    });
+    return { success: true, preview: resetLink };
+  }
+
+  try {
+    const info = await transport.sendMail(mailOptions);
+    logger.info('✅ Password reset email sent', { to: email, messageId: info.messageId });
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    logger.error('❌ Failed to send password reset email', {
+      to: email,
+      error: error.message,
+      stack: error.stack,
+    });
+    throw error;
+  }
+};
+
 const sendVerificationEmail = async (email, name, token) => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const verificationLink = `${frontendUrl}/verify-email?token=${token}`;
@@ -126,4 +195,5 @@ const sendVerificationEmail = async (email, name, token) => {
 
 module.exports = {
   sendVerificationEmail,
+  sendPasswordResetEmail,
 };

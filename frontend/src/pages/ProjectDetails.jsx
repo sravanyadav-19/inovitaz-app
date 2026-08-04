@@ -2,8 +2,9 @@ import { useParams, Link, useNavigate, useSearchParams } from "react-router-dom"
 import { useEffect, useState, useContext } from "react";
 import { projectsAPI, wishlistAPI } from "../api/projects";
 import { paymentsAPI } from "../api/payments";
+import { couponsAPI } from "../api/payments";
 import { AuthContext } from "../context/AuthContext";
-import Linkify from 'react-linkify'; 
+import { tokenize as linkifyTokenize } from "linkifyjs";
 import { 
   HiStar, 
   HiShoppingCart, 
@@ -51,6 +52,12 @@ export default function ProjectDetails() {
   const [activeTab, setActiveTab] = useState('overview');
   const [reviews, setReviews] = useState([]);
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Coupon state (Fix 3: discount is validated server-side at checkout).
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null); // { code, final_amount, discount_amount }
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
 
   // Review Form State
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
@@ -247,6 +254,47 @@ export default function ProjectDetails() {
 
   const purchased = project?.isPurchased || user?.role === "admin";
 
+  async function applyCoupon(e) {
+    e?.preventDefault();
+    const code = couponInput.trim();
+    setCouponError('');
+
+    if (!code) {
+      setCouponError('Enter a coupon code');
+      return;
+    }
+
+    if (!user) {
+      toast.error('Please log in to apply a coupon');
+      navigate('/login');
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      // Preview validation only; the final amount is ALWAYS recomputed server-side at checkout.
+      const res = await couponsAPI.validate(code, project.id, project.price);
+      if (res?.success) {
+        setAppliedCoupon(res.data);
+        toast.success(res.data.savings_text || 'Coupon applied');
+      } else {
+        setCouponError(res?.message || 'Invalid coupon');
+        setAppliedCoupon(null);
+      }
+    } catch (err) {
+      setCouponError(err.message || 'Invalid coupon');
+      setAppliedCoupon(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    setCouponError('');
+  }
+
   async function handleBuy() {
     if (!user) {
       toast.error("Please log in to buy.");
@@ -257,7 +305,11 @@ export default function ProjectDetails() {
     setProcessing(true);
   
     try {
-      const orderResponse = await paymentsAPI.createOrder(project.id);
+      // Pass the coupon code; the backend re-validates and recomputes the amount.
+      const orderResponse = await paymentsAPI.createOrder(
+        project.id,
+        appliedCoupon?.code || null
+      );
   
       if (!orderResponse.success) {
         throw new Error(orderResponse.message || "Failed to create payment order");
@@ -356,6 +408,12 @@ export default function ProjectDetails() {
     } catch (err) {
       console.error(err);
       toast.error(err.message || "Payment initialization failed.");
+
+      // If the server rejected the coupon at checkout, clear the stale applied state.
+      if ((err.message || "").toLowerCase().includes("coupon")) {
+        setAppliedCoupon(null);
+        setCouponError(err.message);
+      }
   
       if (err.message?.toLowerCase().includes("session")) {
         logout();
@@ -372,6 +430,33 @@ export default function ProjectDetails() {
       {text}
     </a>
   );
+
+  // linkifyjs standalone renderer (replaces the removed react-linkify dependency).
+  // Splits a string into link / non-link tokens using the same decorator contract.
+  const LinkifyText = ({ children, componentDecorator }) => {
+    if (typeof children !== "string") return children;
+    const tokens = linkifyTokenize(children);
+    return (
+      <>
+        {tokens.map((token, index) => {
+          const text = token.toString();
+          if (!token.isLink) {
+            return <span key={`t-${index}`}>{text}</span>;
+          }
+          // Derive the href from the token type. (linkifyjs' token.to shape is not
+          // stable across builds, so we avoid reading token.to.href directly.)
+          const href =
+            token.to?.href ||
+            (token.type === "email"
+              ? `mailto:${text}`
+              : /^https?:\/\//i.test(text)
+              ? text
+              : `http://${text}`);
+          return componentDecorator(href, text, index);
+        })}
+      </>
+    );
+  };
 
   const StarRating = ({ rating }) => (
     <div className="flex gap-1">
@@ -455,13 +540,58 @@ export default function ProjectDetails() {
                 </button>
               </div>
 
-              <div className="flex items-baseline gap-3 mb-8">
+              <div className="flex items-baseline gap-3 mb-4 flex-wrap">
                 <span className="text-5xl font-bold text-primary">
-  {formatINRFromPaise(project.price)}
-</span>
-                <span className="text-xl text-outline line-through">₹{Math.round(displayPrice * 1.5)}</span>
-                <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">33% OFF</span>
+                  {formatINRFromPaise(appliedCoupon ? appliedCoupon.final_amount : project.price)}
+                </span>
+                {appliedCoupon ? (
+                  <>
+                    <span className="text-xl text-outline line-through">{formatINRFromPaise(project.price)}</span>
+                    <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">
+                      -{formatINRFromPaise(appliedCoupon.discount_amount)}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-xl text-outline line-through">₹{Math.round(displayPrice * 1.5)}</span>
+                    <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">33% OFF</span>
+                  </>
+                )}
               </div>
+
+              {/* Coupon (Fix 3: validated server-side at checkout) */}
+              {!purchased && (
+                <div className="mb-6">
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <HiCheckCircle className="text-green-500 w-5 h-5" />
+                        <div>
+                          <p className="text-sm font-semibold text-white">{appliedCoupon.code} applied</p>
+                          <p className="text-xs text-green-400">{appliedCoupon.savings_text}</p>
+                        </div>
+                      </div>
+                      <button type="button" onClick={removeCoupon} className="text-xs text-outline hover:text-white underline">
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={applyCoupon} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={couponInput}
+                        onChange={(e) => { setCouponInput(e.target.value); setCouponError(''); }}
+                        placeholder="Coupon code"
+                        className="input flex-1"
+                      />
+                      <button type="submit" disabled={couponLoading} className="btn btn-primary px-4 py-2 whitespace-nowrap">
+                        {couponLoading ? '...' : 'Apply'}
+                      </button>
+                    </form>
+                  )}
+                  {couponError && <p className="text-xs text-red-400 mt-1">{couponError}</p>}
+                </div>
+              )}
 
               {!purchased ? (
                 <button 
@@ -514,9 +644,9 @@ export default function ProjectDetails() {
                 <div className={`prose max-w-none text-outline leading-relaxed ${!purchased ? 'max-h-40 overflow-hidden mask-fade-bottom' : ''}`}>
                   <h3 className="text-xl font-bold text-white mb-4">Project Overview</h3>
                   <div style={{ whiteSpace: "pre-line" }}>
-                    <Linkify componentDecorator={standardLinkDecorator}>
+                    <LinkifyText componentDecorator={standardLinkDecorator}>
                       {overviewText}
-                    </Linkify>
+                    </LinkifyText>
                   </div>
                 </div>
                 {!purchased && <LockedOverlay />}
@@ -601,9 +731,9 @@ export default function ProjectDetails() {
                   <div className="bg-surface p-4 rounded-lg border border-surface-variant">
                     <h4 className="font-semibold text-white mb-2">Wiring Instructions:</h4>
                     <div className="text-outline whitespace-pre-line">
-                      <Linkify componentDecorator={standardLinkDecorator}>
+                      <LinkifyText componentDecorator={standardLinkDecorator}>
                         {circuit.text}
-                      </Linkify>
+                      </LinkifyText>
                     </div>
                   </div>
                 )}
@@ -618,9 +748,9 @@ export default function ProjectDetails() {
                 </h3>
                 <div className="prose max-w-none text-outline">
                   <div style={{ whiteSpace: "pre-line" }}>
-                    <Linkify componentDecorator={standardLinkDecorator}>
+                    <LinkifyText componentDecorator={standardLinkDecorator}>
                       {steps || "No steps provided."}
-                    </Linkify>
+                    </LinkifyText>
                   </div>
                 </div>
 

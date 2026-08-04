@@ -45,14 +45,15 @@ const verifySignedUrl = (projectId, userId, signature, expiry) => {
     return { valid: false, reason: 'URL has expired' };
   }
 
-  // Verify signature
+  // Verify signature using a constant-time comparison (no timing side-channel).
   const data = `${projectId}-${userId}-${expiry}`;
   const expectedSignature = crypto
     .createHmac('sha256', DOWNLOAD_SECRET)
     .update(data)
     .digest('hex');
 
-  if (signature !== expectedSignature) {
+  const { secureCompare } = require('./secureCompare');
+  if (!secureCompare(expectedSignature, signature)) {
     return { valid: false, reason: 'Invalid signature' };
   }
 

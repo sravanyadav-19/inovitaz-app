@@ -4,6 +4,7 @@ inovitaz-app
 ├─ backend
 │  ├─ .env
 │  ├─ .env.example
+│  ├─ jest.config.js
 │  ├─ package-lock.json
 │  ├─ package.json
 │  ├─ scripts
@@ -24,9 +25,12 @@ inovitaz-app
 │  │  │  ├─ review.controller.js
 │  │  │  └─ wishlist.controller.js
 │  │  ├─ middlewares
+│  │  │  ├─ adminAudit.middleware.js
 │  │  │  ├─ auth.middleware.js
 │  │  │  ├─ authOptional.js
-│  │  │  └─ error.middleware.js
+│  │  │  ├─ error.middleware.js
+│  │  │  ├─ ownership.middleware.js
+│  │  │  └─ validate.middleware.js
 │  │  ├─ models
 │  │  │  ├─ payment.model.js
 │  │  │  ├─ project.model.js
@@ -44,10 +48,29 @@ inovitaz-app
 │  │  │  └─ razorpay.js
 │  │  └─ utils
 │  │     ├─ jwt.js
+│  │     ├─ logger.js
+│  │     ├─ signedUrl.js
+│  │     ├─ validateEnv.js
+│  │     ├─ validationSchemas.js
 │  │     └─ validator.js
-│  └─ test-db.js
+│  ├─ test-db.js
+│  └─ tests
+│     ├─ auth.test.js
+│     ├─ order.test.js
+│     ├─ payment.test.js
+│     └─ webhook.test.js
 ├─ frontend
 │  ├─ .env
+│  ├─ .env.example
+│  ├─ dist
+│  │  ├─ assets
+│  │  │  ├─ index-BvcCiRUE.js
+│  │  │  └─ index-DifGwoAL.css
+│  │  ├─ hero-iot.png
+│  │  ├─ index.html
+│  │  ├─ InovitaZ.png
+│  │  ├─ n.png
+│  │  └─ vite.svg
 │  ├─ eslint.config.js
 │  ├─ index.html
 │  ├─ package-lock.json
@@ -56,9 +79,12 @@ inovitaz-app
 │  ├─ public
 │  │  ├─ hero-iot.png
 │  │  ├─ InovitaZ.png
+│  │  ├─ maintenance.html
 │  │  ├─ n.png
-│  │  └─ vite.svg
+│  │  ├─ vite.svg
+│  │  └─ _redirects
 │  ├─ README.md
+│  ├─ render-static.yaml
 │  ├─ src
 │  │  ├─ api
 │  │  │  ├─ auth.js
@@ -72,6 +98,8 @@ inovitaz-app
 │  │  ├─ components
 │  │  │  ├─ AdminRoute.jsx
 │  │  │  ├─ BuyModal.jsx
+│  │  │  ├─ DownloadButton.jsx
+│  │  │  ├─ ErrorBoundary.jsx
 │  │  │  ├─ Footer.jsx
 │  │  │  ├─ LoadingSpinner.jsx
 │  │  │  ├─ Navbar.jsx
@@ -89,22 +117,31 @@ inovitaz-app
 │  │  ├─ lib
 │  │  │  └─ payments.js
 │  │  ├─ main.jsx
-│  │  └─ pages
-│  │     ├─ About.jsx
-│  │     ├─ AdminDashboard.jsx
-│  │     ├─ Dashboard.jsx
-│  │     ├─ Home.jsx
-│  │     ├─ Login.jsx
-│  │     ├─ NotFound.jsx
-│  │     ├─ Privacy.jsx
-│  │     ├─ ProjectDetails.jsx
-│  │     ├─ Projects.jsx
-│  │     ├─ Refund.jsx
-│  │     ├─ Signup.jsx
-│  │     ├─ Support.jsx
-│  │     └─ Terms.jsx
+│  │  ├─ pages
+│  │  │  ├─ About.jsx
+│  │  │  ├─ AdminDashboard.jsx
+│  │  │  ├─ Dashboard.jsx
+│  │  │  ├─ Home.jsx
+│  │  │  ├─ Login.jsx
+│  │  │  ├─ NotFound.jsx
+│  │  │  ├─ Privacy.jsx
+│  │  │  ├─ ProjectDetails.jsx
+│  │  │  ├─ Projects.jsx
+│  │  │  ├─ Refund.jsx
+│  │  │  ├─ Signup.jsx
+│  │  │  ├─ Support.jsx
+│  │  │  └─ Terms.jsx
+│  │  └─ utils
+│  │     └─ price.js
 │  ├─ tailwind.config.js
-│  └─ vite.config.js
-└─ README.md
+│  ├─ test-results
+│  │  └─ .last-run.json
+│  ├─ tests
+│  │  └─ home.spec.js
+│  ├─ vercel.json
+│  ├─ vite.config.js
+│  └─ write_signup.js
+├─ README.md
+└─ render.yaml
 
 ```

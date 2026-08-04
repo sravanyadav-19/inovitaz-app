@@ -37,15 +37,20 @@ const reviewValidation = [
 ];
 
 // ==================== COUPON VALIDATION ====================
+// Field names align with the coupons table + coupon.controller.createCoupon
 const couponValidation = [
   body('code')
     .trim()
-    .isLength({ min: 4, max: 20 })
-    .withMessage('Coupon code must be between 4 and 20 characters'),
-  body('discount_percent')
-    .isFloat({ min: 1, max: 100 })
-    .withMessage('Discount must be between 1 and 100'),
-  body('expires_at')
+    .notEmpty()
+    .withMessage('Coupon code is required'),
+  body('discount_type')
+    .isIn(['percentage', 'fixed'])
+    .withMessage('Discount type must be "percentage" or "fixed"'),
+  body('discount_value')
+    .isFloat({ gt: 0 })
+    .withMessage('Discount value must be a positive number'),
+  body('valid_until')
+    .optional({ nullable: true })
     .isISO8601()
     .withMessage('Invalid expiry date'),
 ];

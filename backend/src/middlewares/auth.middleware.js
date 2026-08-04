@@ -1,6 +1,30 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
 
+/**
+ * Load the user for a decoded JWT and enforce token_version, so that bumping
+ * token_version (e.g. on password reset) invalidates all previously-issued tokens.
+ *
+ * @returns {Promise<object|null>} the user row (with token_version) or null
+ */
+const loadUserForToken = async (decoded) => {
+  if (!decoded || !decoded.id) return null;
+
+  const users = await db.query(
+    'SELECT id, email, name, role, token_version FROM users WHERE id = $1',
+    [decoded.id]
+  );
+
+  if (!users || users.length === 0) return null;
+
+  // Session-invalidation check.
+  if (decoded.token_version !== undefined && Number(decoded.token_version) !== Number(users[0].token_version)) {
+    return null;
+  }
+
+  return users[0];
+};
+
 const authOptional = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
@@ -12,11 +36,7 @@ const authOptional = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const users = await db.query(
-        'SELECT id, email, name, role FROM users WHERE id = $1',
-        [decoded.id]
-      );
-      req.user = users.length > 0 ? users[0] : null;
+      req.user = await loadUserForToken(decoded);
     } catch {
       req.user = null;
     }
@@ -40,19 +60,17 @@ const authRequired = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const users = await db.query(
-        'SELECT id, email, name, role FROM users WHERE id = $1',
-        [decoded.id]
-      );
+      const user = await loadUserForToken(decoded);
 
-      if (!users || users.length === 0) {
+      if (!user) {
+        // Either the user no longer exists, or token_version changed (session reset).
         return res.status(401).json({
           success: false,
-          message: 'User not found or deactivated.'
+          message: 'Session expired or invalidated. Please login again.'
         });
       }
 
-      req.user = users[0];
+      req.user = user;
       next();
     } catch (jwtError) {
       if (jwtError.name === 'TokenExpiredError') {
@@ -88,19 +106,15 @@ const adminOnly = async (req, res, next) => {
     const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const users = await db.query(
-        'SELECT id, email, name, role FROM users WHERE id = $1',
-        [decoded.id]
-      );
+      const user = await loadUserForToken(decoded);
 
-      if (!users || users.length === 0) {
+      if (!user) {
         return res.status(401).json({
           success: false,
           message: 'User not found.'
         });
       }
 
-      const user = users[0];
       if (user.role !== 'admin') {
         return res.status(403).json({
           success: false,
@@ -127,7 +141,7 @@ const adminOnly = async (req, res, next) => {
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
+    { id: user.id, email: user.email, role: user.role, token_version: user.token_version ?? 0 },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );

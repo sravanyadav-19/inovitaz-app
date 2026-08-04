@@ -6,6 +6,7 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const logger = require('../utils/logger');
+const { secureCompare } = require('../utils/secureCompare');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -95,7 +96,7 @@ class RazorpayService {
       .update(`${order_id}|${payment_id}`)
       .digest('hex');
 
-    const isValid = expectedSignature === signature;
+    const isValid = secureCompare(expectedSignature, signature);
     
     logger.payment(
       'Signature verification', 

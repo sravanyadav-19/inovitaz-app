@@ -5,6 +5,7 @@
 
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
@@ -35,6 +36,48 @@ const { adminAuditLogger } = require('./src/middlewares/adminAudit.middleware');
 const app = express();
 const PORT = process.env.PORT || 4000;
 const isProduction = process.env.NODE_ENV === 'production';
+
+// ==========================================
+// FIX 1: trust proxy (Render = one load-balancer hop)
+// Must be set BEFORE rate limiters are registered so express-rate-limit
+// keys off the REAL client IP instead of the load balancer's IP.
+// ==========================================
+app.set('trust proxy', 1);
+
+// ==========================================
+// FIX 2: Security headers (helmet) + Content-Security-Policy
+// Mounted before routes so every response is hardened.
+// ==========================================
+app.use(
+  helmet({
+    // Force framing protection to DENY (closes the download-proxy clickjack surface).
+    frameguard: { action: 'deny' },
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        // Scripts: self + the Razorpay checkout script. No 'unsafe-inline'.
+        scriptSrc: ["'self'", 'https://checkout.razorpay.com'],
+        // Razorpay checkout injects inline styles; allow them for styles only.
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        // Razorpay XHRs + Google Drive file streaming.
+        connectSrc: [
+          "'self'",
+          'https://api.razorpay.com',
+          'https://*.razorpay.com',
+          'https://drive.google.com',
+          'https://docs.google.com',
+        ],
+        // Razorpay opens its checkout in an iframe.
+        frameSrc: ['https://api.razorpay.com', 'https://*.razorpay.com'],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+  })
+);
 
 // ==========================================
 // RATE LIMITING

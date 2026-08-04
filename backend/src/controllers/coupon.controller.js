@@ -1,70 +1,14 @@
-const db = require("../config/db");
-const logger = require("../utils/logger");
+const db = require('../config/db');
+const logger = require('../utils/logger');
+const { normalizeCode, formatINRFromPaise } = require('../services/couponService');
 
 /**
  * Coupon controller
  *
- * MONEY STANDARD:
- * - amount is PAISE
- * - min_purchase_amount is PAISE
- * - max_discount_amount is PAISE
- * - fixed discount_value is PAISE
- * - percentage discount_value is normal percent, e.g. 10 = 10%
+ * NOTE: Coupon validation & discount math now live in
+ * `services/couponService.js` so the payment flow recomputes discounts
+ * with the IDENTICAL logic used here (revenue integrity).
  */
-
-const normalizeCode = (code) => String(code || "").trim().toUpperCase();
-
-const isCouponExpired = (coupon) => {
-  if (!coupon.valid_until) return false;
-  return new Date(coupon.valid_until) < new Date();
-};
-
-const formatINRFromPaise = (paise) => {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(Number(paise || 0) / 100);
-};
-
-const isCouponNotStarted = (coupon) => {
-  if (!coupon.valid_from) return false;
-  return new Date(coupon.valid_from) > new Date();
-};
-
-const calculateDiscount = (coupon, amount) => {
-  const purchaseAmount = Number(amount || 0);
-  let discountAmount = 0;
-
-  if (coupon.discount_type === "percentage") {
-    discountAmount = Math.floor(
-      (purchaseAmount * Number(coupon.discount_value || 0)) / 100
-    );
-  } else {
-    /**
-     * Fixed discount_value is stored in PAISE.
-     * Example:
-     * ₹50 discount => 5000
-     */
-    discountAmount = Math.floor(Number(coupon.discount_value || 0));
-  }
-
-  if (coupon.max_discount_amount) {
-    discountAmount = Math.min(
-      discountAmount,
-      Number(coupon.max_discount_amount)
-    );
-  }
-
-  discountAmount = Math.max(0, Math.min(discountAmount, purchaseAmount));
-  const finalAmount = Math.max(0, purchaseAmount - discountAmount);
-
-  return {
-    discountAmount,
-    finalAmount,
-  };
-};
 
 const validateCoupon = async (req, res) => {
   try {
@@ -72,100 +16,18 @@ const validateCoupon = async (req, res) => {
     const projectId = req.body.project_id || req.body.projectId || null;
     const amount = Number(req.body.amount || 0);
 
-    if (!code) {
-      return res.status(400).json({
+    // Dynamic import avoids a circular require at module load.
+    const { resolveValidCoupon } = require('../services/couponService');
+    const result = await resolveValidCoupon(code, amount, req.user?.id);
+
+    if (!result.ok) {
+      return res.status(result.status || 400).json({
         success: false,
-        message: "Coupon code is required",
+        message: result.reason,
       });
     }
 
-    if (!amount || amount < 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Valid amount is required",
-      });
-    }
-
-    const coupons = await db.query(
-      `SELECT *
-       FROM coupons
-       WHERE code = $1
-       LIMIT 1`,
-      [code]
-    );
-
-    if (coupons.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Invalid coupon code",
-      });
-    }
-
-    const coupon = coupons[0];
-
-    if (!coupon.is_active) {
-      return res.status(400).json({
-        success: false,
-        message: "Coupon is inactive",
-      });
-    }
-
-    if (isCouponNotStarted(coupon)) {
-      return res.status(400).json({
-        success: false,
-        message: "Coupon is not active yet",
-      });
-    }
-
-    if (isCouponExpired(coupon)) {
-      return res.status(400).json({
-        success: false,
-        message: "Coupon has expired",
-      });
-    }
-
-    if (
-      coupon.usage_limit !== null &&
-      Number(coupon.used_count || 0) >= Number(coupon.usage_limit)
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Coupon usage limit reached",
-      });
-    }
-
-    if (Number(coupon.min_purchase_amount || 0) > amount) {
-      return res.status(400).json({
-        success: false,
-        message: `Minimum purchase amount is ₹${Math.round(
-          Number(coupon.min_purchase_amount || 0) / 100
-        )}`,
-      });
-    }
-
-    /**
-     * Optional: prevent same user using coupon multiple times.
-     * This only works reliably after order/coupon_usage is inserted.
-     */
-    if (req.user?.id) {
-      const usageRows = await db.query(
-        `SELECT cu.id
-         FROM coupon_usage cu
-         WHERE cu.coupon_id = $1
-           AND cu.user_id = $2
-         LIMIT 1`,
-        [coupon.id, req.user.id]
-      );
-
-      if (usageRows.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: "You have already used this coupon",
-        });
-      }
-    }
-
-    const { discountAmount, finalAmount } = calculateDiscount(coupon, amount);
+    const { coupon, discountAmount, finalAmount } = result;
 
     return res.json({
       success: true,
@@ -183,11 +45,11 @@ const validateCoupon = async (req, res) => {
       },
     });
   } catch (error) {
-    logger.error("Validate coupon error", { error: error.message });
+    logger.error('Validate coupon error', { error: error.message });
 
     return res.status(500).json({
       success: false,
-      message: "Failed to validate coupon",
+      message: 'Failed to validate coupon',
     });
   }
 };
@@ -219,11 +81,11 @@ const getAllCoupons = async (req, res) => {
       data: coupons,
     });
   } catch (error) {
-    logger.error("Get coupons error", { error: error.message });
+    logger.error('Get coupons error', { error: error.message });
 
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch coupons",
+      message: 'Failed to fetch coupons',
     });
   }
 };
@@ -246,14 +108,14 @@ const createCoupon = async (req, res) => {
     if (!normalizedCode) {
       return res.status(400).json({
         success: false,
-        message: "Coupon code is required",
+        message: 'Coupon code is required',
       });
     }
 
-    if (!["percentage", "fixed"].includes(discount_type)) {
+    if (!['percentage', 'fixed'].includes(discount_type)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid discount type",
+        message: 'Invalid discount type',
       });
     }
 
@@ -262,14 +124,14 @@ const createCoupon = async (req, res) => {
     if (!parsedDiscountValue || parsedDiscountValue <= 0) {
       return res.status(400).json({
         success: false,
-        message: "Discount value must be positive",
+        message: 'Discount value must be positive',
       });
     }
 
-    if (discount_type === "percentage" && parsedDiscountValue > 100) {
+    if (discount_type === 'percentage' && parsedDiscountValue > 100) {
       return res.status(400).json({
         success: false,
-        message: "Percentage discount cannot exceed 100%",
+        message: 'Percentage discount cannot exceed 100%',
       });
     }
 
@@ -304,10 +166,10 @@ const createCoupon = async (req, res) => {
         discount_type,
         parsedDiscountValue,
         Number(min_purchase_amount || 0),
-        max_discount_amount === null || max_discount_amount === ""
+        max_discount_amount === null || max_discount_amount === ''
           ? null
           : Number(max_discount_amount),
-        usage_limit === null || usage_limit === ""
+        usage_limit === null || usage_limit === ''
           ? null
           : Number(usage_limit),
         valid_until || null,
@@ -316,22 +178,22 @@ const createCoupon = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "Coupon created successfully",
+      message: 'Coupon created successfully',
       data: rows[0],
     });
   } catch (error) {
-    logger.error("Create coupon error", { error: error.message });
+    logger.error('Create coupon error', { error: error.message });
 
-    if (error.code === "23505") {
+    if (error.code === '23505') {
       return res.status(409).json({
         success: false,
-        message: "Coupon code already exists",
+        message: 'Coupon code already exists',
       });
     }
 
     return res.status(500).json({
       success: false,
-      message: "Failed to create coupon",
+      message: 'Failed to create coupon',
     });
   }
 };
@@ -352,23 +214,23 @@ const toggleCoupon = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Coupon not found",
+        message: 'Coupon not found',
       });
     }
 
     return res.json({
       success: true,
       message: `Coupon ${
-        rows[0].is_active ? "activated" : "deactivated"
+        rows[0].is_active ? 'activated' : 'deactivated'
       } successfully`,
       data: rows[0],
     });
   } catch (error) {
-    logger.error("Toggle coupon error", { error: error.message });
+    logger.error('Toggle coupon error', { error: error.message });
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update coupon",
+      message: 'Failed to update coupon',
     });
   }
 };
@@ -387,20 +249,20 @@ const deleteCoupon = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Coupon not found",
+        message: 'Coupon not found',
       });
     }
 
     return res.json({
       success: true,
-      message: "Coupon deleted successfully",
+      message: 'Coupon deleted successfully',
     });
   } catch (error) {
-    logger.error("Delete coupon error", { error: error.message });
+    logger.error('Delete coupon error', { error: error.message });
 
     return res.status(500).json({
       success: false,
-      message: "Failed to delete coupon",
+      message: 'Failed to delete coupon',
     });
   }
 };

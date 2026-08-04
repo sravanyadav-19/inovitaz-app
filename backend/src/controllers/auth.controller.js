@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const { validationResult } = require('express-validator');
 const db = require('../config/db');
 const { generateToken } = require('../middlewares/auth.middleware');
-const { sendVerificationEmail } = require('../utils/email');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../utils/email');
 const logger = require('../utils/logger');
 
 const register = async (req, res) => {
@@ -70,7 +70,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     const users = await db.query(
-      'SELECT id, email, password, name, role, is_verified, verification_token FROM users WHERE email = $1',
+      'SELECT id, email, password, name, role, is_verified, verification_token, token_version FROM users WHERE email = $1',
       [email]
     );
 
@@ -259,6 +259,108 @@ const resendVerification = async (req, res) => {
   }
 };
 
+const forgotPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { email } = req.body;
+
+    const users = await db.query(
+      'SELECT id, email, name FROM users WHERE email = $1',
+      [email]
+    );
+
+    // Always respond identically so the endpoint cannot be used to enumerate accounts.
+    const genericOk = {
+      success: true,
+      message: 'If an account exists for that email, a reset link has been sent.',
+    };
+
+    if (users.length === 0) {
+      return res.json(genericOk);
+    }
+
+    const user = users[0];
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await db.query(
+      'UPDATE users SET reset_password_token = $1, reset_password_expires = $2, updated_at = NOW() WHERE id = $3',
+      [resetToken, resetExpires, user.id]
+    );
+
+    try {
+      await sendPasswordResetEmail(user.email, user.name, resetToken);
+      logger.info('Password reset email sent', { userId: user.id, email: user.email });
+    } catch (emailError) {
+      // Log prominently but do NOT reveal failure to the client (anti-enumeration).
+      logger.error('Failed to send password reset email', {
+        userId: user.id,
+        email: user.email,
+        error: emailError.message,
+        stack: emailError.stack,
+      });
+    }
+
+    return res.json(genericOk);
+  } catch (error) {
+    logger.error('Forgot password error', { error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to process request' });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
+    const { token, newPassword } = req.body;
+
+    const users = await db.query(
+      'SELECT id, reset_password_expires FROM users WHERE reset_password_token = $1',
+      [token]
+    );
+
+    if (users.length === 0) {
+      return res.status(400).json({ success: false, message: 'Invalid or expired reset token' });
+    }
+
+    const user = users[0];
+
+    if (new Date() > new Date(user.reset_password_expires)) {
+      return res.status(400).json({ success: false, message: 'Reset token has expired. Please request a new one.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // Invalidate the token AND bump token_version so all previously-issued
+    // JWTs (existing sessions) are rejected on their next request.
+    await db.query(
+      `UPDATE users
+       SET password = $1,
+           reset_password_token = NULL,
+           reset_password_expires = NULL,
+           token_version = token_version + 1,
+           updated_at = NOW()
+       WHERE id = $2`,
+      [hashedPassword, user.id]
+    );
+
+    logger.auth('PASSWORD_RESET', user.id, null, true);
+
+    return res.json({ success: true, message: 'Password reset successfully. Please log in with your new password.' });
+  } catch (error) {
+    logger.error('Reset password error', { error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to reset password' });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -267,4 +369,6 @@ module.exports = {
   changePassword,
   verifyEmail,
   resendVerification,
+  forgotPassword,
+  resetPassword,
 };
