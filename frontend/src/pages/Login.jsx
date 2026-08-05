@@ -12,6 +12,7 @@ const Login = () => {
   const [unverifiedEmail, setUnverifiedEmail] = useState('');
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
+  const [notFoundEmail, setNotFoundEmail] = useState('');
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -34,9 +35,11 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (error) {
       const errorMessage = error.message || 'Login failed. Please try again.';
-      // If the account isn't verified yet, surface a popup with a resend option.
-      if (errorMessage.toLowerCase().includes('verify')) {
+      const low = errorMessage.toLowerCase();
+      if (low.includes('verify')) {
         setUnverifiedEmail(formData.email);
+      } else if (low.includes('no account') || low.includes('sign up') || low.includes('not registered') || low.includes('not found')) {
+        setNotFoundEmail(formData.email);
       }
       toast.error(errorMessage);
     } finally {
@@ -214,6 +217,32 @@ const Login = () => {
                 onClick={() => { setUnverifiedEmail(''); setResent(false); }}
                 className="text-sm text-outline hover:text-white transition-colors"
               >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* No account found popup */}
+      {notFoundEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-blue-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">No account found</h3>
+            <p className="text-outline mb-1">
+              There's no account registered with <span className="text-white font-medium">{notFoundEmail}</span>.
+            </p>
+            <p className="text-outline text-sm mb-6">
+              You need to create an account before you can log in.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button onClick={() => navigate('/signup')} className="btn btn-primary w-full py-3">
+                Go to Sign Up
+              </button>
+              <button onClick={() => setNotFoundEmail('')} className="text-sm text-outline hover:text-white transition-colors">
                 Close
               </button>
             </div>
