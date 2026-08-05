@@ -14,6 +14,13 @@ const logger = require('./src/utils/logger');
 const { validateEnv } = require('./src/utils/validateEnv');
 
 validateEnv();
+// console.log('🔍 [DB DEBUG] running backend is using:', {
+//   host: process.env.DB_HOST,
+//   port: process.env.DB_PORT,
+//   database: process.env.DB_NAME,
+//   user: process.env.DB_USER,
+//   nodeEnv: process.env.NODE_ENV,
+// });
 
 const EventEmitter = require('events');
 EventEmitter.defaultMaxListeners = 15;

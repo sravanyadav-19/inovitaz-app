@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { HiMail, HiLockClosed, HiArrowRight, HiEye, HiEyeOff } from 'react-icons/hi';
+import { authAPI } from '../api/auth';
+import { HiMail, HiLockClosed, HiArrowRight, HiEye, HiEyeOff, HiCheckCircle } from 'react-icons/hi';
 import toast from 'react-hot-toast';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
 
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
@@ -30,9 +34,26 @@ const Login = () => {
       navigate(from, { replace: true });
     } catch (error) {
       const errorMessage = error.message || 'Login failed. Please try again.';
+      // If the account isn't verified yet, surface a popup with a resend option.
+      if (errorMessage.toLowerCase().includes('verify')) {
+        setUnverifiedEmail(formData.email);
+      }
       toast.error(errorMessage);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const res = await authAPI.resendVerification(unverifiedEmail);
+      setResent(true);
+      toast.success(res.message || 'Verification email sent! Check your inbox (and spam).');
+    } catch (err) {
+      toast.error(err.message || 'Failed to resend verification email.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -158,6 +179,47 @@ const Login = () => {
           </p>
         </div>
       </div>
+
+      {/* Unverified-email popup */}
+      {unverifiedEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-yellow-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Email not verified yet</h3>
+            <p className="text-outline mb-1">
+              We sent a verification link to <span className="text-white font-medium">{unverifiedEmail}</span>.
+            </p>
+            <p className="text-outline text-sm mb-6">
+              Please check your inbox (and spam folder), click the link to verify your email, then try logging in again.
+            </p>
+            <div className="flex flex-col gap-3">
+              {resent ? (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-center">
+                  <p className="text-sm text-green-400 font-medium flex items-center justify-center gap-2">
+                    <HiCheckCircle className="w-5 h-5" /> Verification email sent! Check your inbox (and spam).
+                  </p>
+                </div>
+              ) : (
+                <button
+                  onClick={handleResendVerification}
+                  disabled={resending}
+                  className="btn btn-primary w-full py-3"
+                >
+                  {resending ? 'Sending...' : 'Resend verification email'}
+                </button>
+              )}
+              <button
+                onClick={() => { setUnverifiedEmail(''); setResent(false); }}
+                className="text-sm text-outline hover:text-white transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

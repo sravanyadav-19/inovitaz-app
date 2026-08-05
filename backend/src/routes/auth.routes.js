@@ -36,6 +36,13 @@ const forgotPasswordValidation = [
     .withMessage('Please provide a valid email'),
 ];
 
+const resendVerificationValidation = [
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email'),
+];
+
 const resetPasswordValidation = [
   body('token')
     .notEmpty()
@@ -49,7 +56,7 @@ const resetPasswordValidation = [
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
 router.get('/verify-email', authController.verifyEmail);
-router.post('/resend-verification', authController.resendVerification);
+router.post('/resend-verification', resendVerificationValidation, authController.resendVerification);
 router.post('/forgot-password', forgotPasswordValidation, authController.forgotPassword);
 router.post('/reset-password', resetPasswordValidation, authController.resetPassword);
 router.get('/me', authRequired, authController.getMe);

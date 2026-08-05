@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { HiCheckCircle, HiXCircle, HiMail } from 'react-icons/hi';
 import toast from 'react-hot-toast';
@@ -9,6 +9,7 @@ const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('verifying'); // 'verifying' | 'success' | 'error'
   const [message, setMessage] = useState('');
+  const calledRef = useRef(false);
 
   useEffect(() => {
     const token = searchParams.get('token');
@@ -17,6 +18,12 @@ const VerifyEmail = () => {
       setMessage('No verification token provided.');
       return;
     }
+
+    // React StrictMode double-invokes effects in development. Guard so the
+    // one-time verification request fires exactly once — otherwise the second
+    // invoke finds the token already consumed and reports a false "invalid" error.
+    if (calledRef.current) return;
+    calledRef.current = true;
 
     verifyEmail(token);
   }, [searchParams]);

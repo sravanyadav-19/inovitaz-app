@@ -247,8 +247,8 @@ const resendVerification = async (req, res) => {
       [verificationToken, verificationTokenExpires, user.id]
     );
 
-    // Send verification email
-    await sendVerificationEmail(email, user.name, verificationToken);
+    // Send verification email (distinct subject so providers don't dedupe with the original)
+    await sendVerificationEmail(email, user.name, verificationToken, { isResend: true });
 
     logger.info('Verification email resent', { userId: user.id, email });
 

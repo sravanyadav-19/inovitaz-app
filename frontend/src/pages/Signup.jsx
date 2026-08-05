@@ -18,6 +18,8 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [existingEmail, setExistingEmail] = useState('');
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -27,6 +29,41 @@ const Signup = () => {
   
   if (isAuthenticated) {
     return null;
+  }
+
+  // Shown after a successful registration: clear confirmation that the
+  // verification email was sent (instead of silently redirecting to login).
+  if (registeredEmail) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-lowest fade-in px-4 py-12">
+        <div className="w-full max-w-md">
+          <Link to="/" className="flex items-center gap-2 mb-8 group justify-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+              </svg>
+            </div>
+            <span className="text-2xl font-bold text-white tracking-tight">Inovitaz</span>
+          </Link>
+
+          <div className="bg-surface rounded-2xl border border-surface-variant p-8 text-center">
+            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HiMail className="w-12 h-12 text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">Check your email</h2>
+            <p className="text-outline mb-2 leading-relaxed">
+              We've sent a verification link to <span className="text-white font-medium">{registeredEmail}</span>.
+            </p>
+            <p className="text-outline mb-6 text-sm">
+              Click the link in the email to verify your account and log in. Didn't get it? Check your spam folder.
+            </p>
+            <button onClick={() => navigate('/login')} className="btn btn-primary w-full py-3">
+              Go to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const handleChange = (e) => {
@@ -73,10 +110,15 @@ const Signup = () => {
         password: formData.password,
       });
       if (result.success) {
-        toast.success('Account created! Please check your email to verify your account.');
-        navigate('/login', { replace: true });
+        setRegisteredEmail(formData.email);
+        toast.success(`A verification link has been sent to ${formData.email}`);
       }
     } catch (error) {
+      const msg = (error.message || '').toLowerCase();
+      // Email already registered -> show a clear popup (not just a toast).
+      if (msg.includes('already') || msg.includes('exists')) {
+        setExistingEmail(formData.email);
+      }
       toast.error(error.message || 'Registration failed');
     } finally {
       setLoading(false);
@@ -243,6 +285,32 @@ const Signup = () => {
           </p>
         </div>
       </div>
+
+      {/* Email already registered popup */}
+      {existingEmail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
+            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-red-400" />
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Email already registered</h3>
+            <p className="text-outline mb-1">
+              An account with <span className="text-white font-medium">{existingEmail}</span> already exists.
+            </p>
+            <p className="text-outline text-sm mb-6">
+              Try logging in instead, or sign up with a different email address.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button onClick={() => navigate('/login')} className="btn btn-primary w-full py-3">
+                Go to Login
+              </button>
+              <button onClick={() => setExistingEmail('')} className="text-sm text-outline hover:text-white transition-colors">
+                Use a different email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
