@@ -18,6 +18,10 @@ const createTransporter = () => {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      // Fail fast instead of hanging on a slow/unreachable SMTP server.
+      connectionTimeout: 10000,  // 10s to establish the connection
+      greetingTimeout: 10000,    // 10s for the SMTP greeting
+      socketTimeout: 15000,      // 15s of inactivity
     });
   }
 
