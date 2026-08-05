@@ -21,6 +21,7 @@ validateEnv();
 //   user: process.env.DB_USER,
 //   nodeEnv: process.env.NODE_ENV,
 // });
+console.log('📧 [EMAIL DEBUG] BREVO_API_KEY present?', !!process.env.BREVO_API_KEY, '| starts with:', (process.env.BREVO_API_KEY || '').slice(0, 6));
 
 const EventEmitter = require('events');
 EventEmitter.defaultMaxListeners = 15;
