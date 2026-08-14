@@ -1,4 +1,5 @@
 import { HiExclamationCircle, HiMail, HiPhone } from "react-icons/hi";
+import { LEGAL_LAST_UPDATED } from "../utils/legal";
 
 export default function Refund() {
   return (
@@ -7,7 +8,7 @@ export default function Refund() {
         
         <div className="px-8 py-10">
           <h1 className="text-3xl font-bold text-white mb-2">Refund Policy</h1>
-          <p className="text-outline text-sm mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-outline text-sm mb-8">Last updated: {LEGAL_LAST_UPDATED}</p>
 
           <div className="bg-red-500/10 border-l-4 border-red-500 p-4 mb-8">
             <div className="flex items-start">

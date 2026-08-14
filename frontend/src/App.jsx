@@ -6,6 +6,8 @@ import Footer from './components/Footer';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import ScrollToTop from './components/ScrollToTop';
+import CookieConsent from './components/CookieConsent';
+import { useCookieConsent } from './context/CookieConsentContext';
 
 // Pages
 import Home from './pages/Home';
@@ -21,11 +23,14 @@ import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Refund from "./pages/Refund";
+import Cookies from "./pages/Cookies";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 
 function App() {
+  const { consent } = useCookieConsent();
+
   return (
     <ErrorBoundary>
       <div className="min-h-screen flex flex-col">
@@ -47,6 +52,7 @@ function App() {
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/refund" element={<Refund />} />
+            <Route path="/cookies" element={<Cookies />} />
 
             {/* Protected Routes */}
             <Route
@@ -73,7 +79,9 @@ function App() {
           </Routes>
         </main>
         <Footer />
-        <Analytics />
+        <CookieConsent />
+        {/* Analytics loads only after the visitor accepts cookies. */}
+        {consent === "accepted" && <Analytics />}
       </div>
     </ErrorBoundary>
   );

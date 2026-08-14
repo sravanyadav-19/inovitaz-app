@@ -11,7 +11,7 @@ import {
 import { projectsAPI } from "../api/projects";
 import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
-import { formatINRFromPaise, paiseToRupees } from "../utils/price";
+import { formatINRFromPaise } from "../utils/price";
 
 const FALLBACK_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -65,8 +65,6 @@ const ProjectCard = ({ project }) => {
     const match = description?.match(/"overview"\s*:\s*"(.*?)(?<!\\)"/);
     if (match?.[1]) cleanDescription = match[1];
   }
-
-  const displayPrice = paiseToRupees(price);
 
   const diffStyle =
     {
@@ -196,15 +194,10 @@ const ProjectCard = ({ project }) => {
 
           <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20 mt-auto">
             <div className="flex flex-col">
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-display font-bold text-primary-dim text-glow">
-                  {formatINRFromPaise(price)}
-                </span>
-                <span className="text-sm text-outline opacity-70 line-through">
-                  ₹{Math.round(displayPrice * 1.5)}
-                </span>
-              </div>
-              <span className="text-xs text-secondary font-medium">33% OFF</span>
+              <span className="text-2xl font-display font-bold text-primary-dim text-glow">
+                {formatINRFromPaise(price)}
+              </span>
+              <span className="text-xs text-outline font-medium">One-time purchase</span>
             </div>
 
             <div className="flex gap-2">

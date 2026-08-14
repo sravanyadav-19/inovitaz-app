@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
+import { CookieConsentProvider } from './context/CookieConsentContext.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -14,7 +15,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       }}
     >
       <AuthProvider>
-        <App />
+        <CookieConsentProvider>
+          <App />
+        </CookieConsentProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>

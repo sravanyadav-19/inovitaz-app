@@ -551,12 +551,7 @@ export default function ProjectDetails() {
                       -{formatINRFromPaise(appliedCoupon.discount_amount)}
                     </span>
                   </>
-                ) : (
-                  <>
-                    <span className="text-xl text-outline line-through">₹{Math.round(displayPrice * 1.5)}</span>
-                    <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">33% OFF</span>
-                  </>
-                )}
+                ) : null}
               </div>
 
               {/* Coupon (Fix 3: validated server-side at checkout) */}

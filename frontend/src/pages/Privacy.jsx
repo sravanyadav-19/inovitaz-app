@@ -1,9 +1,11 @@
+import { LEGAL_LAST_UPDATED } from "../utils/legal";
+
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-surface-lowest fade-in py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto bg-surface rounded-2xl shadow-sm border border-surface-variant px-8 py-10">
         <h1 className="text-3xl font-bold text-white mb-2">Privacy Policy</h1>
-        <p className="text-outline text-sm mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="text-outline text-sm mb-8">Last updated: {LEGAL_LAST_UPDATED}</p>
 
         <div className="space-y-8 text-outline [&_strong]:text-white">
           <p>
@@ -27,6 +29,32 @@ export default function Privacy() {
           </section>
 
           <section>
+            <h2 className="text-xl font-semibold text-white mb-3">Data Retention</h2>
+            <p>
+              We keep your account information for as long as your account is active. Order and download history is retained to service your purchases and comply with legal obligations. You may request deletion of your account and associated personal data at any time.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-3">Your Rights</h2>
+            <p className="mb-2">
+              You may request to:
+            </p>
+            <ul className="list-disc pl-5 space-y-2">
+              <li>Access a copy of the personal data we hold about you.</li>
+              <li>Correct inaccurate information.</li>
+              <li>Delete your account and personal data.</li>
+            </ul>
+            <p className="mt-2">
+              To make a request, email us at{" "}
+              <a href="mailto:inovitaz.help@gmail.com" className="font-medium text-primary-dim hover:text-primary-fixed underline">
+                inovitaz.help@gmail.com
+              </a>{" "}
+              and we will respond within a reasonable time.
+            </p>
+          </section>
+
+          <section>
             <h2 className="text-xl font-semibold text-white mb-3">Security</h2>
             <p>
               We use industry-standard encryption (HTTPS/TLS) and secure database practices to protect your personal information. Passwords are hashed and never stored in plain text.
@@ -36,12 +64,10 @@ export default function Privacy() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">Contact Us</h2>
             <p>
-              If you have questions about this policy, please contact our support team at <a
-  href="mailto:inovitaz.help@gmail.com"
-  className="font-medium text-primary-dim hover:text-primary-fixed underline"
->
-  inovitaz.help@gmail.com
-</a>.
+              If you have questions about this policy, please contact our support team at{" "}
+              <a href="mailto:inovitaz.help@gmail.com" className="font-medium text-primary-dim hover:text-primary-fixed underline">
+                inovitaz.help@gmail.com
+              </a>.
             </p>
           </section>
         </div>

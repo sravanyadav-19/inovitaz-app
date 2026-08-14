@@ -11,7 +11,7 @@ import {
   HiShieldCheck,
   HiCreditCard 
 } from "react-icons/hi";
-import { FaInstagram, FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa"; // Standard social icons
+import { FaInstagram, FaYoutube } from "react-icons/fa"; // Standard social icons
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -94,8 +94,6 @@ const Footer = () => {
             <div className="flex gap-4 pt-2">
               {[
                 { icon: FaInstagram, link: "https://www.instagram.com/inovitaz/" },
-                { icon: FaFacebook, link: "#" },
-                { icon: FaLinkedin, link: "#" },
                 { icon: FaYoutube, link: "https://www.youtube.com/@inovitaz/" }
               ].map((social, idx) => (
                 <a 
@@ -138,6 +136,7 @@ const Footer = () => {
               <li><Link to="/privacy" className="hover:text-primary-400 transition-colors">Privacy Policy</Link></li>
               <li><Link to="/terms" className="hover:text-primary-400 transition-colors">Terms & Conditions</Link></li>
               <li><Link to="/refund" className="hover:text-primary-400 transition-colors">Refund Policy</Link></li>
+              <li><Link to="/cookies" className="hover:text-primary-400 transition-colors">Cookie Policy</Link></li>
             </ul>
           </div>
 
