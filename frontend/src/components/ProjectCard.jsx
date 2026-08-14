@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
   HiShoppingCart,
+  HiCheck,
   HiEye,
   HiStar,
   HiHeart,
@@ -10,6 +11,7 @@ import {
 } from "react-icons/hi";
 import { projectsAPI } from "../api/projects";
 import { useAuth } from "../hooks/useAuth";
+import { useCart } from "../context/CartContext";
 import toast from "react-hot-toast";
 import { formatINRFromPaise } from "../utils/price";
 
@@ -29,6 +31,7 @@ const FALLBACK_IMAGE =
 
 const ProjectCard = ({ project }) => {
   const { isAuthenticated } = useAuth();
+  const { add, has } = useCart();
   const navigate = useNavigate();
 
   const {
@@ -43,6 +46,17 @@ const ProjectCard = ({ project }) => {
     isPurchased,
     created_at,
   } = project;
+
+  const inCart = has(id);
+
+  const handleAddToCart = () => {
+    if (inCart) {
+      toast("Already in your cart");
+      return;
+    }
+    add(project);
+    toast.success("Added to cart");
+  };
 
   const averageRating = Number(project.average_rating ?? project.rating ?? 0);
   const reviewCount = Number(project.reviews_count ?? project.review_count ?? 0);
@@ -220,12 +234,20 @@ const ProjectCard = ({ project }) => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    navigate(`/projects/${id}?action=buy`);
+                    handleAddToCart();
                   }}
-                  aria-label="Buy project"
-                  className="p-2.5 bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)] rounded-lg transition-all"
+                  aria-label={inCart ? "Already in cart" : "Add to cart"}
+                  className={`p-2.5 rounded-lg transition-all ${
+                    inCart
+                      ? "bg-green-500/20 text-green-400 border border-green-500/40"
+                      : "bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                  }`}
                 >
-                  <HiShoppingCart className="w-5 h-5 text-white" />
+                  {inCart ? (
+                    <HiCheck className="w-5 h-5" />
+                  ) : (
+                    <HiShoppingCart className="w-5 h-5 text-white" />
+                  )}
                 </button>
               )}
             </div>

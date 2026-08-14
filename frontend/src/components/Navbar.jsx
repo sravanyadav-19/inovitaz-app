@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useCart } from '../context/CartContext';
 import {
   HiMenu,
   HiX,
@@ -10,11 +11,13 @@ import {
   HiHome,
   HiCollection,
   HiSupport,
+  HiShoppingCart,
   HiShieldCheck, // Changed from HiShoppingCart for Admin
 } from 'react-icons/hi';
 
 const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { count: cartCount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
@@ -64,6 +67,18 @@ const Navbar = () => {
             <NavLink to="/support" className={navLinkClass}>
               <HiSupport className="w-5 h-5" />
               Support
+            </NavLink>
+
+            <NavLink to="/cart" className={navLinkClass}>
+              <span className="relative">
+                <HiShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </span>
+              Cart
             </NavLink>
 
             {isAuthenticated && (
@@ -186,6 +201,22 @@ const Navbar = () => {
             >
               <HiSupport className="w-5 h-5" />
               Support
+            </NavLink>
+
+            <NavLink
+              to="/cart"
+              className={navLinkClass}
+              onClick={() => setIsOpen(false)}
+            >
+              <span className="relative">
+                <HiShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </span>
+              Cart
             </NavLink>
 
             {isAuthenticated && (

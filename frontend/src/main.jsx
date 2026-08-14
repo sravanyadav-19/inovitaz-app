@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CookieConsentProvider } from './context/CookieConsentContext.jsx'
+import { CartProvider } from './context/CartContext.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -16,7 +17,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     >
       <AuthProvider>
         <CookieConsentProvider>
-          <App />
+          <CartProvider>
+            <App />
+          </CartProvider>
         </CookieConsentProvider>
       </AuthProvider>
     </BrowserRouter>

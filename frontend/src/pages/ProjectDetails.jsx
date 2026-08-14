@@ -27,6 +27,7 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../components/LoadingSpinner";
 import DownloadButton from '../components/DownloadButton';
 import { formatINRFromPaise, paiseToRupees } from "../utils/price";
+import { useCart } from "../context/CartContext";
 
 const PROJECT_DETAIL_FALLBACK_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -44,6 +45,7 @@ const PROJECT_DETAIL_FALLBACK_IMAGE =
 export default function ProjectDetails() {
   const { id } = useParams();
   const { user, logout } = useContext(AuthContext);
+  const { add, has } = useCart();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -248,6 +250,17 @@ export default function ProjectDetails() {
   }
 
   const displayPrice = project ? paiseToRupees(project.price) : 0;
+  const inCart = project ? has(project.id) : false;
+
+  const handleAddToCart = () => {
+    if (!project) return;
+    if (inCart) {
+      navigate("/cart");
+      return;
+    }
+    add(project);
+    toast.success("Added to cart");
+  };
   
   const avgRating = reviews.length > 0 
     ? (reviews.reduce((acc, curr) => acc + curr.rating, 0) / reviews.length).toFixed(1) 
@@ -611,13 +624,25 @@ export default function ProjectDetails() {
               )}
 
               {!purchased ? (
-                <button 
-                  onClick={handleBuy} 
-                  disabled={processing} 
-                  className="w-full btn btn-primary btn-lg text-lg py-4 shadow-lg hover:shadow-xl transition-all"
-                >
-                  {processing ? "Processing Payment..." : "Buy Now & Unlock Full Access"}
-                </button>
+                <div className="space-y-3">
+                  <button 
+                    onClick={handleBuy} 
+                    disabled={processing} 
+                    className="w-full btn btn-primary btn-lg text-lg py-4 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    {processing ? "Processing Payment..." : "Buy Now & Unlock Full Access"}
+                  </button>
+                  <button
+                    onClick={handleAddToCart}
+                    className="w-full btn btn-secondary flex items-center justify-center gap-2"
+                  >
+                    {inCart ? (
+                      <>✓ In Cart — View Cart</>
+                    ) : (
+                      <><HiShoppingCart className="w-5 h-5" /> Add to Cart</>
+                    )}
+                  </button>
+                </div>
               ) : (
                 <div className="mt-2">
                   <DownloadButton 
