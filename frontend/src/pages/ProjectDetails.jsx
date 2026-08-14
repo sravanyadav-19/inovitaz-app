@@ -12,6 +12,7 @@ import {
   HiHeart,
   HiOutlineHeart,
   HiCheckCircle,
+  HiShieldCheck,
   HiLockClosed,
   HiClock,
   HiDownload,
@@ -554,6 +555,27 @@ export default function ProjectDetails() {
                 ) : null}
               </div>
 
+              {/* What's included */}
+              {!purchased && (
+                <div className="mb-6 rounded-xl border border-surface-variant bg-surface-high/60 p-4">
+                  <p className="text-sm font-semibold text-white mb-3">What's included</p>
+                  <ul className="space-y-2">
+                    {[
+                      "Complete, tested source code",
+                      "Circuit diagram & wiring schematics",
+                      "Component list with quantities",
+                      "Step-by-step setup guide (PDF)",
+                      "Lifetime download access",
+                    ].map((item) => (
+                      <li key={item} className="flex items-start gap-2 text-sm text-outline">
+                        <HiCheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {/* Coupon (Fix 3: validated server-side at checkout) */}
               {!purchased && (
                 <div className="mb-6">
@@ -606,9 +628,28 @@ export default function ProjectDetails() {
               )}
               
               {!purchased && (
-                <p className="text-center text-xs text-outline mt-3 flex items-center justify-center gap-1">
-                  <HiCheckCircle className="text-green-500" /> Secure payment via Razorpay
-                </p>
+                <div className="mt-3 space-y-2">
+                  <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-variant bg-surface-high/60 px-3 py-2">
+                    <HiShieldCheck className="w-5 h-5 text-green-500" />
+                    <span className="text-xs text-outline">
+                      Payments secured by{" "}
+                      <a
+                        href="https://razorpay.com"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-white hover:text-primary transition-colors"
+                      >
+                        Razorpay
+                      </a>
+                    </span>
+                  </div>
+                  <p className="text-center text-xs text-outline">
+                    All sales final ·{" "}
+                    <Link to="/refund" className="text-primary hover:text-primary-dim underline underline-offset-2">
+                      Refund Policy
+                    </Link>
+                  </p>
+                </div>
               )}
             </div>
           </div>

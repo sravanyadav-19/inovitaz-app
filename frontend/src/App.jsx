@@ -24,6 +24,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Refund from "./pages/Refund";
 import Cookies from "./pages/Cookies";
+import Security from "./pages/Security";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
@@ -53,6 +54,7 @@ function App() {
             <Route path="/terms" element={<Terms />} />
             <Route path="/refund" element={<Refund />} />
             <Route path="/cookies" element={<Cookies />} />
+            <Route path="/security" element={<Security />} />
 
             {/* Protected Routes */}
             <Route

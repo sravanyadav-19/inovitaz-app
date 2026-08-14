@@ -4,6 +4,27 @@ import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiUser, HiArrowRight } from 'rea
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
+/**
+ * Simple client-side password strength scorer.
+ * (Display-only guidance; the backend still enforces its own rules.)
+ */
+function getPasswordStrength(password) {
+  if (!password) {
+    return { score: 0, level: 0, label: "", bar: "bg-surface-variant", text: "text-outline" };
+  }
+  let score = 0;
+  if (password.length >= 6) score += 1;
+  if (password.length >= 10) score += 1;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+  if (score <= 1) return { score, level: 1, label: "Weak", bar: "bg-red-500", text: "text-red-400" };
+  if (score <= 3) return { score, level: 2, label: "Fair", bar: "bg-yellow-500", text: "text-yellow-400" };
+  if (score <= 4) return { score, level: 3, label: "Good", bar: "bg-green-500", text: "text-green-400" };
+  return { score, level: 4, label: "Strong", bar: "bg-green-500", text: "text-green-400" };
+}
+
 const Signup = () => {
   const navigate = useNavigate();
   const { register, isAuthenticated } = useAuth();
@@ -20,6 +41,8 @@ const Signup = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
   const [existingEmail, setExistingEmail] = useState('');
+
+  const strength = getPasswordStrength(formData.password);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -139,7 +162,9 @@ const Signup = () => {
               <span className="text-2xl font-bold text-white tracking-tight">Inovitaz</span>
             </Link>
             <h2 className="text-3xl font-bold text-white">Create an account</h2>
-            <p className="mt-2 text-sm text-outline">Join thousands of makers building the future.</p>
+            <p className="mt-2 text-sm text-outline">
+              Join thousands of makers building the future. Free to join — browse, wishlist, and buy projects with instant download.
+            </p>
           </div>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -202,6 +227,26 @@ const Signup = () => {
                 </button>
               </div>
               {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+
+              {/* Strength meter (shown once the user starts typing) */}
+              {formData.password && (
+                <div className="mt-2">
+                  <div className="flex gap-1 mb-1">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`h-1.5 flex-1 rounded-full transition-colors ${i < strength.level ? strength.bar : 'bg-surface-variant'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs font-medium ${strength.text}`}>
+                    Password strength: {strength.label}
+                  </p>
+                </div>
+              )}
+              <p className="mt-1 text-xs text-outline">
+                At least 6 characters. Use a mix of upper & lower case letters, numbers and symbols for a stronger password.
+              </p>
             </div>
 
             <div>
