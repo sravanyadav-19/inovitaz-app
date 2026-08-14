@@ -3,7 +3,7 @@
  * Browse projects with filters and search
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { HiSearch, HiFilter, HiX } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
@@ -20,6 +20,7 @@ const Projects = () => {
 
   // Filter states
   const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1);
@@ -61,6 +62,19 @@ const Projects = () => {
     fetchCategories();
   }, []);
 
+  // Debounced live search: commit the input to `search` after a short pause
+  // (instead of firing an API request on every keystroke).
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (search !== searchInput) {
+        setSearch(searchInput);
+        setPage(1);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
   const fetchCategories = async () => {
     try {
       const response = await projectsAPI.getCategories();
@@ -75,8 +89,8 @@ const Projects = () => {
   // Handle search form submit
   const handleSearch = (e) => {
     e.preventDefault();
+    setSearch(searchInput);
     setPage(1); // Reset pagination
-    updateSearchParams();
   };
 
   // Update URL search params
@@ -92,9 +106,16 @@ const Projects = () => {
     setSearchParams(params);
   };
 
+  // Keep the URL in sync so searches and filters are shareable / bookmarkable.
+  useEffect(() => {
+    updateSearchParams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, category, sort, page, difficulty, maxPrice, technology]);
+
   // Clear all filters
   const clearFilters = () => {
     setSearch('');
+    setSearchInput('');
     setCategory('');
     setSort('newest');
     setPage(1);
@@ -158,6 +179,13 @@ const Projects = () => {
 
   const hasActiveFilters = category || difficulty || technology || maxPrice !== "99900";
 
+  // Popular search suggestions — derived from catalog categories + common terms.
+  const suggestedSearches = useMemo(() => {
+    const fromCategories = (categories || []).slice(0, 3).map((c) => c.category);
+    const popular = ["Arduino", "ESP32", "Raspberry Pi", "Robotics"];
+    return [...new Set([...fromCategories, ...popular])].slice(0, 6);
+  }, [categories]);
+
   return (
     <div className="min-h-screen bg-surface fade-in">
       {/* Header */}
@@ -181,29 +209,56 @@ const Projects = () => {
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <form onSubmit={handleSearch} className="flex-1">
-              <div className="relative">
-                <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-outline" />
-                <input
-                  type="text"
-                  placeholder="Search metadata..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="input pl-10 pr-10 bg-surface text-white placeholder-outline-variant font-medium tracking-wide"
-                />
-                {search && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSearch('');
-                      setPage(1);
-                    }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-highest rounded-full transition-colors"
-                    aria-label="Clear search"
-                  >
-                    <HiX className="w-5 h-5 text-outline hover:text-white" />
-                  </button>
-                )}
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-outline" />
+                  <input
+                    type="text"
+                    placeholder="Search projects… e.g. weather station"
+                    value={searchInput}
+                    onChange={(e) => setSearchInput(e.target.value)}
+                    className="input pl-10 pr-10 bg-surface text-white placeholder-outline-variant font-medium tracking-wide"
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchInput('');
+                        setSearch('');
+                        setPage(1);
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-surface-highest rounded-full transition-colors"
+                      aria-label="Clear search"
+                    >
+                      <HiX className="w-5 h-5 text-outline hover:text-white" />
+                    </button>
+                  )}
+                </div>
+                <button type="submit" className="btn btn-primary px-5 shrink-0">
+                  Search
+                </button>
               </div>
+
+              {/* Suggested searches */}
+              {!searchInput && suggestedSearches.length > 0 && (
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-outline font-medium">Popular:</span>
+                  {suggestedSearches.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => {
+                        setSearchInput(s);
+                        setSearch(s);
+                        setPage(1);
+                      }}
+                      className="px-3 py-1 rounded-full text-xs font-medium bg-surface-high border border-surface-variant text-outline hover:text-white hover:border-primary-dim/40 transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
             </form>
 
             {/* Filter Toggle (Mobile) */}
@@ -443,7 +498,7 @@ const Projects = () => {
         {/* Projects Grid */}
         {loading ? (
           <div className="flex justify-center py-12">
-            <LoadingSpinner size="large" text="Loading projects..." />
+            <LoadingSpinner size="large" text={search ? "Searching…" : "Loading projects..."} />
           </div>
         ) : projects.length === 0 ? (
           <div className="text-center py-12 bg-surface-lowest border border-surface-variant rounded-xl glass-panel">
@@ -453,18 +508,39 @@ const Projects = () => {
             <h3 className="text-xl font-display font-semibold text-white mb-2">
               No projects found
             </h3>
-            <p className="text-outline mb-6">
-              Try adjusting your search or filter criteria
+            <p className="text-outline mb-6 max-w-md mx-auto">
+              Nothing matched your current search or filters. Try a popular category, or clear your filters to see everything.
             </p>
+            {suggestedSearches.length > 0 && (
+              <div className="flex flex-wrap justify-center gap-2 mb-6">
+                {suggestedSearches.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => {
+                      setSearch('');
+                      setSearchInput('');
+                      setDifficulty('');
+                      setTechnology('');
+                      setMaxPrice("99900");
+                      setCategory(s);
+                      setPage(1);
+                    }}
+                    className="px-4 py-2 rounded-full text-sm font-medium bg-surface-highest border border-surface-variant text-outline hover:text-white hover:border-primary-dim/40 transition-colors"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
             <button onClick={clearFilters} className="btn btn-primary px-6 py-2">
-              Clear Filters
+              Clear All Filters
             </button>
           </div>
         ) : (
           <>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {projects.map((project) => (
-                <ProjectCard key={project.id} project={project} />
+                <ProjectCard key={project.id} project={project} highlight={search} />
               ))}
             </div>
 

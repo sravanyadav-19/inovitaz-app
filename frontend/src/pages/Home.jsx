@@ -11,7 +11,10 @@ import {
   HiSupport, 
   HiShieldCheck,
   HiArrowRight,
-  HiChip
+  HiChip,
+  HiDownload,
+  HiDocumentText,
+  HiCheckCircle
 } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
 import { projectsAPI } from '../api/projects';
@@ -62,26 +65,63 @@ const Home = () => {
     fetchProjects();
   }, []);
 
-  const features = [
+  const featureGroups = [
     {
-      icon: HiCode,
-      title: 'Production-Ready Code',
-      description: 'Clean, well-documented code that follows industry best practices.',
+      id: 'build',
+      label: 'Build',
+      tagline: 'From idea to working prototype',
+      features: [
+        {
+          icon: HiCode,
+          title: 'Production-ready source code',
+          description: 'Download complete, commented code for every project.',
+          benefit: 'Ship working firmware without starting from scratch.',
+        },
+        {
+          icon: HiChip,
+          title: 'Hardware specs & schematics',
+          description: 'Exact component lists and circuit diagrams included.',
+          benefit: 'Order the right parts the first time.',
+        },
+      ],
     },
     {
-      icon: HiChip,
-      title: 'Complete Hardware Specs',
-      description: 'Detailed component lists and circuit diagrams for easy replication.',
+      id: 'buy',
+      label: 'Buy with confidence',
+      tagline: 'Instant, secure, and yours to keep',
+      features: [
+        {
+          icon: HiDownload,
+          title: 'Instant secure delivery',
+          description: 'Files unlock the moment your payment is confirmed.',
+          benefit: 'Start building in minutes, not days.',
+        },
+        {
+          icon: HiShieldCheck,
+          title: 'Secure payments',
+          description: 'Checkout is handled by Razorpay — card details never touch our servers.',
+          benefit: 'Pay with the same security as major platforms.',
+        },
+      ],
     },
     {
-      icon: HiSupport,
-      title: 'Technical Support',
-      description: 'Get help from our team of experienced developers.',
-    },
-    {
-      icon: HiShieldCheck,
-      title: 'Secure Downloads',
-      description: 'Instant access to your purchases with secure download links.',
+      id: 'support',
+      label: 'Learn & get support',
+      tagline: "You're never stuck on your own",
+      features: [
+        {
+          icon: HiDocumentText,
+          title: 'Step-by-step documentation',
+          description: 'Every kit ships with a setup guide you can follow.',
+          benefit: 'Complete your project even if it is your first IoT build.',
+        },
+        {
+          icon: HiSupport,
+          title: 'Technical support',
+          description: 'Reach our engineers on WhatsApp or email.',
+          benefit: 'Get unstuck fast when something will not compile.',
+        },
+      ],
     },
   ];
 
@@ -163,30 +203,111 @@ const Home = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-display font-bold text-white mb-4">
-              System Capabilities
+              Everything you need to ship an IoT project
             </h2>
             <p className="text-lg text-outline max-w-2xl mx-auto">
-              We provide the core modules to compile your ideas into reality.
+              InovitaZ covers the whole journey — from picking a project to getting it running on your bench.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div 
-                key={index}
-                className="text-center p-6 rounded glass-panel hover:bg-surface-variant/40 transition-colors group"
-              >
-                <div className="w-14 h-14 bg-surface-highest border border-primary-dim/20 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:border-primary-dim/60 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.1)]">
-                  <feature.icon className="w-7 h-7 text-primary-dim" />
+          <div className="grid lg:grid-cols-5 gap-12">
+            {/* Grouped features */}
+            <div className="lg:col-span-3 space-y-12">
+              {featureGroups.map((group) => (
+                <div key={group.id}>
+                  <div className="mb-5">
+                    <h3 className="text-xl font-display font-semibold text-white">
+                      {group.label}
+                    </h3>
+                    <p className="text-sm text-outline">{group.tagline}</p>
+                  </div>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {group.features.map((feature) => (
+                      <div
+                        key={feature.title}
+                        className="p-5 rounded-xl glass-panel hover:bg-surface-variant/40 transition-colors"
+                      >
+                        <div className="w-11 h-11 bg-surface-highest border border-primary-dim/20 rounded-lg flex items-center justify-center mb-3">
+                          <feature.icon className="w-6 h-6 text-primary-dim" />
+                        </div>
+                        <h4 className="font-semibold text-white mb-1.5">{feature.title}</h4>
+                        <p className="text-outline text-sm mb-2">{feature.description}</p>
+                        <p className="text-primary-fixed text-xs font-medium">→ {feature.benefit}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="text-lg font-display font-semibold text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-outline text-sm">
-                  {feature.description}
-                </p>
+              ))}
+
+              {/* Inline CTA */}
+              <div className="pt-2">
+                <Link to="/projects" className="btn btn-primary btn-lg inline-flex items-center gap-2">
+                  Start building — browse projects
+                  <HiArrowRight className="w-5 h-5" />
+                </Link>
               </div>
-            ))}
+            </div>
+
+            {/* Visual + social proof */}
+            <div className="lg:col-span-2">
+              <div className="lg:sticky lg:top-24 space-y-6">
+                {/* Deliverables visual (code mock) */}
+                <div className="rounded-2xl border border-surface-variant bg-surface overflow-hidden shadow-[0_0_25px_rgba(59,130,246,0.1)]">
+                  <div className="flex items-center gap-2 px-4 py-3 border-b border-surface-variant bg-surface-high">
+                    <span className="w-3 h-3 rounded-full bg-red-500/70"></span>
+                    <span className="w-3 h-3 rounded-full bg-yellow-500/70"></span>
+                    <span className="w-3 h-3 rounded-full bg-green-500/70"></span>
+                    <span className="ml-2 text-xs text-outline font-mono">weather_station.ino</span>
+                  </div>
+                  <pre className="p-4 text-xs leading-relaxed font-mono text-green-400 overflow-x-auto">{`#include <DHT.h>
+#define DHT_PIN 2
+
+void setup() {
+  Serial.begin(9600);
+  dht.begin();
+}
+
+void loop() {
+  float t = dht.readTemp();
+  Serial.println(t);
+  delay(2000);
+}`}</pre>
+                </div>
+
+                {/* Kit contents */}
+                <div className="rounded-2xl border border-surface-variant bg-surface p-5">
+                  <p className="text-sm font-semibold text-white mb-3">Every kit includes</p>
+                  <ul className="space-y-2 text-sm text-outline">
+                    {["Complete source code", "Circuit diagram", "Component list", "Setup guide (PDF)", "Lifetime downloads"].map((item) => (
+                      <li key={item} className="flex items-center gap-2">
+                        <HiCheckCircle className="w-4 h-4 text-green-500" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Social proof — TODO: replace with real customer quotes */}
+                <div className="space-y-3">
+                  <figure className="rounded-2xl border border-surface-variant bg-surface p-5">
+                    <blockquote className="text-sm text-outline leading-relaxed">
+                      "The source code and diagrams were so complete I had my weather station running in one afternoon."
+                    </blockquote>
+                    <figcaption className="mt-3 text-xs text-primary-fixed font-medium">
+                      — Engineering student, Andhra Pradesh
+                    </figcaption>
+                  </figure>
+                  <figure className="rounded-2xl border border-surface-variant bg-surface p-5">
+                    <blockquote className="text-sm text-outline leading-relaxed">
+                      "Support replied on WhatsApp within the hour and helped me fix a wiring mistake."
+                    </blockquote>
+                    <figcaption className="mt-3 text-xs text-primary-fixed font-medium">
+                      — Maker & hobbyist
+                    </figcaption>
+                  </figure>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>

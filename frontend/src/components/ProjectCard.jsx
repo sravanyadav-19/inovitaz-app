@@ -28,8 +28,28 @@ const FALLBACK_IMAGE =
     </svg>
   `);
 
+/**
+ * Highlights occurrences of `query` inside `text` (case-insensitive).
+ * Used to highlight search keywords within result cards.
+ */
+function HighlightText({ text, query }) {
+  const q = (query || "").trim();
+  if (!q || !text) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const parts = String(text).split(new RegExp(`(${escaped})`, "gi"));
+  return parts.map((part, i) =>
+    part.toLowerCase() === q.toLowerCase() ? (
+      <mark key={i} className="bg-yellow-400/25 text-white rounded-sm px-0.5">
+        {part}
+      </mark>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
 
-const ProjectCard = ({ project }) => {
+
+const ProjectCard = ({ project, highlight = "" }) => {
   const { isAuthenticated } = useAuth();
   const { add, has } = useCart();
   const navigate = useNavigate();
@@ -191,11 +211,14 @@ const ProjectCard = ({ project }) => {
 
         <div className="p-5 flex-1 flex flex-col">
           <h3 className="text-lg font-display font-semibold text-white mb-2 line-clamp-1 group-hover:text-primary-dim transition-colors">
-            {title}
+            <HighlightText text={title} query={highlight} />
           </h3>
 
           <p className="text-outline text-sm mb-3 line-clamp-2 flex-1 leading-relaxed">
-            {cleanDescription || "Complete IoT project with source code and documentation."}
+            <HighlightText
+              text={cleanDescription || "Complete IoT project with source code and documentation."}
+              query={highlight}
+            />
           </p>
 
           <div className="flex items-center gap-2 mb-4">
