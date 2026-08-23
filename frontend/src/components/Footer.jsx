@@ -111,7 +111,7 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold text-lg mb-5">Explore</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/projects" className="hover:text-primary-400 transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-500"></span> Browse Projects</Link></li>
+              <li><Link to="/projects" className="hover:text-primary-dim transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> Browse Projects</Link></li>
               <li><Link to="/projects?category=IoT" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> IoT Solutions</Link></li>
               <li><Link to="/projects?category=Robotics" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> Robotics</Link></li>
               <li><Link to="/about" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> About Us</Link></li>
@@ -124,20 +124,20 @@ const Footer = () => {
             <ul className="space-y-3 text-sm">
               {user ? (
                 <>
-                  <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">My Dashboard</Link></li>
-                  {/* <li><Link to="/dashboard" className="hover:text-primary-400 transition-colors">Order History</Link></li> */}
+                  <li><Link to="/dashboard" className="hover:text-primary-dim transition-colors">My Dashboard</Link></li>
+                  {/* <li><Link to="/dashboard" className="hover:text-primary-dim transition-colors">Order History</Link></li> */}
                 </>
               ) : (
                 <>
-                  <li><Link to="/login" className="hover:text-primary-400 transition-colors">Login</Link></li>
-                  <li><Link to="/signup" className="hover:text-primary-400 transition-colors">Register</Link></li>
+                  <li><Link to="/login" className="hover:text-primary-dim transition-colors">Login</Link></li>
+                  <li><Link to="/signup" className="hover:text-primary-dim transition-colors">Register</Link></li>
                 </>
               )}
-              <li><Link to="/privacy" className="hover:text-primary-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-primary-400 transition-colors">Terms & Conditions</Link></li>
-              <li><Link to="/refund" className="hover:text-primary-400 transition-colors">Refund Policy</Link></li>
-              <li><Link to="/cookies" className="hover:text-primary-400 transition-colors">Cookie Policy</Link></li>
-              <li><Link to="/security" className="hover:text-primary-400 transition-colors">Security</Link></li>
+              <li><Link to="/privacy" className="hover:text-primary-dim transition-colors">Privacy Policy</Link></li>
+              <li><Link to="/terms" className="hover:text-primary-dim transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/refund" className="hover:text-primary-dim transition-colors">Refund Policy</Link></li>
+              <li><Link to="/cookies" className="hover:text-primary-dim transition-colors">Cookie Policy</Link></li>
+              <li><Link to="/security" className="hover:text-primary-dim transition-colors">Security</Link></li>
             </ul>
           </div>
 
@@ -148,8 +148,12 @@ const Footer = () => {
               onSubmit={handleNewsletterSubmit}
               className="bg-surface p-1 rounded-lg flex mb-6 border border-surface-variant"
             >
+              <label htmlFor="newsletter-email" className="sr-only">Email address for updates</label>
               <input
+                id="newsletter-email"
+                name="newsletterEmail"
                 type="email"
+                autoComplete="email"
                 placeholder="Enter your email"
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
@@ -165,15 +169,15 @@ const Footer = () => {
 
             <div className="space-y-3 text-sm">
               <div className="flex items-start gap-3">
-                <HiLocationMarker className="w-5 h-5 text-primary-500 mt-0.5 flex-shrink-0" />
+                <HiLocationMarker className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 <span>Thullur, Andhra Pradesh,<br />India - 522237</span>
               </div>
               <div className="flex items-center gap-3">
-                <HiPhone className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                <HiPhone className="w-5 h-5 text-primary flex-shrink-0" />
                 <a href="tel:+919705594777" className="hover:text-white">+91 9705594777</a>
               </div>
               <div className="flex items-center gap-3">
-                <HiMail className="w-5 h-5 text-primary-500 flex-shrink-0" />
+                <HiMail className="w-5 h-5 text-primary flex-shrink-0" />
                 <a href="mailto:inovitaz.help@gmail.com" className="hover:text-white">inovitaz.help@gmail.com</a>
               </div>
             </div>

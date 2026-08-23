@@ -3,7 +3,7 @@
  * Handles coupon validation and Razorpay payment
  */
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { 
   HiX, 
   HiShieldCheck, 
@@ -27,7 +27,6 @@ const PAYMENT_FALLBACK_IMAGE =
     </svg>
   `);
 
-const paiseToRupees = (amount) => Number(amount || 0) / 100;
 
 const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
@@ -38,6 +37,55 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
   const [couponError, setCouponError] = useState('');
+  const dialogRef = useRef(null);
+  const closeButtonRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    const previouslyFocused = document.activeElement;
+    const focusableSelector = [
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[tabindex]:not([tabindex="-1"])',
+    ].join(',');
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== 'Tab' || !dialogRef.current) return;
+
+      const focusable = Array.from(dialogRef.current.querySelectorAll(focusableSelector));
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    const focusTimer = window.setTimeout(() => closeButtonRef.current?.focus(), 0);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+      document.removeEventListener('keydown', handleKeyDown);
+      previouslyFocused?.focus?.();
+    };
+  }, [isOpen, onClose]);
 
   const formatPrice = formatINRFromPaise;
 
@@ -186,20 +234,29 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
         onClick={onClose}
-      ></div>
+        aria-hidden="true"
+      />
 
-      {/* Modal */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-surface-lowest border border-surface-variant rounded-2xl shadow-xl max-w-md w-full fade-in">
+      <div className="relative z-10 flex min-h-full items-center justify-center p-4">
+        <section
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="payment-modal-title"
+          aria-describedby="payment-modal-description"
+          tabIndex={-1}
+          className="relative bg-surface-lowest border border-surface-variant rounded-2xl shadow-xl max-w-md w-full fade-in"
+        >
           {/* Close button */}
           <button
+            ref={closeButtonRef}
+            type="button"
             aria-label="Close payment modal"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-secondary-400 hover:text-secondary-600 transition-colors z-10"
+            className="absolute top-4 right-4 p-2 text-outline hover:text-white transition-colors z-10"
           >
             <HiX className="w-5 h-5" />
           </button>
@@ -208,15 +265,15 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
           <div className="p-6">
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HiCreditCard className="w-8 h-8 text-primary-dim" />
               </div>
-              <h2 className="text-xl font-bold text-secondary-900">Complete Purchase</h2>
-              <p className="text-secondary-600 text-sm mt-1">Secure payment powered by Razorpay</p>
+              <h2 id="payment-modal-title" className="text-xl font-bold text-white">Complete Purchase</h2>
+              <p id="payment-modal-description" className="text-outline text-sm mt-1">Secure payment powered by Razorpay</p>
             </div>
 
             {/* Project Info */}
-            <div className="bg-secondary-50 rounded-xl p-4 mb-6">
+            <div className="bg-surface-low rounded-xl p-4 mb-6">
               <div className="flex gap-4">
               <img
                 src={project.thumbnail || PAYMENT_FALLBACK_IMAGE}
@@ -228,25 +285,26 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                 }}
               />
                 <div className="flex-1">
-                  <h3 className="font-semibold text-secondary-900 line-clamp-2">
+                  <h3 className="font-semibold text-white line-clamp-2">
                     {project.title}
                   </h3>
-                  <p className="text-sm text-secondary-500 mt-1">{project.category}</p>
+                  <p className="text-sm text-outline mt-1">{project.category}</p>
                 </div>
               </div>
             </div>
 
             {/* Coupon Section */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-outline mb-2">
+              <label htmlFor="payment-coupon" className="block text-sm font-medium text-outline mb-2">
                 Have a coupon code?
               </label>
               
               {!appliedCoupon ? (
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
-                    <HiTag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
+                    <HiTag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-outline" />
                     <input
+                      id="payment-coupon"
                       type="text"
                       value={couponCode}
                       onChange={(e) => {
@@ -255,6 +313,8 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                       }}
                       placeholder="Enter coupon code"
                       className={`input pl-10 ${couponError ? 'border-red-300 focus:ring-red-500' : ''}`}
+                      aria-invalid={Boolean(couponError)}
+                      aria-describedby={couponError ? 'payment-coupon-error' : undefined}
                       disabled={couponLoading}
                     />
                   </div>
@@ -264,7 +324,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                     className="btn btn-secondary px-6"
                   >
                     {couponLoading ? (
-                      <div className="w-4 h-4 border-2 border-secondary-400 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="w-4 h-4 border-2 border-outline-variant border-t-transparent rounded-full animate-spin"></div>
                     ) : (
                       'Apply'
                     )}
@@ -285,7 +345,9 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                       </div>
                     </div>
                     <button
+                      type="button"
                       onClick={handleRemoveCoupon}
+                      aria-label="Remove applied coupon"
                       className="text-green-600 hover:text-green-700 p-1"
                     >
                       <HiXCircle className="w-5 h-5" />
@@ -295,7 +357,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
               )}
 
               {couponError && (
-                <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
+                <p id="payment-coupon-error" role="alert" className="text-red-600 text-sm mt-2 flex items-center gap-1">
                   <HiXCircle className="w-4 h-4" />
                   {couponError}
                 </p>
@@ -304,7 +366,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
 
             {/* Price Breakdown */}
             <div className="space-y-3 py-4 border-t border-b border-surface-variant mb-6">
-              <div className="flex justify-between items-center text-secondary-600">
+              <div className="flex justify-between items-center text-outline">
                 <span>Original Price</span>
                 <span>{formatPrice(project.price)}</span>
               </div>
@@ -320,7 +382,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
               )}
 
               <div className="flex justify-between items-center pt-3 border-t border-surface-variant">
-                <span className="font-semibold text-secondary-900">Total Amount</span>
+                <span className="font-semibold text-white">Total Amount</span>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-primary-dim">
                     {formatPrice(finalPrice)}
@@ -371,14 +433,14 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             </div>
 
             {/* Terms */}
-            <p className="text-xs text-center text-secondary-500 mt-4">
+            <p className="text-xs text-center text-outline mt-4">
               By proceeding, you agree to our{' '}
-              <a href="/terms" target="_blank" className="text-primary-dim hover:text-primary-fixed hover:underline">
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-dim hover:text-primary-fixed hover:underline">
                 Terms & Conditions
               </a>
             </p>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

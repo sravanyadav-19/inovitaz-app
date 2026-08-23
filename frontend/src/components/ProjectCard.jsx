@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import {
   HiShoppingCart,
   HiCheck,
@@ -8,15 +8,16 @@ import {
   HiHeart,
   HiOutlineHeart,
   HiClock,
-} from "react-icons/hi";
-import { projectsAPI } from "../api/projects";
-import { useAuth } from "../hooks/useAuth";
-import { useCart } from "../context/CartContext";
-import toast from "react-hot-toast";
-import { formatINRFromPaise } from "../utils/price";
+} from 'react-icons/hi';
+import { projectsAPI } from '../api/projects';
+import { useAuth } from '../hooks/useAuth';
+import { useCart } from '../context/CartContext';
+import { requestCookieConsent } from '../context/CookieConsentContext';
+import toast from 'react-hot-toast';
+import { formatINRFromPaise } from '../utils/price';
 
 const FALLBACK_IMAGE =
-  "data:image/svg+xml;utf8," +
+  'data:image/svg+xml;utf8,' +
   encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
       <rect width="400" height="300" fill="#0c1324"/>
@@ -28,70 +29,72 @@ const FALLBACK_IMAGE =
     </svg>
   `);
 
-/**
- * Highlights occurrences of `query` inside `text` (case-insensitive).
- * Used to highlight search keywords within result cards.
- */
 function HighlightText({ text, query }) {
-  const q = (query || "").trim();
+  const q = (query || '').trim();
   if (!q || !text) return text;
-  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const parts = String(text).split(new RegExp(`(${escaped})`, "gi"));
-  return parts.map((part, i) =>
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const parts = String(text).split(new RegExp(`(${escaped})`, 'gi'));
+  return parts.map((part, index) =>
     part.toLowerCase() === q.toLowerCase() ? (
-      <mark key={i} className="bg-yellow-400/25 text-white rounded-sm px-0.5">
+      <mark key={index} className="bg-yellow-400/25 text-white rounded-sm px-0.5">
         {part}
       </mark>
     ) : (
-      <span key={i}>{part}</span>
+      <span key={index}>{part}</span>
     )
   );
 }
 
+const StarRating = ({ rating }) => (
+  <div aria-hidden="true" className="flex items-center gap-1">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <HiStar
+        key={star}
+        className={`w-4 h-4 ${star <= Math.round(rating) ? 'text-yellow-400' : 'text-slate-600'}`}
+      />
+    ))}
+  </div>
+);
 
-const ProjectCard = ({ project, highlight = "" }) => {
+const ProjectCard = ({ project, highlight = '' }) => {
   const { isAuthenticated } = useAuth();
   const { add, has } = useCart();
-  const navigate = useNavigate();
-
   const {
     id,
     title,
     description,
     price,
     thumbnail,
-    image_url,
+    image_url: imageUrl,
     category,
     difficulty,
     isPurchased,
-    created_at,
+    created_at: createdAt,
   } = project;
 
   const inCart = has(id);
-
-  const handleAddToCart = () => {
-    if (inCart) {
-      toast("Already in your cart");
-      return;
-    }
-    add(project);
-    toast.success("Added to cart");
-  };
-
-  const averageRating = Number(project.average_rating ?? project.rating ?? 0);
-  const reviewCount = Number(project.reviews_count ?? project.review_count ?? 0);
-
   const [isWishlisted, setIsWishlisted] = useState(
     Boolean(project.isWishlisted ?? project.is_wishlisted ?? false)
   );
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
-  const displayImage = thumbnail || image_url || FALLBACK_IMAGE;
+  const handleAddToCart = () => {
+    if (inCart) {
+      toast('Already in your cart');
+      return;
+    }
+    add(project);
+    requestCookieConsent();
+    toast.success('Added to cart');
+  };
+
+  const averageRating = Number(project.average_rating ?? project.rating ?? 0);
+  const reviewCount = Number(project.reviews_count ?? project.review_count ?? 0);
+  const displayImage = thumbnail || imageUrl || FALLBACK_IMAGE;
 
   let cleanDescription = description;
-
   try {
-    if (description && typeof description === "string" && description.trim().startsWith("{")) {
+    if (description && typeof description === 'string' && description.trim().startsWith('{')) {
       const parsed = JSON.parse(description);
       cleanDescription = parsed.overview || description;
     }
@@ -100,110 +103,85 @@ const ProjectCard = ({ project, highlight = "" }) => {
     if (match?.[1]) cleanDescription = match[1];
   }
 
-  const diffStyle =
-    {
-      Beginner: "bg-green-500/15 text-green-400 border border-green-500/25",
-      Intermediate: "bg-yellow-500/15 text-yellow-300 border border-yellow-500/25",
-      Advanced: "bg-red-500/15 text-red-400 border border-red-500/25",
-    }[difficulty] ||
-    "bg-surface-highest text-outline border border-outline-variant/30";
+  const diffStyle = {
+    Beginner: 'bg-green-500/15 text-green-400 border border-green-500/25',
+    Intermediate: 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/25',
+    Advanced: 'bg-red-500/15 text-red-400 border border-red-500/25',
+  }[difficulty] || 'bg-surface-highest text-outline border border-outline-variant/30';
 
-  const isNew =
-    created_at &&
-    new Date().getTime() - new Date(created_at).getTime() <
-      7 * 24 * 60 * 60 * 1000;
+  const isNew = createdAt && new Date().getTime() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
 
-  const toggleWishlist = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const toggleWishlist = async () => {
     if (!isAuthenticated) {
-      toast.error("Please login to add to wishlist");
+      toast.error('Please login to add to wishlist');
       return;
     }
-
     if (wishlistLoading) return;
 
     setWishlistLoading(true);
-
     try {
       const response = isWishlisted
         ? await projectsAPI.removeFromWishlist(id)
         : await projectsAPI.addToWishlist(id);
 
       if (response.success) {
-        setIsWishlisted((prev) => !prev);
-        toast.success(isWishlisted ? "Removed from wishlist" : "Added to wishlist");
+        setIsWishlisted((previous) => !previous);
+        toast.success(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
       } else {
-        toast.error(response.message || "Failed to update wishlist");
+        toast.error(response.message || 'Failed to update wishlist');
       }
     } catch {
-      toast.error("Failed to update wishlist");
+      toast.error('Failed to update wishlist');
     } finally {
       setWishlistLoading(false);
     }
   };
 
-  const StarRating = ({ rating }) => (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <HiStar
-          key={star}
-          className={`w-4 h-4 ${
-            star <= Math.round(rating) ? "text-yellow-400" : "text-slate-600"
-          }`}
-        />
-      ))}
-    </div>
-  );
+  const detailsPath = `/projects/${id}`;
 
   return (
-    <Link to={`/projects/${id}`} className="group relative block h-full">
+    <article className="group relative h-full">
       <div className="card hover:-translate-y-1 transition-all duration-300 h-full flex flex-col relative z-10 group-hover:border-primary-dim/30 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
         <div className="relative h-48 overflow-hidden bg-surface-lowest border-b border-outline-variant/20">
-          <img
-            src={displayImage}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = FALLBACK_IMAGE;
-            }}
-          />
-
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <Link to={detailsPath} aria-label={`View ${title}`} className="block h-full">
+            <img
+              src={displayImage}
+              alt={title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = FALLBACK_IMAGE;
+              }}
+            />
+            <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          </Link>
 
           <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
             <div className="flex flex-col gap-2">
               <span className="inline-block bg-primary-dim/20 text-primary-fixed border border-primary-dim/30 backdrop-blur-md text-xs font-medium px-3 py-1 rounded-full shadow-sm">
-                {category || "IoT"}
+                {category || 'IoT'}
               </span>
-
               {isNew && (
                 <span className="inline-flex bg-secondary/20 text-secondary border border-secondary/30 backdrop-blur-md text-xs font-medium px-3 py-1 rounded-full shadow-sm items-center gap-1">
-                  <HiClock className="w-3 h-3" /> New
+                  <HiClock aria-hidden="true" className="w-3 h-3" /> New
                 </span>
               )}
             </div>
 
             <button
+              type="button"
               onClick={toggleWishlist}
               disabled={wishlistLoading}
-              aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+              aria-label={isWishlisted ? `Remove ${title} from wishlist` : `Add ${title} to wishlist`}
+              aria-pressed={isWishlisted}
               className="p-2 bg-surface-highest/80 backdrop-blur-md border border-outline-variant/30 text-outline hover:text-white rounded-full shadow-sm transition-all duration-200 hover:scale-110 disabled:opacity-60"
             >
-              {isWishlisted ? (
-                <HiHeart className="w-5 h-5 text-red-400" />
-              ) : (
-                <HiOutlineHeart className="w-5 h-5 group-hover:text-red-400" />
-              )}
+              {isWishlisted ? <HiHeart aria-hidden="true" className="w-5 h-5 text-red-400" /> : <HiOutlineHeart aria-hidden="true" className="w-5 h-5 group-hover:text-red-400" />}
             </button>
           </div>
 
           {difficulty && (
-            <span
-              className={`absolute bottom-3 right-3 ${diffStyle} text-xs font-medium px-3 py-1 rounded-full shadow-sm`}
-            >
+            <span className={`absolute bottom-3 right-3 ${diffStyle} text-xs font-medium px-3 py-1 rounded-full shadow-sm`}>
               {difficulty}
             </span>
           )}
@@ -211,75 +189,57 @@ const ProjectCard = ({ project, highlight = "" }) => {
 
         <div className="p-5 flex-1 flex flex-col">
           <h3 className="text-lg font-display font-semibold text-white mb-2 line-clamp-1 group-hover:text-primary-dim transition-colors">
-            <HighlightText text={title} query={highlight} />
+            <Link to={detailsPath} className="focus-visible:rounded-sm">
+              <HighlightText text={title} query={highlight} />
+            </Link>
           </h3>
 
           <p className="text-outline text-sm mb-3 line-clamp-2 flex-1 leading-relaxed">
-            <HighlightText
-              text={cleanDescription || "Complete IoT project with source code and documentation."}
-              query={highlight}
-            />
+            <HighlightText text={cleanDescription || 'Complete IoT project with source code and documentation.'} query={highlight} />
           </p>
 
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-4" aria-label={`${averageRating ? averageRating.toFixed(1) : '0.0'} out of 5 stars from ${reviewCount} reviews`}>
             <StarRating rating={averageRating} />
-            <span className="text-sm font-medium text-white">
-              {averageRating ? averageRating.toFixed(1) : "0.0"}
-            </span>
+            <span className="text-sm font-medium text-white">{averageRating ? averageRating.toFixed(1) : '0.0'}</span>
             <span className="text-xs text-outline">({reviewCount})</span>
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20 mt-auto">
             <div className="flex flex-col">
-              <span className="text-2xl font-display font-bold text-primary-dim text-glow">
-                {formatINRFromPaise(price)}
-              </span>
+              <span className="text-2xl font-display font-bold text-primary-dim text-glow">{formatINRFromPaise(price)}</span>
               <span className="text-xs text-outline font-medium">One-time purchase</span>
             </div>
 
             <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(`/projects/${id}`);
-                }}
-                aria-label="View project details"
+              <Link
+                to={detailsPath}
+                aria-label={`View details for ${title}`}
                 className="p-2.5 bg-surface-highest border border-outline-variant/30 rounded-lg hover:bg-surface-variant hover:border-outline-variant transition-colors"
               >
-                <HiEye className="w-5 h-5 text-outline group-hover:text-white" />
-              </button>
+                <HiEye aria-hidden="true" className="w-5 h-5 text-outline group-hover:text-white" />
+              </Link>
 
               {!isPurchased && (
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleAddToCart();
-                  }}
-                  aria-label={inCart ? "Already in cart" : "Add to cart"}
+                  onClick={handleAddToCart}
+                  aria-label={inCart ? `${title} is already in cart` : `Add ${title} to cart`}
                   className={`p-2.5 rounded-lg transition-all ${
                     inCart
-                      ? "bg-green-500/20 text-green-400 border border-green-500/40"
-                      : "bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]"
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/40'
+                      : 'bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]'
                   }`}
                 >
-                  {inCart ? (
-                    <HiCheck className="w-5 h-5" />
-                  ) : (
-                    <HiShoppingCart className="w-5 h-5 text-white" />
-                  )}
+                  {inCart ? <HiCheck aria-hidden="true" className="w-5 h-5" /> : <HiShoppingCart aria-hidden="true" className="w-5 h-5 text-white" />}
                 </button>
               )}
             </div>
           </div>
         </div>
 
-        <div className="absolute inset-0 border border-primary-dim/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20" />
+        <div aria-hidden="true" className="absolute inset-0 border border-primary-dim/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20" />
       </div>
-    </Link>
+    </article>
   );
 };
 
