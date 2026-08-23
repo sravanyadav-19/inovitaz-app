@@ -5,10 +5,17 @@ const LoadingSpinner = ({ size = 'medium', text = '' }) => {
     large: 'w-16 h-16',
   };
 
+  const message = text || 'Loading';
+
   return (
-    <div className="flex flex-col items-center justify-center gap-3">
-      <div className={`loader ${sizeClasses[size]}`}></div>
-      {text && <p className="text-secondary-600 text-sm">{text}</p>}
+    <div
+      className="flex flex-col items-center justify-center gap-3"
+      role="status"
+      aria-live="polite"
+      aria-label={message}
+    >
+      <div className={`loader ${sizeClasses[size]}`} aria-hidden="true" />
+      {text && <p className="text-outline text-sm">{text}</p>}
     </div>
   );
 };

@@ -1,50 +1,53 @@
-import { Link } from "react-router-dom";
-import { useCookieConsent } from "../context/CookieConsentContext";
+import { Link } from 'react-router-dom';
+import { useCookieConsent } from '../context/CookieConsentContext';
 
 /**
- * Cookie consent banner.
- * Shown until the visitor makes a choice; the choice is remembered in
- * localStorage. Non-essential analytics (Vercel) is only enabled on "Accept".
+ * Compact, optional-consent banner. It is only shown after a meaningful browse
+ * action, so it does not cover the first screen or interrupt a payment flow.
  */
 export default function CookieConsent() {
-  const { consent, accept, decline } = useCookieConsent();
+  const { consent, isPromptVisible, accept, decline } = useCookieConsent();
 
-  if (consent) return null;
+  if (consent || !isPromptVisible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 p-4 sm:p-6">
-      <div className="max-w-3xl mx-auto bg-surface border border-surface-variant rounded-2xl shadow-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <div className="flex-1">
-          <h3 className="text-sm font-semibold text-white mb-1">
-            We value your privacy
+    <div className="fixed inset-x-0 bottom-0 z-[60] p-3 sm:p-4 pointer-events-none">
+      <aside
+        aria-labelledby="cookie-consent-title"
+        aria-describedby="cookie-consent-description"
+        className="pointer-events-auto max-w-2xl mx-auto bg-surface border border-surface-variant rounded-xl shadow-2xl px-4 py-3 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3"
+      >
+        <div className="flex-1 min-w-0">
+          <h3 id="cookie-consent-title" className="text-sm font-semibold text-white">
+            Cookie preferences
           </h3>
-          <p className="text-sm text-outline leading-relaxed">
-            We use essential storage to keep you signed in, and — with your
-            consent — anonymous analytics to understand how InovitaZ is used so
-            we can improve it.{" "}
+          <p id="cookie-consent-description" className="mt-1 text-xs sm:text-sm text-outline leading-relaxed">
+            Essential storage keeps you signed in. With your permission, we use anonymous analytics to improve InovitaZ.{' '}
             <Link
               to="/cookies"
               className="text-primary hover:text-primary-dim font-medium underline underline-offset-2"
             >
-              Read our Cookie Policy
+              Cookie Policy
             </Link>
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
           <button
+            type="button"
             onClick={decline}
-            className="px-4 py-2 rounded-lg text-sm font-medium text-outline hover:text-white border border-surface-variant hover:bg-surface-high transition-colors"
+            className="px-3.5 py-2 rounded-lg text-sm font-medium text-outline hover:text-white border border-surface-variant hover:bg-surface-high transition-colors"
           >
             Decline
           </button>
           <button
+            type="button"
             onClick={accept}
-            className="btn btn-primary px-4 py-2 rounded-lg text-sm font-semibold"
+            className="btn btn-primary px-3.5 py-2 rounded-lg text-sm font-semibold"
           >
             Accept
           </button>
         </div>
-      </div>
+      </aside>
     </div>
   );
 }

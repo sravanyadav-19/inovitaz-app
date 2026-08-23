@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { Analytics } from '@vercel/analytics/react';
+import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from './components/ErrorBoundary';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -19,16 +20,23 @@ import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import NotFound from './pages/NotFound';
 import Support from './pages/Support';
-import About from "./pages/About";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
-import Refund from "./pages/Refund";
-import Cookies from "./pages/Cookies";
-import Security from "./pages/Security";
-import Cart from "./pages/Cart";
-import VerifyEmail from "./pages/VerifyEmail";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import About from './pages/About';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Refund from './pages/Refund';
+import Cookies from './pages/Cookies';
+import Security from './pages/Security';
+import Cart from './pages/Cart';
+import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+
+const toastStyle = {
+  background: '#151b2d',
+  color: '#ffffff',
+  border: '1px solid #2e3447',
+  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.35)',
+};
 
 function App() {
   const { consent } = useCookieConsent();
@@ -84,8 +92,19 @@ function App() {
         </main>
         <Footer />
         <CookieConsent />
+        <Toaster
+          position="top-right"
+          gutter={10}
+          toastOptions={{
+            duration: 4500,
+            style: toastStyle,
+            success: { iconTheme: { primary: '#4ae176', secondary: '#151b2d' } },
+            error: { iconTheme: { primary: '#f87171', secondary: '#151b2d' } },
+          }}
+          ariaProps={{ role: 'status', 'aria-live': 'polite' }}
+        />
         {/* Analytics loads only after the visitor accepts cookies. */}
-        {consent === "accepted" && <Analytics />}
+        {consent === 'accepted' && <Analytics />}
       </div>
     </ErrorBoundary>
   );

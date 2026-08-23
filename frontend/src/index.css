@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Shared keyboard focus — do not rely on colour alone. */
+:where(a, button, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid #6bff8f;
+  outline-offset: 3px;
+}
+
 /* Animations */
 .fade-in {
   animation: fadeIn 0.5s ease-in-out;
