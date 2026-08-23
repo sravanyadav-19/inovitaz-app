@@ -28,6 +28,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import DownloadButton from '../components/DownloadButton';
 import { formatINRFromPaise, paiseToRupees } from "../utils/price";
 import { useCart } from "../context/CartContext";
+import { requestCookieConsent } from "../context/CookieConsentContext";
 
 const PROJECT_DETAIL_FALLBACK_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -66,13 +67,15 @@ export default function ProjectDetails() {
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
   const [submittingReview, setSubmittingReview] = useState(false);
 
+  // These loaders intentionally refresh only when the route product or signed-in user changes.
   useEffect(() => {
     loadProject();
     loadReviews();
     checkWishlist();
-  }, [id, user]);
+  }, [id, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-trigger buy flow when ?action=buy is in URL
+  // Auto-trigger buy flow once when ?action=buy is in the URL. Depending on
+  // handleBuy here would risk reopening payment as unrelated state changes.
   useEffect(() => {
     if (searchParams.get('action') === 'buy' && project && !loading) {
       // Remove the action param from URL
@@ -83,12 +86,15 @@ export default function ProjectDetails() {
       // Trigger the buy flow
       handleBuy();
     }
-  }, [searchParams, project, loading]);
+  }, [searchParams, project, loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadProject() {
     try {
       const res = await projectsAPI.getById(id);
-      if (res?.success) setProject(res.data);
+      if (res?.success) {
+        setProject(res.data);
+        requestCookieConsent();
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -197,7 +203,6 @@ export default function ProjectDetails() {
   // --- SMART DATA PARSER (FIXED FOR QUANTITY) ---
   let overviewText = "";
   let components = []; // Stores { name, quantity, link }
-  let downloadUrl = "#";
   let circuit = { image: "", text: "" };
   let steps = "";
   let source = "";
@@ -215,7 +220,6 @@ export default function ProjectDetails() {
       }
 
       overviewText = descObj.overview || rawDesc;
-      downloadUrl = descObj.download_url || "#";
       circuit = descObj.circuit || { image: descObj.circuitImage, text: descObj.circuitText } || {};
       steps = descObj.steps || "";
       source = descObj.source || "";
@@ -244,7 +248,7 @@ export default function ProjectDetails() {
           })).filter(c => c.name);
         }
       }
-    } catch (e) {
+    } catch {
       overviewText = rawDesc.replace(/[{"}]/g, '').replace(/overview:/g, '');
     }
   }
@@ -254,6 +258,7 @@ export default function ProjectDetails() {
 
   const handleAddToCart = () => {
     if (!project) return;
+    requestCookieConsent();
     if (inCart) {
       navigate("/cart");
       return;
@@ -270,6 +275,7 @@ export default function ProjectDetails() {
 
   async function applyCoupon(e) {
     e?.preventDefault();
+    requestCookieConsent();
     const code = couponInput.trim();
     setCouponError('');
 
@@ -548,7 +554,13 @@ export default function ProjectDetails() {
                   <span className="text-lg font-bold ml-1 text-white">{avgRating > 0 ? avgRating : "New"}</span>
                   <span className="text-sm text-outline">({reviews.length} reviews)</span>
                 </div>
-                <button onClick={toggleWishlist} className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-red-500/20 transition-colors text-outline hover:text-red-400">
+                <button
+                  type="button"
+                  onClick={toggleWishlist}
+                  aria-label={isWishlisted ? `Remove ${project.title} from wishlist` : `Save ${project.title} to wishlist`}
+                  aria-pressed={isWishlisted}
+                  className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-red-500/20 transition-colors text-outline hover:text-red-400"
+                >
                   {isWishlisted ? <HiHeart className="w-6 h-6 text-red-500" /> : <HiOutlineHeart className="w-6 h-6" />}
                   <span className="text-sm font-medium">{isWishlisted ? 'Saved' : 'Save'}</span>
                 </button>
@@ -607,11 +619,15 @@ export default function ProjectDetails() {
                     </div>
                   ) : (
                     <form onSubmit={applyCoupon} className="flex gap-2">
+                      <label htmlFor="project-coupon" className="sr-only">Coupon code</label>
                       <input
+                        id="project-coupon"
                         type="text"
                         value={couponInput}
                         onChange={(e) => { setCouponInput(e.target.value); setCouponError(''); }}
                         placeholder="Coupon code"
+                        aria-invalid={Boolean(couponError)}
+                        aria-describedby={couponError ? 'project-coupon-error' : undefined}
                         className="input flex-1"
                       />
                       <button type="submit" disabled={couponLoading} className="btn btn-primary px-4 py-2 whitespace-nowrap">
@@ -619,7 +635,7 @@ export default function ProjectDetails() {
                       </button>
                     </form>
                   )}
-                  {couponError && <p className="text-xs text-red-400 mt-1">{couponError}</p>}
+                  {couponError && <p id="project-coupon-error" role="alert" className="text-xs text-red-400 mt-1">{couponError}</p>}
                 </div>
               )}
 
@@ -685,11 +701,17 @@ export default function ProjectDetails() {
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="card overflow-hidden shadow-sm rounded-xl min-h-[400px]">
           {/* Tab Navigation */}
-          <div className="flex border-b border-surface-variant bg-surface-highest overflow-x-auto">
-            {tabs.map(tab => (
-              <button 
-                key={tab} 
-                onClick={() => setActiveTab(tab)} 
+          <div role="tablist" aria-label="Project information" className="flex border-b border-surface-variant bg-surface-highest overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                id={`project-tab-${tab}`}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
+                aria-controls={`project-panel-${tab}`}
+                tabIndex={activeTab === tab ? 0 : -1}
+                onClick={() => setActiveTab(tab)}
                 className={`px-6 py-4 capitalize font-medium transition-colors border-b-2 whitespace-nowrap ${activeTab === tab ? 'border-primary text-primary bg-surface' : 'border-transparent text-outline hover:text-white hover:bg-surface-high'}`}
               >
                 {tab}
@@ -697,7 +719,13 @@ export default function ProjectDetails() {
             ))}
           </div>
 
-          <div className="p-8 relative">
+          <div
+            id={`project-panel-${activeTab}`}
+            role="tabpanel"
+            aria-labelledby={`project-tab-${activeTab}`}
+            tabIndex={0}
+            className="p-8 relative"
+          >
             
             {/* OVERVIEW TAB */}
             {activeTab === 'overview' && (
@@ -848,17 +876,25 @@ export default function ProjectDetails() {
                     <form onSubmit={handleSubmitReview}>
                       <div className="flex items-center gap-2 mb-4">
                         <span className="text-sm font-medium text-outline">Rating:</span>
-                        <div className="flex gap-1 cursor-pointer">
+                        <div role="radiogroup" aria-label="Your rating" className="flex gap-1">
                           {[1, 2, 3, 4, 5].map((star) => (
-                            <HiStar 
-                              key={star} 
-                              onClick={() => setNewReview({...newReview, rating: star})}
-                              className={`w-7 h-7 hover:scale-110 transition-transform ${star <= newReview.rating ? 'text-yellow-400' : 'text-outline'}`} 
-                            />
+                            <button
+                              key={star}
+                              type="button"
+                              role="radio"
+                              aria-checked={star === newReview.rating}
+                              aria-label={`${star} ${star === 1 ? 'star' : 'stars'}`}
+                              onClick={() => setNewReview({ ...newReview, rating: star })}
+                              className={`rounded transition-transform hover:scale-110 ${star <= newReview.rating ? 'text-yellow-400' : 'text-outline'}`}
+                            >
+                              <HiStar aria-hidden="true" className="w-7 h-7" />
+                            </button>
                           ))}
                         </div>
                       </div>
+                      <label htmlFor="project-review-comment" className="sr-only">Your review</label>
                       <textarea
+                        id="project-review-comment"
                         className="w-full p-3 bg-surface-lowest border border-surface-variant rounded-md focus:ring-2 focus:ring-primary focus:outline-none mb-3 text-white placeholder-outline"
                         rows="3"
                         placeholder="Share your experience..."

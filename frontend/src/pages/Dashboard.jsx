@@ -32,6 +32,23 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [downloadingId, setDownloadingId] = useState(null);
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const dashboardTabs = ['orders', 'downloads', 'wishlist'];
+
+  const handleTabKeyDown = (event) => {
+    const currentIndex = dashboardTabs.indexOf(activeTab);
+    let nextIndex = null;
+
+    if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % dashboardTabs.length;
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + dashboardTabs.length) % dashboardTabs.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = dashboardTabs.length - 1;
+    if (nextIndex === null) return;
+
+    event.preventDefault();
+    const nextTab = dashboardTabs[nextIndex];
+    setActiveTab(nextTab);
+    window.requestAnimationFrame(() => document.getElementById(`dashboard-tab-${nextTab}`)?.focus());
+  };
 
   useEffect(() => {
     fetchData();
@@ -104,7 +121,7 @@ const Dashboard = () => {
       } else {
         toast.error(response.message || 'Download failed');
       }
-    } catch (error) {
+    } catch {
       toast.error('Download failed.');
     } finally {
       setDownloadingId(null);
@@ -120,7 +137,7 @@ const Dashboard = () => {
       } else {
         toast.error(response.message || 'Failed to remove');
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to remove from wishlist');
     }
   };
@@ -224,11 +241,18 @@ const Dashboard = () => {
         {/* Tabs */}
         <div className="card">
           <div className="border-b border-surface-variant">
-            <nav className="flex gap-8 px-6">
-              {['orders', 'downloads', 'wishlist'].map(tab => (
+            <nav role="tablist" aria-label="Dashboard sections" className="flex gap-8 px-6">
+              {dashboardTabs.map((tab) => (
                 <button
                   key={tab}
+                  id={`dashboard-tab-${tab}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab}
+                  aria-controls={`dashboard-panel-${tab}`}
+                  tabIndex={activeTab === tab ? 0 : -1}
                   onClick={() => setActiveTab(tab)}
+                  onKeyDown={handleTabKeyDown}
                   className={`py-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
                     activeTab === tab
                       ? 'border-primary text-primary'
@@ -241,7 +265,7 @@ const Dashboard = () => {
             </nav>
           </div>
 
-          <div className="p-6">
+          <div id={`dashboard-panel-${activeTab}`} role="tabpanel" aria-labelledby={`dashboard-tab-${activeTab}`} tabIndex={0} className="p-6">
 
             {/* ORDERS TAB */}
             {activeTab === 'orders' && (
@@ -250,14 +274,14 @@ const Dashboard = () => {
                 : (
                   <div className="space-y-4">
                     {orders.map((order) => (
-                      <div
-                        key={order.id}
-                        className="border border-surface-variant rounded-lg hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-shadow cursor-pointer"
-                        onClick={() => setExpandedOrder(
-                          expandedOrder === order.id ? null : order.id
-                        )}
-                      >
-                        <div className="p-4 flex items-center justify-between">
+                      <div key={order.id} className="border border-surface-variant rounded-lg hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-shadow">
+                        <button
+                          type="button"
+                          aria-expanded={expandedOrder === order.id}
+                          aria-controls={`order-details-${order.id}`}
+                          onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                          className="w-full p-4 flex items-center justify-between text-left rounded-lg"
+                        >
                           <div className="flex items-center gap-4">
                             <img
                               src={order.project_thumbnail || FALLBACK_IMG}
@@ -284,10 +308,10 @@ const Dashboard = () => {
                             </p>
                             <div className="mt-1">{getStatusBadge(order.status)}</div>
                           </div>
-                        </div>
+                        </button>
 
                         {expandedOrder === order.id && (
-                          <div className="border-t border-surface-variant bg-surface-high p-4 text-sm grid md:grid-cols-2 gap-4 fade-in">
+                          <div id={`order-details-${order.id}`} className="border-t border-surface-variant bg-surface-high p-4 text-sm grid md:grid-cols-2 gap-4 fade-in">
                             <div>
                               <p>
                                 <span className="text-outline">Payment ID: </span>
@@ -373,9 +397,10 @@ const Dashboard = () => {
                               </button>
                               <Link
                                 to={`/projects/${project.id}`}
+                                aria-label={`View ${project.title}`}
                                 className="btn btn-secondary btn-sm"
                               >
-                                <HiExternalLink />
+                                <HiExternalLink aria-hidden="true" />
                               </Link>
                             </div>
                           </div>
@@ -420,10 +445,12 @@ const Dashboard = () => {
                             View
                           </Link>
                           <button
+                            type="button"
                             onClick={() => removeFromWishlist(item.id)}
+                            aria-label={`Remove ${item.title} from wishlist`}
                             className="btn btn-secondary btn-sm text-red-400"
                           >
-                            <HiHeart className="w-4 h-4" />
+                            <HiHeart aria-hidden="true" className="w-4 h-4" />
                           </button>
                         </div>
                       </div>

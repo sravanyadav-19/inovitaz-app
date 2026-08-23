@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { 
   HiMail, 
   HiPhone, 
@@ -9,6 +9,7 @@ import {
   HiQuestionMarkCircle,
   HiSearch
 } from "react-icons/hi";
+import { requestCookieConsent } from "../context/CookieConsentContext";
 
 // FAQ content, grouped by topic. Edit questions/answers here.
 const FAQ_TOPICS = [
@@ -85,18 +86,24 @@ const FAQ_TOPICS = [
 // Helper Component for Accordion
 function FAQItem({ question, answer }) {
   const [isOpen, setIsOpen] = useState(false);
+  const triggerId = useId();
+  const panelId = useId();
 
   return (
     <div className="bg-surface border border-surface-variant rounded-xl overflow-hidden">
-      <button 
-        onClick={() => setIsOpen(!isOpen)}
+      <button
+        id={triggerId}
+        type="button"
+        onClick={() => setIsOpen((open) => !open)}
+        aria-expanded={isOpen}
+        aria-controls={panelId}
         className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-surface-high transition-colors"
       >
         <span className="font-semibold text-white">{question}</span>
-        {isOpen ? <HiChevronUp className="text-primary" /> : <HiChevronDown className="text-outline" />}
+        {isOpen ? <HiChevronUp aria-hidden="true" className="text-primary" /> : <HiChevronDown aria-hidden="true" className="text-outline" />}
       </button>
       {isOpen && (
-        <div className="px-6 pb-4 text-outline text-sm leading-relaxed border-t border-surface-variant bg-surface-highest">
+        <div id={panelId} role="region" aria-labelledby={triggerId} className="px-6 pb-4 text-outline text-sm leading-relaxed border-t border-surface-variant bg-surface-highest">
           {answer}
         </div>
       )}
@@ -210,22 +217,32 @@ export default function Support() {
 
           {/* Search */}
           <div className="relative mb-6">
+            <label htmlFor="faq-search" className="sr-only">Search frequently asked questions</label>
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <HiSearch className="w-5 h-5 text-outline" />
             </div>
             <input
-              type="text"
+              id="faq-search"
+              type="search"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value) requestCookieConsent();
+                setQuery(e.target.value);
+              }}
               placeholder="Search for a question…"
               className="input pl-10 w-full"
             />
           </div>
 
           {/* Topic pills */}
-          <div className="flex flex-wrap justify-center gap-2 mb-8">
+          <div role="group" aria-label="Filter frequently asked questions by topic" className="flex flex-wrap justify-center gap-2 mb-8">
             <button
-              onClick={() => setActiveTopic("all")}
+              type="button"
+              onClick={() => {
+                requestCookieConsent();
+                setActiveTopic("all");
+              }}
+              aria-pressed={activeTopic === "all"}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 activeTopic === "all"
                   ? "bg-primary text-white"
@@ -237,7 +254,12 @@ export default function Support() {
             {FAQ_TOPICS.map((topic) => (
               <button
                 key={topic.id}
-                onClick={() => setActiveTopic(topic.id)}
+                type="button"
+                onClick={() => {
+                  requestCookieConsent();
+                  setActiveTopic(topic.id);
+                }}
+                aria-pressed={activeTopic === topic.id}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                   activeTopic === topic.id
                     ? "bg-primary text-white"

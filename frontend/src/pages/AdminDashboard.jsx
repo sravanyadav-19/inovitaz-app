@@ -536,16 +536,20 @@ const AdminProjects = () => {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => handleEdit(project)}
+                        aria-label={`Edit ${project.title}`}
                         className="p-2 text-outline hover:text-primary-dim hover:bg-primary/10 rounded-lg transition-colors"
                       >
-                        <HiPencil className="w-5 h-5" />
+                        <HiPencil aria-hidden="true" className="w-5 h-5" />
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDelete(project.id)}
+                        aria-label={`Delete ${project.title}`}
                         className="p-2 text-outline hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                       >
-                        <HiTrash className="w-5 h-5" />
+                        <HiTrash aria-hidden="true" className="w-5 h-5" />
                       </button>
                     </div>
                   </td>
@@ -572,11 +576,28 @@ const AdminProjects = () => {
           <div
             className="fixed inset-0 bg-black/80"
             onClick={() => setShowModal(false)}
-          ></div>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-surface-lowest rounded-2xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto fade-in">
+            aria-hidden="true"
+          />
+          <div className="relative z-10 flex min-h-full items-center justify-center p-4">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="project-modal-title"
+              tabIndex={-1}
+              onKeyDown={(event) => event.key === 'Escape' && setShowModal(false)}
+              className="relative bg-surface-lowest rounded-2xl shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto fade-in"
+            >
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setShowModal(false)}
+                aria-label="Close project form"
+                className="absolute right-4 top-4 p-2 text-outline hover:text-white rounded-lg"
+              >
+                <HiX aria-hidden="true" className="w-5 h-5" />
+              </button>
               <div className="p-6 border-b border-surface-variant">
-                <h3 className="text-xl font-semibold text-white">
+                <h3 id="project-modal-title" className="text-xl font-semibold text-white">
                   {editingProject ? "Edit Project" : "Add New Project"}
                 </h3>
                 <p className="text-sm text-outline mt-1">
@@ -968,7 +989,7 @@ const AdminProjects = () => {
                   </button>
                 </div>
               </form>
-            </div>
+            </section>
           </div>
         </div>
       )}
@@ -1091,7 +1112,7 @@ const AdminOrders = () => {
                           {order.coupon_code}
                         </span>
                       ) : (
-                        <span className="text-secondary-400 text-xs">-</span>
+                        <span className="text-outline text-xs">-</span>
                       )}
                     </td>
                     <td className="py-4 px-4">
@@ -1183,7 +1204,7 @@ const AdminUsers = () => {
                 >
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                         <span className="text-white font-medium">
                           {user.name?.charAt(0).toUpperCase()}
                         </span>
@@ -1450,7 +1471,9 @@ const AdminCoupons = () => {
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => handleToggle(coupon.id)}
+                        aria-label={`${coupon.is_active ? 'Deactivate' : 'Activate'} coupon ${coupon.code}`}
                         className={`p-2 rounded-lg transition-colors ${
                           coupon.is_active
                             ? "text-red-400 hover:bg-red-500/10"
@@ -1459,17 +1482,19 @@ const AdminCoupons = () => {
                         title={coupon.is_active ? "Deactivate" : "Activate"}
                       >
                         {coupon.is_active ? (
-                          <HiXCircle className="w-5 h-5" />
+                          <HiXCircle aria-hidden="true" className="w-5 h-5" />
                         ) : (
-                          <HiCheck className="w-5 h-5" />
+                          <HiCheck aria-hidden="true" className="w-5 h-5" />
                         )}
                       </button>
                       <button
+                        type="button"
                         onClick={() => handleDelete(coupon.id)}
+                        aria-label={`Delete coupon ${coupon.code}`}
                         className="p-2 text-outline hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="Delete"
                       >
-                        <HiTrash className="w-5 h-5" />
+                        <HiTrash aria-hidden="true" className="w-5 h-5" />
                       </button>
                     </div>
                   </td>
@@ -1496,11 +1521,28 @@ const AdminCoupons = () => {
           <div
             className="fixed inset-0 bg-black/80"
             onClick={() => setShowModal(false)}
-          ></div>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-surface-lowest rounded-2xl shadow-xl max-w-md w-full fade-in">
+            aria-hidden="true"
+          />
+          <div className="relative z-10 flex min-h-full items-center justify-center p-4">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="coupon-modal-title"
+              tabIndex={-1}
+              onKeyDown={(event) => event.key === 'Escape' && setShowModal(false)}
+              className="relative bg-surface-lowest rounded-2xl shadow-xl max-w-md w-full fade-in"
+            >
+              <button
+                type="button"
+                autoFocus
+                onClick={() => setShowModal(false)}
+                aria-label="Close coupon form"
+                className="absolute right-4 top-4 p-2 text-outline hover:text-white rounded-lg"
+              >
+                <HiX aria-hidden="true" className="w-5 h-5" />
+              </button>
               <div className="p-6 border-b border-surface-variant">
-                <h3 className="text-xl font-semibold text-white">
+                <h3 id="coupon-modal-title" className="text-xl font-semibold text-white">
                   Create Coupon
                 </h3>
               </div>
@@ -1671,7 +1713,7 @@ const AdminCoupons = () => {
                   </button>
                 </div>
               </form>
-            </div>
+            </section>
           </div>
         </div>
       )}

@@ -15,6 +15,7 @@ import { projectsAPI } from "../api/projects";
 import { couponsAPI } from "../api/payments";
 import { formatINRFromPaise } from "../utils/price";
 import toast from "react-hot-toast";
+import { requestCookieConsent } from "../context/CookieConsentContext";
 
 const FALLBACK_IMAGE =
   "data:image/svg+xml;utf8," +
@@ -84,6 +85,7 @@ export default function Cart() {
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
+    requestCookieConsent();
     const code = couponInput.trim();
     if (!code) {
       setCouponError("Enter a coupon code");
@@ -251,6 +253,7 @@ export default function Cart() {
                                 toast("Already in your cart");
                               } else {
                                 add(s);
+                                requestCookieConsent();
                                 toast.success("Added to cart");
                               }
                             }}
@@ -305,18 +308,20 @@ export default function Cart() {
                   <span className="text-sm text-green-400 font-medium">
                     {appliedCoupon.code} applied — {appliedCoupon.savings_text}
                   </span>
-                  <button onClick={removeCoupon} className="text-xs text-outline hover:text-white underline">
-                    Remove
+                  <button type="button" onClick={removeCoupon} className="text-xs text-outline hover:text-white underline">
+                    Remove coupon
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleApplyCoupon} className="mb-4">
+                  <label htmlFor="cart-coupon" className="sr-only">Coupon code</label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <HiTag className="w-4 h-4 text-outline" />
                       </div>
                       <input
+                        id="cart-coupon"
                         type="text"
                         value={couponInput}
                         onChange={(e) => {
@@ -324,6 +329,8 @@ export default function Cart() {
                           setCouponError("");
                         }}
                         placeholder="Coupon code"
+                        aria-invalid={Boolean(couponError)}
+                        aria-describedby={couponError ? 'cart-coupon-error' : undefined}
                         className="input pl-9 w-full"
                       />
                     </div>
@@ -331,7 +338,7 @@ export default function Cart() {
                       {couponLoading ? "..." : "Apply"}
                     </button>
                   </div>
-                  {couponError && <p className="text-xs text-red-400 mt-1">{couponError}</p>}
+                  {couponError && <p id="cart-coupon-error" role="alert" className="text-xs text-red-400 mt-1">{couponError}</p>}
                   {items.length > 1 && (
                     <p className="text-xs text-outline mt-1">
                       Coupons apply per project — add one during checkout.

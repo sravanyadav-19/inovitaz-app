@@ -49,6 +49,17 @@ const Signup = () => {
       navigate("/dashboard", { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!existingEmail) return undefined;
+
+    const closeOnEscape = (event) => {
+      if (event.key === 'Escape') setExistingEmail('');
+    };
+
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [existingEmail]);
   
   if (isAuthenticated) {
     return null;
@@ -80,7 +91,7 @@ const Signup = () => {
             <p className="text-outline mb-6 text-sm">
               Click the link in the email to verify your account and log in. Didn't get it? Check your spam folder.
             </p>
-            <button onClick={() => navigate('/login')} className="btn btn-primary w-full py-3">
+            <button type="button" autoFocus onClick={() => navigate('/login')} className="btn btn-primary w-full py-3">
               Go to Login
             </button>
           </div>
@@ -169,64 +180,81 @@ const Signup = () => {
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
             <div>
-              <label className="block text-sm font-medium text-outline mb-1">Full Name</label>
+              <label htmlFor="signup-name" className="block text-sm font-medium text-outline mb-1">Full Name</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <HiUser className="h-5 w-5 text-outline" />
                 </div>
                 <input
+                  id="signup-name"
                   name="name"
                   type="text"
+                  autoComplete="name"
+                  required
                   value={formData.name}
                   onChange={handleChange}
+                  aria-invalid={Boolean(errors.name)}
+                  aria-describedby={errors.name ? 'signup-name-error' : undefined}
                   className={`input pl-10 w-full ${errors.name ? 'border-red-500' : ''}`}
                   placeholder="John Doe"
                 />
               </div>
-              {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
+              {errors.name && <p id="signup-name-error" role="alert" className="mt-1 text-xs text-red-400">{errors.name}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-outline mb-1">Email Address</label>
+              <label htmlFor="signup-email" className="block text-sm font-medium text-outline mb-1">Email Address</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <HiMail className="h-5 w-5 text-outline" />
                 </div>
                 <input
+                  id="signup-email"
                   name="email"
                   type="email"
+                  autoComplete="email"
+                  required
                   value={formData.email}
                   onChange={handleChange}
+                  aria-invalid={Boolean(errors.email)}
+                  aria-describedby={errors.email ? 'signup-email-error' : undefined}
                   className={`input pl-10 w-full ${errors.email ? 'border-red-500' : ''}`}
                   placeholder="you@example.com"
                 />
               </div>
-              {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
+              {errors.email && <p id="signup-email-error" role="alert" className="mt-1 text-xs text-red-400">{errors.email}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-outline mb-1">Password</label>
+              <label htmlFor="signup-password" className="block text-sm font-medium text-outline mb-1">Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <HiLockClosed className="h-5 w-5 text-outline" />
                 </div>
                 <input
+                  id="signup-password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
                   value={formData.password}
                   onChange={handleChange}
+                  aria-invalid={Boolean(errors.password)}
+                  aria-describedby={errors.password ? 'signup-password-error signup-password-hint' : 'signup-password-hint'}
                   className={`input pl-10 pr-10 w-full ${errors.password ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-pressed={showPassword}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}
                 </button>
               </div>
-              {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
+              {errors.password && <p id="signup-password-error" role="alert" className="mt-1 text-xs text-red-400">{errors.password}</p>}
 
               {/* Strength meter (shown once the user starts typing) */}
               {formData.password && (
@@ -244,34 +272,41 @@ const Signup = () => {
                   </p>
                 </div>
               )}
-              <p className="mt-1 text-xs text-outline">
+              <p id="signup-password-hint" className="mt-1 text-xs text-outline">
                 At least 6 characters. Use a mix of upper & lower case letters, numbers and symbols for a stronger password.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-outline mb-1">Confirm Password</label>
+              <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-outline mb-1">Confirm Password</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <HiLockClosed className="h-5 w-5 text-outline" />
                 </div>
                 <input
+                  id="signup-confirm-password"
                   name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
+                  autoComplete="new-password"
+                  required
                   value={formData.confirmPassword}
                   onChange={handleChange}
+                  aria-invalid={Boolean(errors.confirmPassword)}
+                  aria-describedby={errors.confirmPassword ? 'signup-confirm-password-error' : undefined}
                   className={`input pl-10 pr-10 w-full ${errors.confirmPassword ? 'border-red-500' : ''}`}
                   placeholder="••••••••"
                 />
                 <button
                   type="button"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                  aria-pressed={showConfirmPassword}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}
                 </button>
               </div>
-              {errors.confirmPassword && <p className="mt-1 text-xs text-red-600">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && <p id="signup-confirm-password-error" role="alert" className="mt-1 text-xs text-red-400">{errors.confirmPassword}</p>}
             </div>
 
             <div className="flex items-start">
@@ -280,6 +315,8 @@ const Signup = () => {
                 type="checkbox"
                 checked={agreedToTerms}
                 onChange={(e) => setAgreedToTerms(e.target.checked)}
+                aria-invalid={Boolean(errors.terms)}
+                aria-describedby={errors.terms ? 'signup-terms-error' : undefined}
                 className="h-4 w-4 mt-1 text-primary bg-surface-lowest border-surface-variant rounded"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-outline">
@@ -289,7 +326,7 @@ const Signup = () => {
                 <Link to="/privacy" className="text-primary hover:text-primary-dim">Privacy Policy</Link>
               </label>
             </div>
-            {errors.terms && <p className="text-xs text-red-600">{errors.terms}</p>}
+            {errors.terms && <p id="signup-terms-error" role="alert" className="text-xs text-red-400">{errors.terms}</p>}
 
             <button
               type="submit"
@@ -334,26 +371,26 @@ const Signup = () => {
       {/* Email already registered popup */}
       {existingEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
+          <section role="dialog" aria-modal="true" aria-labelledby="existing-email-title" aria-describedby="existing-email-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
             <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <HiMail className="w-8 h-8 text-red-400" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">Email already registered</h3>
+            <h3 id="existing-email-title" className="text-xl font-bold text-white mb-2">Email already registered</h3>
             <p className="text-outline mb-1">
               An account with <span className="text-white font-medium">{existingEmail}</span> already exists.
             </p>
-            <p className="text-outline text-sm mb-6">
+            <p id="existing-email-description" className="text-outline text-sm mb-6">
               Try logging in instead, or sign up with a different email address.
             </p>
             <div className="flex flex-col gap-3">
-              <button onClick={() => navigate('/login')} className="btn btn-primary w-full py-3">
+              <button type="button" autoFocus onClick={() => navigate('/login')} className="btn btn-primary w-full py-3">
                 Go to Login
               </button>
-              <button onClick={() => setExistingEmail('')} className="text-sm text-outline hover:text-white transition-colors">
+              <button type="button" onClick={() => setExistingEmail('')} className="text-sm text-outline hover:text-white transition-colors">
                 Use a different email
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
     </div>

@@ -26,6 +26,20 @@ const Login = () => {
     }
   }, [isAuthenticated, navigate]);
 
+  useEffect(() => {
+    if (!unverifiedEmail && !notFoundEmail) return undefined;
+
+    const closeOnEscape = (event) => {
+      if (event.key !== 'Escape') return;
+      setUnverifiedEmail('');
+      setNotFoundEmail('');
+      setResent(false);
+    };
+
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [unverifiedEmail, notFoundEmail]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -82,13 +96,15 @@ const Login = () => {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">Email address</label>
+                <label htmlFor="login-email" className="block text-sm font-medium text-outline mb-1">Email address</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <HiMail className="h-5 w-5 text-outline" />
                   </div>
                   <input
+                    id="login-email"
                     type="email"
+                    autoComplete="email"
                     required
                     className="input pl-10 w-full"
                     placeholder="you@example.com"
@@ -99,13 +115,15 @@ const Login = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">Password</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-outline mb-1">Password</label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <HiLockClosed className="h-5 w-5 text-outline" />
                   </div>
                   <input
+                    id="login-password"
                     type={showPassword ? 'text' : 'password'}
+                    autoComplete="current-password"
                     required
                     className="input pl-10 pr-10 w-full"
                     placeholder="••••••••"
@@ -114,6 +132,8 @@ const Login = () => {
                   />
                   <button
                     type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white transition-colors"
                     onClick={() => setShowPassword(!showPassword)}
                   >
@@ -186,15 +206,15 @@ const Login = () => {
       {/* Unverified-email popup */}
       {unverifiedEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
+          <section role="dialog" aria-modal="true" aria-labelledby="unverified-email-title" aria-describedby="unverified-email-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
             <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <HiMail className="w-8 h-8 text-yellow-400" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">Email not verified yet</h3>
+            <h3 id="unverified-email-title" className="text-xl font-bold text-white mb-2">Email not verified yet</h3>
             <p className="text-outline mb-1">
               We sent a verification link to <span className="text-white font-medium">{unverifiedEmail}</span>.
             </p>
-            <p className="text-outline text-sm mb-6">
+            <p id="unverified-email-description" className="text-outline text-sm mb-6">
               Please check your inbox (and spam folder), click the link to verify your email, then try logging in again.
             </p>
             <div className="flex flex-col gap-3">
@@ -206,6 +226,8 @@ const Login = () => {
                 </div>
               ) : (
                 <button
+                  type="button"
+                  autoFocus
                   onClick={handleResendVerification}
                   disabled={resending}
                   className="btn btn-primary w-full py-3"
@@ -214,39 +236,40 @@ const Login = () => {
                 </button>
               )}
               <button
+                type="button"
                 onClick={() => { setUnverifiedEmail(''); setResent(false); }}
                 className="text-sm text-outline hover:text-white transition-colors"
               >
                 Close
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
 
       {/* No account found popup */}
       {notFoundEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
+          <section role="dialog" aria-modal="true" aria-labelledby="no-account-title" aria-describedby="no-account-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
             <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
               <HiMail className="w-8 h-8 text-blue-400" />
             </div>
-            <h3 className="text-xl font-bold text-white mb-2">No account found</h3>
+            <h3 id="no-account-title" className="text-xl font-bold text-white mb-2">No account found</h3>
             <p className="text-outline mb-1">
               There's no account registered with <span className="text-white font-medium">{notFoundEmail}</span>.
             </p>
-            <p className="text-outline text-sm mb-6">
+            <p id="no-account-description" className="text-outline text-sm mb-6">
               You need to create an account before you can log in.
             </p>
             <div className="flex flex-col gap-3">
-              <button onClick={() => navigate('/signup')} className="btn btn-primary w-full py-3">
+              <button type="button" autoFocus onClick={() => navigate('/signup')} className="btn btn-primary w-full py-3">
                 Go to Sign Up
               </button>
-              <button onClick={() => setNotFoundEmail('')} className="text-sm text-outline hover:text-white transition-colors">
+              <button type="button" onClick={() => setNotFoundEmail('')} className="text-sm text-outline hover:text-white transition-colors">
                 Close
               </button>
             </div>
-          </div>
+          </section>
         </div>
       )}
     </div>

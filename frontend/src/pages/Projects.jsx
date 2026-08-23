@@ -9,6 +9,7 @@ import { HiSearch, HiFilter, HiX } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { projectsAPI } from '../api/projects';
+import { requestCookieConsent } from '../context/CookieConsentContext';
 
 const Projects = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -89,6 +90,7 @@ const Projects = () => {
   // Handle search form submit
   const handleSearch = (e) => {
     e.preventDefault();
+    requestCookieConsent();
     setSearch(searchInput);
     setPage(1); // Reset pagination
   };
@@ -127,26 +129,31 @@ const Projects = () => {
 
   // Filter change handlers - ALWAYS reset page to 1
   const handleCategoryChange = (value) => {
+    requestCookieConsent();
     setCategory(value);
     setPage(1);
   };
 
   const handleDifficultyChange = (value) => {
+    requestCookieConsent();
     setDifficulty(value);
     setPage(1);
   };
 
   const handleTechnologyChange = (value) => {
+    requestCookieConsent();
     setTechnology(value);
     setPage(1);
   };
 
   const handleMaxPriceChange = (value) => {
+    requestCookieConsent();
     setMaxPrice(value);
     setPage(1);
   };
 
   const handleSortChange = (value) => {
+    requestCookieConsent();
     setSort(value);
     setPage(1);
   };
@@ -209,11 +216,14 @@ const Projects = () => {
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <form onSubmit={handleSearch} className="flex-1">
+              <label htmlFor="project-search" className="sr-only">Search projects</label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-outline" />
                   <input
-                    type="text"
+                    id="project-search"
+                    type="search"
+                    autoComplete="off"
                     placeholder="Search projects… e.g. weather station"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
@@ -263,7 +273,10 @@ const Projects = () => {
 
             {/* Filter Toggle (Mobile) */}
             <button
+              type="button"
               onClick={() => setShowFilters(!showFilters)}
+              aria-expanded={showFilters}
+              aria-controls="mobile-project-filters"
               className="lg:hidden btn btn-secondary"
             >
               <HiFilter className="w-5 h-5 mr-2" />
@@ -273,6 +286,7 @@ const Projects = () => {
             {/* Filters (Desktop) */}
             <div className="hidden lg:flex items-center gap-3 flex-wrap">
               <select
+                aria-label="Filter projects by category"
                 value={category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
                 className="input w-auto text-sm bg-surface text-white"
@@ -286,6 +300,7 @@ const Projects = () => {
               </select>
 
               <select
+                aria-label="Filter projects by difficulty"
                 value={difficulty}
                 onChange={(e) => handleDifficultyChange(e.target.value)}
                 className="input w-auto text-sm bg-surface text-white"
@@ -298,6 +313,7 @@ const Projects = () => {
               </select>
 
               <select
+                aria-label="Filter projects by technology"
                 value={technology}
                 onChange={(e) => handleTechnologyChange(e.target.value)}
                 className="input w-auto text-sm bg-surface text-white"
@@ -312,6 +328,7 @@ const Projects = () => {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-outline font-medium">MAX:</span>
                 <select
+                  aria-label="Maximum project price"
                   value={maxPrice}
                   onChange={(e) => handleMaxPriceChange(e.target.value)}
                   className="input w-auto text-sm bg-surface text-white"
@@ -324,6 +341,7 @@ const Projects = () => {
               </div>
 
               <select
+                aria-label="Sort projects"
                 value={sort}
                 onChange={(e) => handleSortChange(e.target.value)}
                 className="input w-auto text-sm bg-surface text-white"
@@ -349,12 +367,13 @@ const Projects = () => {
 
           {/* Mobile Filters */}
           {showFilters && (
-            <div className="lg:hidden mt-4 pt-4 border-t border-surface-variant space-y-4 fade-in">
+            <div id="mobile-project-filters" className="lg:hidden mt-4 pt-4 border-t border-surface-variant space-y-4 fade-in">
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">
+                <label htmlFor="mobile-project-category" className="block text-sm font-medium text-outline mb-1">
                   Category
                 </label>
                 <select
+                  id="mobile-project-category"
                   value={category}
                   onChange={(e) => handleCategoryChange(e.target.value)}
                   className="input"
@@ -369,10 +388,11 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">
+                <label htmlFor="mobile-project-difficulty" className="block text-sm font-medium text-outline mb-1">
                   Difficulty Level
                 </label>
                 <select
+                  id="mobile-project-difficulty"
                   value={difficulty}
                   onChange={(e) => handleDifficultyChange(e.target.value)}
                   className="input"
@@ -386,10 +406,11 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">
+                <label htmlFor="mobile-project-technology" className="block text-sm font-medium text-outline mb-1">
                   Technology
                 </label>
                 <select
+                  id="mobile-project-technology"
                   value={technology}
                   onChange={(e) => handleTechnologyChange(e.target.value)}
                   className="input"
@@ -403,10 +424,11 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">
+                <label htmlFor="mobile-project-max-price" className="block text-sm font-medium text-outline mb-1">
                   Maximum Price
                 </label>
                 <select
+                  id="mobile-project-max-price"
                   value={maxPrice}
                   onChange={(e) => handleMaxPriceChange(e.target.value)}
                   className="input"
@@ -419,10 +441,11 @@ const Projects = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-outline mb-1">
+                <label htmlFor="mobile-project-sort" className="block text-sm font-medium text-outline mb-1">
                   Sort By
                 </label>
                 <select
+                  id="mobile-project-sort"
                   value={sort}
                   onChange={(e) => handleSortChange(e.target.value)}
                   className="input"
@@ -463,7 +486,7 @@ const Projects = () => {
             {difficulty && (
               <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 {difficulty}
-                <button onClick={() => handleDifficultyChange('')} className="hover:text-white transition-colors">
+                <button type="button" aria-label="Remove difficulty filter" onClick={() => handleDifficultyChange('')} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
@@ -471,7 +494,7 @@ const Projects = () => {
             {technology && (
               <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 {technology}
-                <button onClick={() => handleTechnologyChange('')} className="hover:text-white transition-colors">
+                <button type="button" aria-label="Remove technology filter" onClick={() => handleTechnologyChange('')} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
@@ -479,7 +502,7 @@ const Projects = () => {
             {maxPrice !== "99900" && (
               <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 Max ₹{Math.round(Number(maxPrice || 0) / 100)}
-                <button onClick={() => handleMaxPriceChange("99900")} className="hover:text-white transition-colors">
+                <button type="button" aria-label="Remove maximum price filter" onClick={() => handleMaxPriceChange("99900")} className="hover:text-white transition-colors">
                   <HiX className="w-3 h-3" />
                 </button>
               </span>
