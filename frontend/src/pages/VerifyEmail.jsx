@@ -41,7 +41,7 @@ const VerifyEmail = () => {
         setStatus('error');
         setMessage(json.message || 'Verification failed.');
       }
-    } catch (error) {
+    } catch {
       setStatus('error');
       setMessage('An error occurred while verifying your email. Please try again.');
     }

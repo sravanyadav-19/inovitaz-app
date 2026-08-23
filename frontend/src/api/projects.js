@@ -48,7 +48,7 @@ export const projectsAPI = {
     try {
       const response = await api.get("/projects/categories");
       return response.data;
-    } catch (error) {
+    } catch {
       return {
         success: true,
         data: [
