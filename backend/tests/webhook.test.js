@@ -41,11 +41,18 @@ describe('Payment Webhook - Integration', () => {
     );
     testUserId = userResult[0].id;
 
-    // 3. Create the test order linked to the new project
+    // 3. Create a test order header and its project item.
+    const orderRows = await db.query(
+      `INSERT INTO orders (user_id, project_id, razorpay_order_id, amount, original_amount, status)
+       VALUES ($1, NULL, $2, 49900, 49900, 'created')
+       RETURNING id`,
+      [testUserId, testOrderId]
+    );
     await db.query(
-      `INSERT INTO orders (user_id, project_id, razorpay_order_id, amount, status) 
-       VALUES ($1, $2, $3, 49900, 'created')`,
-      [testUserId, testProjectId, testOrderId]
+      `INSERT INTO order_items
+        (order_id, project_id, unit_price, original_amount, discount_amount, final_amount)
+       VALUES ($1, $2, 49900, 49900, 0, 49900)`,
+      [orderRows[0].id, testProjectId]
     );
   });
 
