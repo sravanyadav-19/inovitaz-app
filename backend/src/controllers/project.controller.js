@@ -85,7 +85,14 @@ const getAllProjects = async (req, res) => {
     if (userId) params.push(userId);
 
     const purchaseSelect = userId
-      ? `EXISTS (SELECT 1 FROM orders o WHERE o.project_id = p.id AND o.user_id = $${paramIndex++} AND o.status = 'paid') AS is_purchased,`
+      ? `EXISTS (
+           SELECT 1
+           FROM orders o
+           JOIN order_items oi ON oi.order_id = o.id
+           WHERE oi.project_id = p.id
+             AND o.user_id = $${paramIndex++}
+             AND o.status = 'paid'
+         ) AS is_purchased,`
       : `FALSE AS is_purchased,`;
     if (userId) params.push(userId);
 
@@ -152,7 +159,13 @@ const getProjectById = async (req, res) => {
         isPurchased = true;
       } else {
         const orders = await db.query(
-          `SELECT id FROM orders WHERE user_id = $1 AND project_id = $2 AND status = 'paid' LIMIT 1`,
+          `SELECT o.id
+           FROM orders o
+           JOIN order_items oi ON oi.order_id = o.id
+           WHERE o.user_id = $1
+             AND oi.project_id = $2
+             AND o.status = 'paid'
+           LIMIT 1`,
           [req.user.id, id]
         );
         isPurchased = orders.length > 0;
@@ -181,83 +194,91 @@ const downloadProject = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
-    const isAdmin = req.user.role === "admin";
+    const isAdmin = req.user.role === 'admin';
 
     const projects = await db.query(
-      `SELECT id, title, description, content_url FROM projects WHERE id = $1`, [id]
+      'SELECT id, title, description, content_url FROM projects WHERE id = $1',
+      [id]
     );
 
     if (projects.length === 0) {
-      return res.status(404).json({ success: false, message: "Project not found" });
+      return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
     const project = projects[0];
+    let orderId = null;
+    let downloadLog = null;
 
-    // 1. Ownership/Purchase Check
     if (!isAdmin) {
-      const orders = await db.query(
-        `SELECT id FROM orders WHERE user_id = $1 AND project_id = $2 AND status = 'paid'`,
+      const entitlements = await db.query(
+        `SELECT o.id
+         FROM orders o
+         JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.user_id = $1
+           AND oi.project_id = $2
+           AND o.status = 'paid'
+         ORDER BY o.paid_at DESC NULLS LAST, o.created_at DESC
+         LIMIT 1`,
         [userId, id]
       );
-      if (orders.length === 0) {
-        return res.status(403).json({ success: false, message: "You do not own this project" });
+
+      if (entitlements.length === 0) {
+        return res.status(403).json({ success: false, message: 'You do not own this project' });
       }
 
-      const orderId = orders[0].id;
-
-      // 2. Download Tracking & Rate Limiting
-      let log = await db.query(
-        `SELECT download_count, max_downloads, expiry_date FROM download_logs WHERE order_id = $1`,
-        [orderId]
+      orderId = entitlements[0].id;
+      const logs = await db.query(
+        `SELECT download_count, max_downloads, expiry_date
+         FROM download_logs
+         WHERE order_id = $1 AND project_id = $2
+         LIMIT 1`,
+        [orderId, id]
       );
 
-      if (log.length === 0) {
+      if (logs.length === 0) {
         const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 180); // 180 days validity
+        expiryDate.setDate(expiryDate.getDate() + 180);
 
         await db.query(
-          `INSERT INTO download_logs (user_id, project_id, order_id, download_count, max_downloads, expiry_date)
+          `INSERT INTO download_logs
+            (user_id, project_id, order_id, download_count, max_downloads, expiry_date)
            VALUES ($1, $2, $3, 0, 5, $4)`,
           [userId, id, orderId, expiryDate]
         );
-        
-        log = [{ download_count: 0, max_downloads: 5, expiry_date: expiryDate }];
+        downloadLog = { download_count: 0, max_downloads: 5, expiry_date: expiryDate };
+      } else {
+        downloadLog = logs[0];
       }
 
-      const { download_count, max_downloads, expiry_date } = log[0];
-
-      if (new Date() > new Date(expiry_date)) {
-        return res.status(403).json({ success: false, message: "Your download access has expired" });
+      if (new Date() > new Date(downloadLog.expiry_date)) {
+        return res.status(403).json({ success: false, message: 'Your download access has expired' });
       }
 
-      if (download_count >= max_downloads) {
-        return res.status(403).json({ success: false, message: "You have reached the maximum number of downloads for this project" });
+      if (Number(downloadLog.download_count) >= Number(downloadLog.max_downloads)) {
+        return res.status(403).json({
+          success: false,
+          message: 'You have reached the maximum number of downloads for this project',
+        });
       }
     }
 
     const baseUrl = project.content_url || extractDownloadUrl(project);
-    if (!baseUrl || baseUrl === "#") {
-      return res.status(404).json({ success: false, message: "Download link not available" });
+    if (!baseUrl || baseUrl === '#') {
+      return res.status(404).json({ success: false, message: 'Download link not available' });
     }
 
-    // 3. Increment Log Count (only after confirming file exists)
     if (!isAdmin) {
-      const orders = await db.query(
-        `SELECT id FROM orders WHERE user_id = $1 AND project_id = $2 AND status = 'paid' LIMIT 1`,
-        [userId, id]
-      );
       await db.query(
-        `UPDATE download_logs 
-         SET download_count = download_count + 1, 
-             last_downloaded_at = CURRENT_TIMESTAMP 
-         WHERE order_id = $1`,
-        [orders[0].id]
+        `UPDATE download_logs
+         SET download_count = download_count + 1,
+             last_downloaded_at = CURRENT_TIMESTAMP
+         WHERE order_id = $1 AND project_id = $2`,
+        [orderId, id]
       );
     }
 
-    // 4. Generate Short-lived JWT for Proxy Stream
     const token = jwt.sign(
-      { projectId: id, userId: userId },
+      { projectId: id, userId },
       process.env.JWT_SECRET,
       { expiresIn: '2m' }
     );
@@ -265,16 +286,15 @@ const downloadProject = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        // FIX: Remove leading /api to prevent duplication with VITE_API_BASE_URL
         downloadUrl: `/projects/stream/${token}`,
-        fileName: `${project.title.replace(/\s+/g, "_")}.zip`,
+        fileName: `${project.title.replace(/\s+/g, '_')}.zip`,
         expires_at: new Date(Date.now() + 2 * 60 * 1000).toISOString(),
-        message: "Secure download session initialized.",
+        message: 'Secure download session initialized.',
       },
     });
   } catch (error) {
-    logger.error("Download project error", { error: error.message });
-    return res.status(500).json({ success: false, message: "Failed to process download" });
+    logger.error('Download project error', { error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to process download' });
   }
 };
 

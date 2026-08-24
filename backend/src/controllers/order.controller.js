@@ -1,61 +1,120 @@
 const db = require('../config/db');
 
+const normalizePage = (value, fallback = 1) => Math.max(parseInt(value, 10) || fallback, 1);
+const normalizeLimit = (value, fallback = 10, max = 100) => Math.min(Math.max(parseInt(value, 10) || fallback, 1), max);
+
+const getItemsForOrders = async (orderIds) => {
+  if (orderIds.length === 0) return new Map();
+
+  const rows = await db.query(
+    `SELECT
+       oi.order_id,
+       oi.project_id,
+       oi.quantity,
+       oi.unit_price,
+       oi.original_amount,
+       oi.discount_amount,
+       oi.final_amount,
+       p.title AS project_title,
+       p.thumbnail AS project_thumbnail,
+       p.category AS project_category
+     FROM order_items oi
+     JOIN projects p ON p.id = oi.project_id
+     WHERE oi.order_id = ANY($1::int[])
+     ORDER BY oi.order_id DESC, oi.id ASC`,
+    [orderIds]
+  );
+
+  return rows.reduce((itemsByOrder, item) => {
+    const current = itemsByOrder.get(item.order_id) || [];
+    current.push(item);
+    itemsByOrder.set(item.order_id, current);
+    return itemsByOrder;
+  }, new Map());
+};
+
+const withItems = async (orders) => {
+  const itemsByOrder = await getItemsForOrders(orders.map((order) => order.id));
+
+  return orders.map((order) => {
+    const items = itemsByOrder.get(order.id) || [];
+    const firstItem = items[0];
+
+    // Keep these legacy top-level fields while the Dashboard UI is migrated in
+    // a later phase. New callers should use `items` and `item_count`.
+    return {
+      ...order,
+      items,
+      item_count: items.length,
+      project_id: firstItem?.project_id ?? order.project_id ?? null,
+      project_title: firstItem?.project_title ?? 'No projects',
+      project_thumbnail: firstItem?.project_thumbnail ?? null,
+      project_category: firstItem?.project_category ?? null,
+    };
+  });
+};
+
 const getMyOrders = async (req, res) => {
   try {
     const userId = req.user.id;
     const { status, page = 1, limit = 10 } = req.query;
+    const safePage = normalizePage(page);
+    const safeLimit = normalizeLimit(limit);
+    const offset = (safePage - 1) * safeLimit;
 
-    let paramIndex = 1;
     const params = [userId];
-    let sql = `
-      SELECT
-        o.id, o.project_id, o.razorpay_order_id,
-        o.razorpay_payment_id, o.amount, o.status, o.created_at,
-        p.title as project_title,
-        p.thumbnail as project_thumbnail,
-        p.category as project_category
-      FROM orders o
-      JOIN projects p ON o.project_id = p.id
-      WHERE o.user_id = $${paramIndex++}
-    `;
-
+    let where = 'WHERE o.user_id = $1';
     if (status) {
-      sql += ` AND o.status = $${paramIndex++}`;
       params.push(status);
+      where += ` AND o.status = $${params.length}`;
     }
 
-    sql += ' ORDER BY o.created_at DESC';
-
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    sql += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-    params.push(parseInt(limit), offset);
-
-    const orders = await db.query(sql, params);
+    params.push(safeLimit, offset);
+    const orders = await db.query(
+      `SELECT
+         o.id,
+         o.project_id,
+         o.razorpay_order_id,
+         o.razorpay_payment_id,
+         o.amount,
+         o.original_amount,
+         o.discount_amount,
+         o.coupon_code,
+         o.currency,
+         o.status,
+         o.paid_at,
+         o.created_at
+       FROM orders o
+       ${where}
+       ORDER BY o.created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
 
     const countParams = [userId];
-    let countSql = 'SELECT COUNT(*) as total FROM orders WHERE user_id = $1';
+    let countWhere = 'WHERE user_id = $1';
     if (status) {
-      countSql += ' AND status = $2';
       countParams.push(status);
+      countWhere += ` AND status = $2`;
     }
-    const countResult = await db.query(countSql, countParams);
-    const total = parseInt(countResult[0].total);
+    const countResult = await db.query(`SELECT COUNT(*) AS total FROM orders ${countWhere}`, countParams);
+    const total = parseInt(countResult[0]?.total || 0, 10);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
-        orders,
+        orders: await withItems(orders),
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: safePage,
+          limit: safeLimit,
           total,
-          pages: Math.ceil(total / parseInt(limit))
-        }
-      }
+          pages: Math.ceil(total / safeLimit),
+        },
+      },
     });
   } catch (error) {
     console.error('Get my orders error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch orders' });
   }
 };
 
@@ -63,29 +122,37 @@ const getPurchasedProjects = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const projects = await db.query(
+    const downloads = await db.query(
       `SELECT
-        p.id, p.title, p.description, p.thumbnail, p.category,
-        o.created_at as purchased_at,
-        o.amount as paid_amount,
-        dl.download_count,
-        dl.max_downloads,
-        dl.expiry_date
+         o.id AS order_id,
+         p.id,
+         p.title,
+         p.thumbnail,
+         p.content_url,
+         p.category,
+         oi.final_amount AS amount,
+         oi.original_amount,
+         oi.discount_amount,
+         o.created_at AS purchased_at,
+         COALESCE(dl.download_count, 0) AS download_count,
+         COALESCE(dl.max_downloads, 5) AS max_downloads,
+         GREATEST(COALESCE(dl.max_downloads, 5) - COALESCE(dl.download_count, 0), 0) AS downloads_remaining,
+         COALESCE(dl.expiry_date, o.created_at + INTERVAL '180 days') AS expiry_date,
+         dl.last_downloaded_at
        FROM orders o
-       JOIN projects p ON o.project_id = p.id
-       LEFT JOIN download_logs dl ON o.id = dl.order_id
-       WHERE o.user_id = $1 AND o.status = 'paid'
-       ORDER BY o.created_at DESC`,
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN projects p ON p.id = oi.project_id
+       LEFT JOIN download_logs dl ON dl.order_id = o.id AND dl.project_id = oi.project_id
+       WHERE o.user_id = $1
+         AND o.status = 'paid'
+       ORDER BY o.created_at DESC, oi.id ASC`,
       [userId]
     );
 
-    res.json({
-      success: true,
-      data: { downloads: projects }
-    });
+    return res.json({ success: true, data: { downloads } });
   } catch (error) {
     console.error('Get purchased projects error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch purchased projects' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch purchased projects' });
   }
 };
 
@@ -96,14 +163,21 @@ const getOrderById = async (req, res) => {
 
     const orders = await db.query(
       `SELECT
-        o.*,
-        p.title as project_title,
-        p.description as project_description,
-        p.thumbnail as project_thumbnail,
-        p.category as project_category
+         o.id,
+         o.project_id,
+         o.razorpay_order_id,
+         o.razorpay_payment_id,
+         o.amount,
+         o.original_amount,
+         o.discount_amount,
+         o.coupon_code,
+         o.currency,
+         o.status,
+         o.paid_at,
+         o.created_at
        FROM orders o
-       JOIN projects p ON o.project_id = p.id
-       WHERE o.id = $1 AND o.user_id = $2`,
+       WHERE o.id = $1 AND o.user_id = $2
+       LIMIT 1`,
       [id, userId]
     );
 
@@ -111,10 +185,11 @@ const getOrderById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    res.json({ success: true, data: orders[0] });
+    const [order] = await withItems(orders);
+    return res.json({ success: true, data: { order } });
   } catch (error) {
     console.error('Get order by ID error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch order' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch order' });
   }
 };
 

@@ -51,8 +51,13 @@ const reviewController = {
       }
 
       const orders = await db.query(
-        `SELECT id FROM orders
-         WHERE user_id = $1 AND project_id = $2 AND status = 'paid'
+        `SELECT o.id
+         FROM orders o
+         JOIN order_items oi ON oi.order_id = o.id
+         WHERE o.user_id = $1
+           AND oi.project_id = $2
+           AND o.status = 'paid'
+         ORDER BY o.paid_at DESC NULLS LAST, o.created_at DESC
          LIMIT 1`,
         [userId, project_id]
       );
