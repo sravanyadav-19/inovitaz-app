@@ -7,6 +7,7 @@ DROP TABLE IF EXISTS coupon_usage CASCADE;
 DROP TABLE IF EXISTS download_logs CASCADE;
 DROP TABLE IF EXISTS wishlist CASCADE;
 DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS order_items CASCADE;
 DROP TABLE IF EXISTS orders CASCADE;
 DROP TABLE IF EXISTS coupons CASCADE;
 DROP TABLE IF EXISTS projects CASCADE;
@@ -71,7 +72,8 @@ CREATE INDEX idx_projects_price ON projects(price);
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  -- Legacy field retained for backwards compatibility. New orders use order_items.
+project_id INTEGER REFERENCES projects(id) ON DELETE SET NULL,
   razorpay_order_id VARCHAR(255),
   razorpay_payment_id VARCHAR(255),
   razorpay_signature VARCHAR(255),
@@ -93,6 +95,25 @@ CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_razorpay ON orders(razorpay_order_id);
 CREATE INDEX idx_orders_user_status ON orders(user_id, status);
 CREATE INDEX idx_orders_project_status ON orders(project_id, status);
+
+-- Order Items Table
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  project_id INTEGER NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
+  quantity SMALLINT NOT NULL DEFAULT 1 CHECK (quantity = 1),
+  unit_price INTEGER NOT NULL CHECK (unit_price >= 0),
+  original_amount INTEGER NOT NULL CHECK (original_amount >= 0),
+  discount_amount INTEGER NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
+  final_amount INTEGER NOT NULL CHECK (final_amount >= 0),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (order_id, project_id),
+  CHECK (final_amount = original_amount - discount_amount)
+);
+
+CREATE INDEX idx_order_items_order ON order_items(order_id);
+CREATE INDEX idx_order_items_project ON order_items(project_id);
+CREATE INDEX idx_order_items_project_order ON order_items(project_id, order_id);
 
 -- Coupons Table
 CREATE TABLE coupons (
@@ -182,6 +203,25 @@ CREATE INDEX idx_coupon_usage_user ON coupon_usage(user_id);
 -- ============================================
 
 CREATE VIEW project_stats AS
+WITH sales AS (
+  SELECT
+    oi.project_id,
+    COUNT(DISTINCT oi.order_id) FILTER (WHERE o.status = 'paid') AS total_sales,
+    COALESCE(
+      SUM(oi.final_amount) FILTER (WHERE o.status = 'paid'),
+      0
+    ) AS total_revenue
+  FROM order_items oi
+  JOIN orders o ON o.id = oi.order_id
+  GROUP BY oi.project_id
+),
+wishlist_counts AS (
+  SELECT
+    project_id,
+    COUNT(*) AS wishlist_count
+  FROM wishlist
+  GROUP BY project_id
+)
 SELECT
   p.id,
   p.title,
@@ -190,39 +230,41 @@ SELECT
   p.difficulty,
   p.average_rating,
   p.reviews_count,
-  COUNT(DISTINCT o.id) as total_sales,
-  COUNT(DISTINCT w.id) as wishlist_count,
-  COALESCE(SUM(CASE WHEN o.status = 'paid' THEN o.amount ELSE 0 END), 0) as total_revenue
+  COALESCE(s.total_sales, 0) AS total_sales,
+  COALESCE(w.wishlist_count, 0) AS wishlist_count,
+  COALESCE(s.total_revenue, 0) AS total_revenue
 FROM projects p
-LEFT JOIN orders o ON p.id = o.project_id
-LEFT JOIN wishlist w ON p.id = w.project_id
-GROUP BY p.id;
+LEFT JOIN sales s ON s.project_id = p.id
+LEFT JOIN wishlist_counts w ON w.project_id = p.id;
 
 CREATE VIEW user_purchases AS
 SELECT
-  o.id as order_id,
+  o.id AS order_id,
   o.user_id,
-  u.name as user_name,
+  u.name AS user_name,
   u.email,
-  o.project_id,
-  p.title as project_title,
+  oi.project_id,
+  p.title AS project_title,
   p.category,
   p.thumbnail,
-  o.amount,
-  o.original_amount,
-  o.discount_amount,
+  oi.final_amount AS amount,
+  oi.original_amount,
+  oi.discount_amount,
   o.coupon_code,
   o.status,
-  o.created_at as purchased_at,
+  o.created_at AS purchased_at,
   dl.download_count,
   dl.max_downloads,
-  (dl.max_downloads - dl.download_count) as downloads_remaining,
+  (dl.max_downloads - dl.download_count) AS downloads_remaining,
   dl.expiry_date,
   dl.last_downloaded_at
 FROM orders o
-JOIN users u ON o.user_id = u.id
-JOIN projects p ON o.project_id = p.id
-LEFT JOIN download_logs dl ON o.id = dl.order_id
+JOIN order_items oi ON oi.order_id = o.id
+JOIN users u ON u.id = o.user_id
+JOIN projects p ON p.id = oi.project_id
+LEFT JOIN download_logs dl
+  ON dl.order_id = o.id
+  AND dl.project_id = oi.project_id
 WHERE o.status = 'paid';
 
 -- ============================================
