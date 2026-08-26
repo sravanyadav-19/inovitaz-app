@@ -51,7 +51,7 @@ const Footer = () => {
               </div>
               <div className="flex flex-wrap justify-center gap-3">
                 <a
-                  href="https://wa.me/919705594777"
+                  href="https://wa.me/919652332341"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium flex items-center gap-2 transition-all shadow-lg shadow-green-900/20"
@@ -172,9 +172,12 @@ const Footer = () => {
                 <HiLocationMarker className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                 <span>Thullur, Andhra Pradesh,<br />India - 522237</span>
               </div>
-              <div className="flex items-center gap-3">
-                <HiPhone className="w-5 h-5 text-primary flex-shrink-0" />
-                <a href="tel:+919705594777" className="hover:text-white">+91 9705594777</a>
+              <div className="flex items-start gap-3">
+                <HiPhone className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <div className="flex flex-col gap-1">
+                  <a href="tel:+919705594777" className="hover:text-white">+91 97055 94777</a>
+                  <a href="tel:+919652332341" className="hover:text-white">+91 96523 32341</a>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <HiMail className="w-5 h-5 text-primary flex-shrink-0" />

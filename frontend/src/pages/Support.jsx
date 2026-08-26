@@ -147,10 +147,10 @@ export default function Support() {
 
       {/* 2. Contact Cards - Floating overlap */}
       <div className="max-w-7xl mx-auto px-6 -mt-10 pb-16">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-3 items-stretch">
           
           {/* WhatsApp */}
-          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300">
+          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
             <div className="w-14 h-14 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-4">
               <HiChat className="w-7 h-7 text-green-500" />
             </div>
@@ -158,18 +158,28 @@ export default function Support() {
             <p className="text-outline mb-6 text-sm">
               Fastest way to get answers. <br/>Available 9 AM - 9 PM.
             </p>
-            <a
-              href="https://wa.me/919705594777"
-              target="_blank"
-              rel="noreferrer"
-              className="block w-full py-2.5 rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white transition-colors"
-            >
-              Start Chat
-            </a>
+            <div className="mt-auto space-y-2">
+              <a
+                href="https://wa.me/919705594777"
+                target="_blank"
+                rel="noreferrer"
+                className="block w-full py-2.5 rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white transition-colors"
+              >
+                +91 97055 94777
+              </a>
+              <a
+                href="https://wa.me/919652332341"
+                target="_blank"
+                rel="noreferrer"
+                className="block w-full py-2.5 rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white transition-colors"
+              >
+                +91 96523 32341
+              </a>
+            </div>
           </div>
 
           {/* Email */}
-          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300">
+          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
             <div className="w-14 h-14 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
               <HiMail className="w-7 h-7 text-blue-500" />
             </div>
@@ -179,14 +189,14 @@ export default function Support() {
             </p>
             <a
               href="mailto:inovitaz.help@gmail.com"
-              className="block w-full py-2.5 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+              className="block w-full py-2.5 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors mt-auto"
             >
               Compose Email
             </a>
           </div>
 
           {/* Phone */}
-          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300">
+          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
             <div className="w-14 h-14 mx-auto bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
               <HiPhone className="w-7 h-7 text-purple-500" />
             </div>
@@ -194,12 +204,20 @@ export default function Support() {
             <p className="text-outline mb-6 text-sm">
               Speak directly to our team. <br/>Mon — Fri, 9 AM — 6 PM.
             </p>
-            <a
-              href="tel:+919705594777"
-              className="block w-full py-2.5 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
-            >
-              +91 9705594777
-            </a>
+            <div className="mt-auto space-y-2">
+              <a
+                href="tel:+919705594777"
+                className="block w-full py-2.5 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+              >
+                +91 97055 94777
+              </a>
+              <a
+                href="tel:+919652332341"
+                className="block w-full py-2.5 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+              >
+                +91 96523 32341
+              </a>
+            </div>
           </div>
         </div>
 

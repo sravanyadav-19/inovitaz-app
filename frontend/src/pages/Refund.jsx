@@ -47,10 +47,13 @@ export default function Refund() {
                     inovitaz.help@gmail.com
                   </a>
                 </div>
-                <div className="flex items-center gap-3">
-                  <HiPhone className="text-primary" />
-                  <a href="tel:+919705594777" className="hover:underline font-medium">+91 9705594777</a>
+              <div className="flex items-start gap-3">
+                <HiPhone className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <div className="flex flex-col gap-1">
+                  <a href="tel:+919705594777" className="hover:text-white">+91 97055 94777</a>
+                  <a href="tel:+919652332341" className="hover:text-white">+91 96523 32341</a>
                 </div>
+              </div>
               </div>
             </section>
 
