@@ -10,7 +10,8 @@
     "test": "jest --watchAll=false",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:integration": "jest tests/order.test.js tests/webhook.test.js --watchAll=false"
+    "test:integration": "jest tests/order.test.js tests/webhook.test.js --watchAll=false",
+    "migrate:order-items": "node scripts/migrate-order-items.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

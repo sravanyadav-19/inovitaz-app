@@ -115,7 +115,16 @@ const deleteProject = async (req, res) => {
     }
 
     const paidOrders = await db.query(
-      `SELECT COUNT(*) as count FROM orders WHERE project_id = $1 AND status = 'paid'`,
+      `SELECT COUNT(*) AS count
+       FROM orders o
+       WHERE o.status = 'paid'
+         AND (
+           o.project_id = $1
+           OR EXISTS (
+             SELECT 1 FROM order_items oi
+             WHERE oi.order_id = o.id AND oi.project_id = $1
+           )
+         )`,
       [id]
     );
 
@@ -127,7 +136,16 @@ const deleteProject = async (req, res) => {
     }
 
     await db.query(
-      `DELETE FROM orders WHERE project_id = $1 AND status != 'paid'`, [id]
+      `DELETE FROM orders o
+       WHERE o.status != 'paid'
+         AND (
+           o.project_id = $1
+           OR EXISTS (
+             SELECT 1 FROM order_items oi
+             WHERE oi.order_id = o.id AND oi.project_id = $1
+           )
+         )`,
+      [id]
     );
 
     await db.query('DELETE FROM projects WHERE id = $1', [id]);
@@ -144,103 +162,120 @@ const deleteProject = async (req, res) => {
 const getAllOrders = async (req, res) => {
   try {
     const { status, page = 1, limit = 20 } = req.query;
+    const safePage = Math.max(parseInt(page, 10) || 1, 1);
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const offset = (safePage - 1) * safeLimit;
 
-    let paramIndex = 1;
     const params = [];
-    let sql = `
-      SELECT
-        o.*, u.email as user_email,
-        u.name as user_name, p.title as project_title
-      FROM orders o
-      JOIN users u ON o.user_id = u.id
-      JOIN projects p ON o.project_id = p.id
-    `;
-
+    let where = '';
     if (status) {
-      sql += ` WHERE o.status = $${paramIndex++}`;
       params.push(status);
+      where = 'WHERE o.status = $1';
     }
 
-    sql += ' ORDER BY o.created_at DESC';
+    params.push(safeLimit, offset);
+    const orders = await db.query(
+      `SELECT
+         o.id,
+         o.razorpay_order_id,
+         o.razorpay_payment_id,
+         o.amount,
+         o.original_amount,
+         o.discount_amount,
+         o.coupon_code,
+         o.currency,
+         o.status,
+         o.paid_at,
+         o.created_at,
+         u.email AS user_email,
+         u.name AS user_name,
+         COUNT(oi.id)::INTEGER AS item_count,
+         COALESCE(STRING_AGG(p.title, ', ' ORDER BY oi.id), 'No projects') AS project_title
+       FROM orders o
+       JOIN users u ON u.id = o.user_id
+       LEFT JOIN order_items oi ON oi.order_id = o.id
+       LEFT JOIN projects p ON p.id = oi.project_id
+       ${where}
+       GROUP BY o.id, u.id
+       ORDER BY o.created_at DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
 
-    const offset = (parseInt(page) - 1) * parseInt(limit);
-    sql += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
-    params.push(parseInt(limit), offset);
+    const countParams = status ? [status] : [];
+    const countWhere = status ? 'WHERE status = $1' : '';
+    const countResult = await db.query(`SELECT COUNT(*) AS total FROM orders ${countWhere}`, countParams);
+    const total = parseInt(countResult[0]?.total || 0, 10);
 
-    const orders = await db.query(sql, params);
-
-    let countSql = 'SELECT COUNT(*) as total FROM orders';
-    if (status) countSql += ' WHERE status = $1';
-    const countResult = await db.query(countSql, status ? [status] : []);
-    const total = parseInt(countResult[0].total);
-
-    res.json({
+    return res.json({
       success: true,
       data: {
         orders,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: safePage,
+          limit: safeLimit,
           total,
-          pages: Math.ceil(total / parseInt(limit))
-        }
-      }
+          pages: Math.ceil(total / safeLimit),
+        },
+      },
     });
   } catch (error) {
     logger.error('Get all orders error', { error: error.message });
-    res.status(500).json({ success: false, message: 'Failed to fetch orders' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch orders' });
   }
 };
 
 const getDashboardStats = async (req, res) => {
   try {
-    const usersResult = await db.query(
-      `SELECT COUNT(*) as total FROM users WHERE role = 'user'`
-    );
-    const projectsResult = await db.query(
-      'SELECT COUNT(*) as total FROM projects'
-    );
-    const revenueResult = await db.query(
-      `SELECT COALESCE(SUM(amount), 0) as total FROM orders WHERE status = 'paid'`
-    );
-    const ordersResult = await db.query(
-      `SELECT COUNT(*) as total FROM orders WHERE status = 'paid'`
-    );
-    const recentOrders = await db.query(
-      `SELECT o.*, u.email as user_email, p.title as project_title
-       FROM orders o
-       JOIN users u ON o.user_id = u.id
-       JOIN projects p ON o.project_id = p.id
-       WHERE o.status = 'paid'
-       ORDER BY o.created_at DESC
-       LIMIT 5`
-    );
-    const monthlyRevenue = await db.query(
-      `SELECT
-        TO_CHAR(created_at, 'YYYY-MM') as month,
-        SUM(amount) as revenue,
-        COUNT(*) as orders
-       FROM orders
-       WHERE status = 'paid'
-       AND created_at >= NOW() - INTERVAL '6 months'
-       GROUP BY TO_CHAR(created_at, 'YYYY-MM')
-       ORDER BY month ASC`
-    );
+    const [usersResult, projectsResult, revenueResult, ordersResult, recentOrders, monthlyRevenue] = await Promise.all([
+      db.query(`SELECT COUNT(*) AS total FROM users WHERE role = 'user'`),
+      db.query('SELECT COUNT(*) AS total FROM projects'),
+      db.query(`SELECT COALESCE(SUM(amount), 0) AS total FROM orders WHERE status = 'paid'`),
+      db.query(`SELECT COUNT(*) AS total FROM orders WHERE status = 'paid'`),
+      db.query(
+        `SELECT
+           o.id,
+           o.amount,
+           o.created_at,
+           u.email AS user_email,
+           COUNT(oi.id)::INTEGER AS item_count,
+           COALESCE(STRING_AGG(p.title, ', ' ORDER BY oi.id), 'No projects') AS project_title
+         FROM orders o
+         JOIN users u ON u.id = o.user_id
+         LEFT JOIN order_items oi ON oi.order_id = o.id
+         LEFT JOIN projects p ON p.id = oi.project_id
+         WHERE o.status = 'paid'
+         GROUP BY o.id, u.id
+         ORDER BY o.created_at DESC
+         LIMIT 5`
+      ),
+      db.query(
+        `SELECT
+           TO_CHAR(created_at, 'YYYY-MM') AS month,
+           SUM(amount) AS revenue,
+           COUNT(*) AS orders
+         FROM orders
+         WHERE status = 'paid'
+           AND created_at >= NOW() - INTERVAL '6 months'
+         GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+         ORDER BY month ASC`
+      ),
+    ]);
 
-    res.json({
+    return res.json({
       success: true,
       data: {
-        totalUsers: parseInt(usersResult[0].total),
-        totalProjects: parseInt(projectsResult[0].total),
-        totalRevenue: parseFloat(revenueResult[0].total),
-        totalOrders: parseInt(ordersResult[0].total),
+        totalUsers: parseInt(usersResult[0]?.total || 0, 10),
+        totalProjects: parseInt(projectsResult[0]?.total || 0, 10),
+        totalRevenue: Number(revenueResult[0]?.total || 0),
+        totalOrders: parseInt(ordersResult[0]?.total || 0, 10),
         recentOrders,
-        monthlyRevenue
-      }
+        monthlyRevenue,
+      },
     });
   } catch (error) {
     logger.error('Get dashboard stats error', { error: error.message });
-    res.status(500).json({ success: false, message: 'Failed to fetch dashboard stats' });
+    return res.status(500).json({ success: false, message: 'Failed to fetch dashboard stats' });
   }
 };
 
