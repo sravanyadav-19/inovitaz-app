@@ -167,4 +167,50 @@ describe('Password reset flow', () => {
 
     await db.query('DELETE FROM users WHERE id = $1', [u[0].id]);
   });
+
+  it('invalidates existing sessions after a password change (old sessions must not survive)', async () => {
+    const email = `chg_${Date.now()}@example.com`;
+    await request(app)
+      .post('/api/auth/register')
+      .send({ name: 'Change', email, password: 'Old@1234' });
+
+    const u = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    await db.query(
+      'UPDATE users SET is_verified = TRUE, verification_token = NULL WHERE id = $1',
+      [u[0].id]
+    );
+
+    const loginRes = await request(app)
+      .post('/api/auth/login')
+      .send({ email, password: 'Old@1234' });
+    expect(loginRes.statusCode).toBe(200);
+    const oldToken = loginRes.body.data.token;
+
+    // Weak/short new password is rejected at the boundary.
+    const weakRes = await request(app)
+      .put('/api/auth/password')
+      .set('Authorization', `Bearer ${oldToken}`)
+      .send({ currentPassword: 'Old@1234', newPassword: '123' });
+    expect(weakRes.statusCode).toBe(400);
+
+    const res = await request(app)
+      .put('/api/auth/password')
+      .set('Authorization', `Bearer ${oldToken}`)
+      .send({ currentPassword: 'Old@1234', newPassword: 'New@1234' });
+    expect(res.statusCode).toBe(200);
+
+    // The pre-change token is now rejected (token_version bumped).
+    const me = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${oldToken}`);
+    expect(me.statusCode).toBe(401);
+
+    // The new password logs in.
+    const relogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email, password: 'New@1234' });
+    expect(relogin.statusCode).toBe(200);
+
+    await db.query('DELETE FROM users WHERE id = $1', [u[0].id]);
+  });
 });

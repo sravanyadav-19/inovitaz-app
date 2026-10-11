@@ -149,6 +149,11 @@ const updateProfile = async (req, res) => {
 
 const changePassword = async (req, res) => {
   try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
+    }
+
     const userId = req.user.id;
     const { currentPassword, newPassword } = req.body;
 
@@ -160,9 +165,16 @@ const changePassword = async (req, res) => {
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 12);
-    await db.query('UPDATE users SET password = $1, updated_at = NOW() WHERE id = $2', [hashedNewPassword, userId]);
+    // Bump token_version like resetPassword does: changing the password must
+    // invalidate every existing session, or a stolen JWT outlives the change.
+    await db.query(
+      'UPDATE users SET password = $1, token_version = token_version + 1, updated_at = NOW() WHERE id = $2',
+      [hashedNewPassword, userId]
+    );
 
-    return res.json({ success: true, message: 'Password changed successfully' });
+    // The current session's token is now invalid too; the frontend's 401
+    // handler clears it and redirects to /login.
+    return res.json({ success: true, message: 'Password changed successfully. Please login with your new password.' });
   } catch (error) {
     logger.error('Change password error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to change password' });

@@ -52,6 +52,15 @@ const resetPasswordValidation = [
     .withMessage('Password must be at least 6 characters'),
 ];
 
+const changePasswordValidation = [
+  body('currentPassword')
+    .notEmpty()
+    .withMessage('Current password is required'),
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters'),
+];
+
 // Routes
 router.post('/register', registerValidation, authController.register);
 router.post('/login', loginValidation, authController.login);
@@ -61,6 +70,6 @@ router.post('/forgot-password', forgotPasswordValidation, authController.forgotP
 router.post('/reset-password', resetPasswordValidation, authController.resetPassword);
 router.get('/me', authRequired, authController.getMe);
 router.put('/profile', authRequired, authController.updateProfile);
-router.put('/password', authRequired, authController.changePassword);
+router.put('/password', authRequired, changePasswordValidation, authController.changePassword);
 
 module.exports = router;
