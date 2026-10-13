@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { ordersAPI } from '../api/payments';
 import { projectsAPI, wishlistAPI } from '../api/projects';
-import LoadingSpinner from '../components/LoadingSpinner';
+import Skeleton, { SkeletonCircle, SkeletonText } from '../components/ui/Skeleton';
 
 const FALLBACK_IMG =
   "data:image/svg+xml;utf8," +
@@ -165,24 +165,51 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="large" text="Loading dashboard..." />
+      <div className="min-h-[100dvh] fade-in">
+        <div className="border-b border-surface-variant">
+          <div className="max-w-7xl mx-auto px-4 py-8 flex items-center gap-4">
+            <SkeletonCircle className="w-16 h-16" />
+            <div className="flex-1 space-y-2 max-w-xs">
+              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-4 w-56" />
+            </div>
+          </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="card p-6 flex items-center gap-4">
+                <Skeleton className="w-12 h-12 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-16" />
+                  <Skeleton className="h-6 w-10" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="card p-6 space-y-4">
+            <Skeleton className="h-9 w-72" />
+            <SkeletonText lines={3} />
+            <SkeletonText lines={2} />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in">
+    <div className="min-h-[100dvh] fade-in">
 
       {/* Header */}
-      <div className="bg-surface border-b border-surface-variant">
+      <div className="border-b border-surface-variant">
         <div className="max-w-7xl mx-auto px-4 py-8">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
               {user?.name?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <div className="t-label text-primary-dim mb-1">Dashboard</div>
+              <h1 className="t-h1 text-white">
                 Welcome back, {user?.name}!
               </h1>
               <p className="text-outline">{user?.email}</p>
@@ -196,44 +223,44 @@ const Dashboard = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary-dim">
               <HiShoppingBag className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-outline">Orders</p>
-              <p className="text-2xl font-bold text-white">{orders.length}</p>
+              <p className="t-label text-outline mb-1">Orders</p>
+              <p className="t-num text-white">{orders.length}</p>
             </div>
           </div>
 
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-500/20 rounded-xl flex items-center justify-center text-green-400">
+            <div className="w-12 h-12 bg-success/20 rounded-xl flex items-center justify-center text-success-fg">
               <HiCheckCircle className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-outline">Completed</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="t-label text-outline mb-1">Completed</p>
+              <p className="t-num text-white">
                 {orders.filter(o => o.status === 'paid').length}
               </p>
             </div>
           </div>
 
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400">
+            <div className="w-12 h-12 bg-secondary/20 rounded-xl flex items-center justify-center text-secondary">
               <HiDownload className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-outline">Downloads</p>
-              <p className="text-2xl font-bold text-white">{purchasedProjects.length}</p>
+              <p className="t-label text-outline mb-1">Downloads</p>
+              <p className="t-num text-white">{purchasedProjects.length}</p>
             </div>
           </div>
 
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-pink-500/20 rounded-xl flex items-center justify-center text-pink-400">
+            <div className="w-12 h-12 bg-tertiary/20 rounded-xl flex items-center justify-center text-tertiary">
               <HiHeart className="w-6 h-6" />
             </div>
             <div>
-              <p className="text-sm text-outline">Wishlist</p>
-              <p className="text-2xl font-bold text-white">{wishlist.length}</p>
+              <p className="t-label text-outline mb-1">Wishlist</p>
+              <p className="t-num text-white">{wishlist.length}</p>
             </div>
           </div>
         </div>
@@ -255,7 +282,7 @@ const Dashboard = () => {
                   onKeyDown={handleTabKeyDown}
                   className={`py-4 px-1 border-b-2 font-medium text-sm capitalize transition-colors ${
                     activeTab === tab
-                      ? 'border-primary text-primary'
+                      ? 'border-primary text-primary-dim'
                       : 'border-transparent text-outline hover:text-white'
                   }`}
                 >
@@ -270,11 +297,14 @@ const Dashboard = () => {
             {/* ORDERS TAB */}
             {activeTab === 'orders' && (
               orders.length === 0
-                ? <EmptyState title="No orders yet" />
+                ? <EmptyState
+                title="No orders yet"
+                hint="Projects you buy appear here — full source code, schematic, and build guide, delivered digitally."
+              />
                 : (
                   <div className="space-y-4">
                     {orders.map((order) => (
-                      <div key={order.id} className="border border-surface-variant rounded-lg hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-shadow">
+                      <div key={order.id} className="border border-surface-variant rounded-lg hover:border-primary-dim/40 transition-colors">
                         <button
                           type="button"
                           aria-expanded={expandedOrder === order.id}
@@ -303,7 +333,7 @@ const Dashboard = () => {
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold text-white">
+                            <p className="t-num text-white">
                               {formatPrice(order.amount)}
                             </p>
                             <div className="mt-1">{getStatusBadge(order.status)}</div>
@@ -315,7 +345,7 @@ const Dashboard = () => {
                             <div>
                               <p>
                                 <span className="text-outline">Payment ID: </span>
-                                {order.razorpay_payment_id || 'N/A'}
+                                <span className="t-num text-sm">{order.razorpay_payment_id || 'N/A'}</span>
                               </p>
                               <p>
                                 <span className="text-outline">Category: </span>
@@ -349,13 +379,16 @@ const Dashboard = () => {
             {/* DOWNLOADS TAB */}
             {activeTab === 'downloads' && (
               purchasedProjects.length === 0
-                ? <EmptyState title="No downloads available" />
+                ? <EmptyState
+                title="No downloads yet"
+                hint="Every purchase unlocks up to 5 downloads of its files, right here."
+              />
                 : (
                   <div className="grid md:grid-cols-2 gap-4">
                     {purchasedProjects.map((project) => (
                       <div
                         key={project.id}
-                        className="card p-4 border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-shadow"
+                        className="card p-4 border border-surface-variant hover:border-primary-dim/40 transition-colors"
                       >
                         <div className="flex gap-4">
                           <img
@@ -374,7 +407,7 @@ const Dashboard = () => {
                             <div className="mt-2 space-y-1 text-sm">
                               <div className="flex items-center gap-2 text-outline">
                                 <HiDownload className="w-4 h-4" />
-                                <span>{project.downloads_remaining} downloads left</span>
+                                <span><span className="t-num">{project.downloads_remaining}</span> downloads left</span>
                               </div>
                               <div className="flex items-center gap-2 text-outline">
                                 <HiCalendar className="w-4 h-4" />
@@ -414,7 +447,10 @@ const Dashboard = () => {
             {/* WISHLIST TAB */}
             {activeTab === 'wishlist' && (
               wishlist.length === 0
-                ? <EmptyState title="Your wishlist is empty" />
+                ? <EmptyState
+                title="Your wishlist is empty"
+                hint="Tap the heart on any project to keep it here for later."
+              />
                 : (
                   <div className="grid md:grid-cols-3 gap-6">
                     {wishlist.map((item) => (
@@ -434,7 +470,7 @@ const Dashboard = () => {
                         <h3 className="font-medium text-white text-sm mb-2 truncate">
                           {item.title}
                         </h3>
-                        <p className="text-primary font-bold text-sm mb-3">
+                        <p className="t-num text-sm text-primary-dim mb-3">
                           {formatINRFromPaise(item.price)}
                         </p>
                         <div className="flex gap-2">
@@ -448,7 +484,7 @@ const Dashboard = () => {
                             type="button"
                             onClick={() => removeFromWishlist(item.id)}
                             aria-label={`Remove ${item.title} from wishlist`}
-                            className="btn btn-secondary btn-sm text-red-400"
+                            className="btn btn-secondary btn-sm text-danger-fg"
                           >
                             <HiHeart aria-hidden="true" className="w-4 h-4" />
                           </button>
@@ -466,13 +502,14 @@ const Dashboard = () => {
   );
 };
 
-const EmptyState = ({ title }) => (
+const EmptyState = ({ title, hint }) => (
   <div className="text-center py-12">
     <div className="w-16 h-16 bg-surface-high rounded-full flex items-center justify-center mx-auto mb-4 text-outline">
       <HiExclamationCircle className="w-8 h-8" />
     </div>
-    <h3 className="text-lg font-medium text-white">{title}</h3>
-    <Link to="/projects" className="btn btn-primary mt-4 inline-block">
+    <h3 className="t-h3 text-white">{title}</h3>
+    {hint && <p className="text-outline mt-2 max-w-sm mx-auto">{hint}</p>}
+    <Link to="/projects" className="btn btn-primary mt-5 inline-flex items-center">
       Browse Projects
     </Link>
   </div>
