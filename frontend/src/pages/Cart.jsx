@@ -125,12 +125,12 @@ export default function Cart() {
   // ---- Empty state ----
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-surface-lowest fade-in flex items-center justify-center px-4 py-16">
+      <div className="min-h-[100dvh] fade-in flex items-center justify-center px-4 py-16">
         <div className="text-center max-w-md">
           <div className="w-20 h-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center mb-6">
             <HiShoppingCart className="w-10 h-10 text-primary" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-3">Your cart is empty</h1>
+          <h1 className="t-h1 text-white mb-3">Your cart is empty</h1>
           <p className="text-outline mb-8">
             Browse the catalog and add projects you'd like to build.
           </p>
@@ -143,16 +143,16 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[100dvh] fade-in py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="t-h1 text-white">
             Your Cart{" "}
-            <span className="text-outline text-xl font-normal">
+            <span className="t-base text-outline">
               ({count} {count === 1 ? "project" : "projects"})
             </span>
           </h1>
-          <Link to="/projects" className="text-sm text-primary hover:text-primary-dim font-medium">
+          <Link to="/projects" className="text-sm text-primary-dim hover:text-primary-fixed font-medium">
             ← Continue shopping
           </Link>
         </div>
@@ -199,14 +199,14 @@ export default function Cart() {
                     <button
                       onClick={() => remove(item.id)}
                       aria-label={`Remove ${item.title} from cart`}
-                      className="p-2 text-outline hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors shrink-0"
+                      className="w-11 h-11 inline-flex items-center justify-center text-outline hover:text-danger-fg hover:bg-danger/10 rounded-lg transition-colors shrink-0"
                     >
                       <HiTrash className="w-5 h-5" />
                     </button>
                   </div>
 
                   <div className="mt-auto flex items-center justify-between pt-3">
-                    <span className="text-xl font-display font-bold text-primary-dim text-glow">
+                    <span className="t-num text-primary-dim">
                       {formatINRFromPaise(item.price)}
                     </span>
                     <button
@@ -244,7 +244,7 @@ export default function Cart() {
                           {s.title}
                         </Link>
                         <div className="mt-auto flex items-center justify-between pt-2">
-                          <span className="text-sm font-bold text-primary-dim">
+                          <span className="t-num text-sm text-primary-dim">
                             {formatINRFromPaise(s.price)}
                           </span>
                           <button
@@ -258,7 +258,7 @@ export default function Cart() {
                               }
                             }}
                             disabled={inCart}
-                            className="p-2 rounded-lg bg-surface-highest border border-surface-variant hover:bg-surface-variant transition-colors disabled:opacity-50"
+                            className="w-11 h-11 inline-flex items-center justify-center rounded-lg bg-surface-highest border border-surface-variant hover:bg-surface-variant transition-colors disabled:opacity-50"
                             aria-label={`Add ${s.title} to cart`}
                           >
                             {inCart ? (
@@ -284,28 +284,28 @@ export default function Cart() {
               <div className="space-y-2 text-sm mb-4">
                 <div className="flex justify-between text-outline">
                   <span>Subtotal</span>
-                  <span className="text-white">{formatINRFromPaise(subtotal)}</span>
+                  <span className="t-num text-white">{formatINRFromPaise(subtotal)}</span>
                 </div>
 
                 {appliedCoupon ? (
-                  <div className="flex justify-between text-green-400">
+                  <div className="flex justify-between text-success-fg">
                     <span>Coupon ({appliedCoupon.code})</span>
-                    <span>-{formatINRFromPaise(appliedCoupon.discount_amount)}</span>
+                    <span className="t-num">-{formatINRFromPaise(appliedCoupon.discount_amount)}</span>
                   </div>
                 ) : null}
               </div>
 
               <div className="flex justify-between items-baseline border-t border-surface-variant pt-4 mb-4">
                 <span className="font-semibold text-white">Total</span>
-                <span className="text-2xl font-display font-bold text-primary-dim text-glow">
+                <span className="t-num text-primary-dim">
                   {formatINRFromPaise(total)}
                 </span>
               </div>
 
               {/* Coupon */}
               {appliedCoupon ? (
-                <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg px-3 py-2 mb-4">
-                  <span className="text-sm text-green-400 font-medium">
+                <div className="flex items-center justify-between bg-success/15 border border-success/40 rounded-xl px-3 py-2 mb-4">
+                  <span className="text-sm text-success-fg font-medium">
                     {appliedCoupon.code} applied — {appliedCoupon.savings_text}
                   </span>
                   <button type="button" onClick={removeCoupon} className="text-xs text-outline hover:text-white underline">
@@ -338,7 +338,7 @@ export default function Cart() {
                       {couponLoading ? "..." : "Apply"}
                     </button>
                   </div>
-                  {couponError && <p id="cart-coupon-error" role="alert" className="text-xs text-red-400 mt-1">{couponError}</p>}
+                  {couponError && <p id="cart-coupon-error" role="alert" className="text-xs text-danger-fg mt-1">{couponError}</p>}
                   {items.length > 1 && (
                     <p className="text-xs text-outline mt-1">
                       Coupons apply per project — add one during checkout.
@@ -365,7 +365,7 @@ export default function Cart() {
               {/* Payment methods */}
               <div className="mt-5 pt-4 border-t border-surface-variant">
                 <p className="text-xs text-outline mb-2 flex items-center gap-1.5">
-                  <HiShieldCheck className="w-4 h-4 text-green-500" />
+                  <HiShieldCheck className="w-4 h-4 text-success-fg" />
                   Secure payments via Razorpay
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -383,7 +383,7 @@ export default function Cart() {
               {/* Support */}
               <div className="mt-4 flex items-center gap-2 text-sm">
                 <HiSupport className="w-4 h-4 text-primary" />
-                <Link to="/support" className="text-primary hover:text-primary-dim font-medium">
+                <Link to="/support" className="text-primary-dim hover:text-primary-fixed font-medium">
                   Need help with your order?
                 </Link>
               </div>

@@ -235,7 +235,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -256,7 +256,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             type="button"
             aria-label="Close payment modal"
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-outline hover:text-white transition-colors z-10"
+            className="absolute top-3 right-3 w-11 h-11 inline-flex items-center justify-center text-outline hover:text-white transition-colors z-10 rounded-lg"
           >
             <HiX className="w-5 h-5" />
           </button>
@@ -268,7 +268,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
               <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <HiCreditCard className="w-8 h-8 text-primary-dim" />
               </div>
-              <h2 id="payment-modal-title" className="text-xl font-bold text-white">Complete Purchase</h2>
+              <h2 id="payment-modal-title" className="t-h3 text-white">Complete Purchase</h2>
               <p id="payment-modal-description" className="text-outline text-sm mt-1">Secure payment powered by Razorpay</p>
             </div>
 
@@ -312,7 +312,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                         setCouponError('');
                       }}
                       placeholder="Enter coupon code"
-                      className={`input pl-10 ${couponError ? 'border-red-300 focus:ring-red-500' : ''}`}
+                      className={`input pl-10 ${couponError ? 'border-danger-fg/60 focus:ring-danger' : ''}`}
                       aria-invalid={Boolean(couponError)}
                       aria-describedby={couponError ? 'payment-coupon-error' : undefined}
                       disabled={couponLoading}
@@ -331,15 +331,15 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                   </button>
                 </div>
               ) : (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <div className="bg-success/15 border border-success/40 rounded-xl p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-2">
-                      <HiCheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
+                      <HiCheckCircle className="w-5 h-5 text-success-fg mt-0.5" />
                       <div>
-                        <p className="font-medium text-green-800 text-sm">
+                        <p className="font-medium text-success-fg text-sm">
                           {appliedCoupon.code} applied
                         </p>
-                        <p className="text-xs text-green-600 mt-0.5">
+                        <p className="text-xs text-success-fg/80 mt-0.5">
                           {appliedCoupon.description}
                         </p>
                       </div>
@@ -348,7 +348,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
                       type="button"
                       onClick={handleRemoveCoupon}
                       aria-label="Remove applied coupon"
-                      className="text-green-600 hover:text-green-700 p-1"
+                      className="text-success-fg hover:text-white w-11 h-11 inline-flex items-center justify-center -mt-1 -mr-1 rounded-lg"
                     >
                       <HiXCircle className="w-5 h-5" />
                     </button>
@@ -357,7 +357,7 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
               )}
 
               {couponError && (
-                <p id="payment-coupon-error" role="alert" className="text-red-600 text-sm mt-2 flex items-center gap-1">
+                <p id="payment-coupon-error" role="alert" className="text-danger-fg text-sm mt-2 flex items-center gap-1">
                   <HiXCircle className="w-4 h-4" />
                   {couponError}
                 </p>
@@ -368,27 +368,27 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             <div className="space-y-3 py-4 border-t border-b border-surface-variant mb-6">
               <div className="flex justify-between items-center text-outline">
                 <span>Original Price</span>
-                <span>{formatPrice(project.price)}</span>
+                <span className="t-num">{formatPrice(project.price)}</span>
               </div>
 
               {appliedCoupon && discount > 0 && (
-                <div className="flex justify-between items-center text-green-600">
+                <div className="flex justify-between items-center text-success-fg">
                   <span className="flex items-center gap-1">
                     <HiTag className="w-4 h-4" />
                     Discount ({appliedCoupon.code})
                   </span>
-                  <span>-{formatPrice(discount)}</span>
+                  <span className="t-num">-{formatPrice(discount)}</span>
                 </div>
               )}
 
               <div className="flex justify-between items-center pt-3 border-t border-surface-variant">
                 <span className="font-semibold text-white">Total Amount</span>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-primary-dim">
+                  <div className="t-num text-primary-dim">
                     {formatPrice(finalPrice)}
                   </div>
                   {appliedCoupon && discount > 0 && (
-                    <div className="text-xs text-green-600 font-medium">
+                    <div className="text-xs text-success-fg font-medium">
                       You save {formatPrice(discount)}!
                     </div>
                   )}
@@ -397,11 +397,11 @@ const PaymentModal = ({ project, isOpen, onClose, onSuccess }) => {
             </div>
 
             {/* Security Note */}
-            <div className="flex items-start gap-3 bg-green-50 rounded-lg p-3 mb-6">
-              <HiShieldCheck className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-3 bg-success/10 border border-success/25 rounded-xl p-3 mb-6">
+              <HiShieldCheck className="w-5 h-5 text-success-fg mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-green-800">Secure Transaction</p>
-                <p className="text-xs text-green-600 mt-0.5">
+                <p className="text-sm font-medium text-success-fg">Secure transaction</p>
+                <p className="text-xs text-success-fg/80 mt-0.5">
                   Your payment information is encrypted and secure.
                 </p>
               </div>
