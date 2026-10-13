@@ -122,12 +122,25 @@ const sendEmail = async ({ to, subject, html, devLogLabel, devLogLink }) => {
 /* ------------------------------------------------------------------ */
 /* HTML shell                                                          */
 /* ------------------------------------------------------------------ */
-const buildEmailHtml = ({ heading, name, intro = [], ctaText, ctaLink, fallbackAnchorText, note }) => {
+const buildEmailHtml = ({ heading, name, intro = [], ctaText, ctaLink, fallbackAnchorText, note, highlights = [] }) => {
   const year = new Date().getFullYear();
   const introHtml = intro
     .map((p) => `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;color:#475569;">${p}</p>`)
     .join('');
   const FONT = "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
+  // Optional "what you unlock" list — mirrors the benefit-led copy of the site
+  // (plain words, honest products: source code, schematic, build guide).
+  const highlightsHtml = highlights.length
+    ? `
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:22px 0 6px 0;background-color:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;">
+                <tr>
+                  <td style="padding:16px 20px;">
+                    <p style="margin:0 0 10px 0;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#94a3b8;">After verification you can</p>
+                    ${highlights.map((h) => `<p style="margin:0 0 7px 0;font-size:14px;line-height:1.55;color:#475569;"><span style="color:#16a34a;font-weight:700;">&#10003;</span>&nbsp;&nbsp;${h}</p>`).join('')}
+                  </td>
+                </tr>
+              </table>`
+    : '';
 
   return `
 <!DOCTYPE html>
@@ -158,6 +171,7 @@ const buildEmailHtml = ({ heading, name, intro = [], ctaText, ctaLink, fallbackA
               <h1 style="margin:0 0 18px 0;font-size:22px;line-height:1.35;font-weight:700;color:#0f172a;">${heading}</h1>
               <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;color:#475569;">Hi ${name},</p>
               ${introHtml}
+              ${highlightsHtml}
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 10px 0;">
                 <tr>
                   <td align="center">
@@ -198,12 +212,17 @@ const sendVerificationEmail = async (email, name, token, { isResend = false } = 
     heading: 'Verify your email address',
     name,
     intro: isResend
-      ? ['Just a friendly reminder — confirm your email address to activate your InovitaZ account and start exploring premium IoT projects.']
-      : ['Welcome to <strong style="color:#0f172a;">InovitaZ</strong>! Confirm your email address to activate your account and start exploring premium IoT projects.'],
+      ? ["Still not verified? One click below confirms this email address and unlocks the whole premium catalog — source code, schematic, and build guide included with every premium project."]
+      : ['Welcome to <strong style="color:#0f172a;">InovitaZ</strong>. One quick step: confirm this is your email address and your account is active. It takes ten seconds — then the full premium catalog is yours.'],
     ctaText: 'Verify email address',
     ctaLink: verificationLink,
-    fallbackAnchorText: 'click here to verify your email',
+    fallbackAnchorText: 'open the verification link instead',
     note: "This link expires in 24 hours. If you didn't create an account, you can safely ignore this email.",
+    highlights: [
+      'Download the full source code, schematic, and build guide of any premium project.',
+      'Save projects to your cart and check out securely with Razorpay — digital delivery, nothing ships.',
+      'Re-download your purchased projects anytime from your dashboard.',
+    ],
   });
 
   try {
@@ -228,11 +247,11 @@ const sendPasswordResetEmail = async (email, name, token) => {
   const html = buildEmailHtml({
     heading: 'Reset your password',
     name,
-    intro: ['We received a request to reset the password for your InovitaZ account. Click the button below to choose a new password.'],
+    intro: ['We got your request to reset the password for your InovitaZ account. Choose a new one below and you will be back in your dashboard in under a minute.'],
     ctaText: 'Reset password',
     ctaLink: resetLink,
-    fallbackAnchorText: 'click here to reset your password',
-    note: "This link expires in 1 hour. If you didn't request a reset, you can safely ignore this email — your password will not be changed.",
+    fallbackAnchorText: 'open the reset link instead',
+    note: "This link expires in 1 hour. If this wasn't you, ignore this email — your password stays exactly as it was.",
   });
 
   try {
