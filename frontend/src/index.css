@@ -2,124 +2,154 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Shared keyboard focus — do not rely on colour alone. */
-:where(a, button, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
-  outline: 3px solid #6bff8f;
-  outline-offset: 3px;
+/* ════════════════════════════════════════════════════════════════════
+   Inovitaz design system — Phase 0 (UX-AUDIT.md findings F1–F6, F11–F12)
+   Canon: designer-skills — color-system, dark-mode-design, typography-scale,
+   spacing-system (4px base), fitts-law (44px), animation-principles
+   (ease-out entrances, 120–320ms), loading-states, law-of-common-region.
+
+   Radius rule (F6): 12px for containers (.card/.input/modals),
+   999px for pills (.btn/.badge/chips). Nothing else.
+   Elevation rule (F4/F5): surfaces step lighter; borders hairline;
+   shadow glows are BANNED — one exception, .glow-hero for ≤2 hero accents.
+   ════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Motion scale (animation-principles) */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);  /* entrances */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);       /* exits */
+  --dur-fast: 120ms;   /* button/toggle states */
+  --dur-med: 200ms;    /* fades, small movements */
+  --dur-slow: 320ms;   /* modals, page-level */
 }
 
-/* Animations */
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@layer base {
+  body {
+    @apply bg-surface-lowest text-gray-900 font-sans antialiased;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  /* Visible, not colour-only focus (WCAG 2.4.7). */
+  :where(a, button, input, select, textarea, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 3px solid #5EE38D;
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: rgba(132, 169, 255, 0.28);
+  }
+
+  /* F11: iOS Safari 100vh is unreliable — the 100dvh screen helper.
+     Page roots should use .screen instead of min-h-screen. */
+  .screen {
+    min-height: 100dvh;
   }
 }
 
 @layer components {
-  /* Buttons */
+  /* ── Type components (typography-scale, 1.25 ratio: 16→20→25→31→39→49) ── */
+  .t-display { @apply font-display font-bold; font-size: clamp(32px, 6vw, 49px); line-height: 1.15; letter-spacing: -0.02em; }
+  .t-h1      { @apply font-display font-bold; font-size: clamp(28px, 4.5vw, 39px); line-height: 1.2;  letter-spacing: -0.02em; }
+  .t-h2      { @apply font-display font-bold; font-size: clamp(24px, 3.5vw, 31px); line-height: 1.25; letter-spacing: -0.02em; }
+  .t-h3      { @apply font-semibold; font-size: 25px; line-height: 1.3; letter-spacing: -0.01em; }
+  .t-sub     { @apply font-medium;  font-size: 20px; line-height: 1.4; }
+  .t-body    { @apply text-base;    line-height: 1.5; }
+  .t-sm      { @apply text-sm;      line-height: 1.45; }
+  .t-caption { @apply text-xs;      line-height: 1.45; }
+  /* +0.05em caps labels (typography skill); mono for prices/IDs/telemetry. */
+  .t-label   { @apply text-xs font-semibold uppercase; letter-spacing: 0.05em; }
+  .t-num     { @apply font-mono tabular-nums; }
+
+  /* ── Buttons (fitts-law: 44px, CTA 48px; pill radius per F6;
+     hovers change COLOUR only — no glow, no floating) ── */
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded font-sans font-medium transition-all duration-200 focus:outline-none focus:ring-2;
+    @apply inline-flex items-center justify-center gap-2 px-5 rounded-full font-medium transition-colors duration-200 focus:outline-none;
+    min-height: 44px;
   }
-  
-  .btn-primary {
-    @apply bg-gradient-to-br from-blue-500 to-blue-700 text-white border-0 shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 rounded focus:ring-blue-500;
+  .btn-primary { @apply bg-primary text-white hover:bg-primary-container; }
+  .btn-secondary { @apply bg-transparent text-secondary-dim border border-surface-highest hover:border-secondary-dim hover:bg-secondary/5; }
+  .btn-outline { @apply border border-primary-dim/60 text-primary-dim hover:bg-primary/10 hover:border-primary-dim; }
+  /* Destructive: quiet + deliberately low-emphasis (fitts-law distance rule). */
+  .btn-danger { @apply bg-transparent text-danger-fg border border-danger/40 hover:bg-danger/10; }
+  /* Icon-only button: 44×44 target with a 20px icon (fitts). */
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-full border border-transparent text-outline transition-colors duration-200 hover:text-white hover:bg-surface-highest focus:outline-none;
+    width: 44px; height: 44px; min-height: 44px;
   }
+  .btn-lg { @apply px-6 text-base; min-height: 48px; }
+  .btn-sm { @apply px-3.5 text-sm; min-height: 36px; } /* desktop-dense only */
+  .btn:disabled { @apply opacity-50 cursor-not-allowed; }
 
-  .btn-secondary {
-    @apply bg-transparent text-secondary border border-slate-600/50 shadow-[0_0_10px_rgba(74,225,118,0.1)] hover:bg-green-400/10 hover:border-secondary focus:ring-secondary;
-  }
-
-  .btn-outline {
-    @apply border-2 border-primary text-primary hover:bg-primary hover:text-white focus:ring-primary;
-  }
-
-  /* Form Elements - Technical Terminal Input Style */
+  /* ── Inputs (44px, 12px radius, border + ring focus = not colour-only) ── */
   .input {
-    @apply w-full rounded border border-outline-variant bg-surface-lowest px-4 py-2 text-white placeholder-outline transition-colors focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary focus:shadow-[0_0_8px_rgba(74,225,118,0.5)];
+    @apply w-full rounded-xl border border-surface-highest bg-surface-high px-4 text-gray-900 placeholder-outline transition-colors duration-200;
+    height: 44px;
   }
-
-  /* Cards - Glassmorphism Data Modules */
-  .card {
-    @apply bg-surface-low border-t border-slate-600/20 rounded shadow-xl backdrop-blur-md;
+  .input:focus {
+    @apply border-primary-dim outline-none;
+    box-shadow: 0 0 0 3px rgba(132, 169, 255, 0.25);
   }
+  textarea.input { @apply py-2.5 h-auto; }
 
-  /* Structural Containers */
-  .container-custom {
-    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-  }
+  /* ── Cards (law-of-common-region: enclose + pad, no shadow) ── */
+  .card { @apply bg-surface-low border border-surface-variant rounded-xl; }
+  /* Interactive cards: border + step-lighter fill on hover, nothing else. */
+  .card-interactive { @apply card transition-colors duration-200 hover:border-primary-dim/40 hover:bg-surface-high; }
 
+  /* ── Badges (pills; semantic token roles) ── */
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border; }
+  .badge-primary { @apply bg-primary/10 text-primary-dim border-primary-dim/30; }
+  .badge-success { @apply bg-success/10 text-success-fg border-success/30; }
+  .badge-warning { @apply bg-warning/10 text-warning-fg border-warning/30; }
+  .badge-danger  { @apply bg-danger/10  text-danger-fg  border-danger/30; }
+  .badge-purple  { @apply bg-purple-500/10 text-purple-300 border-purple-400/30; }
+
+  /* ── Icon tiles (12px radius containers) ── */
+  .icon-tile { @apply w-12 h-12 rounded-xl flex items-center justify-center border; }
+  .icon-tile-green  { @apply bg-success/10 text-success-fg border-success/30; }
+  .icon-tile-blue   { @apply bg-primary/10 text-primary-dim border-primary-dim/30; }
+  .icon-tile-purple { @apply bg-purple-500/10 text-purple-300 border-purple-400/30; }
+  .icon-tile-orange { @apply bg-warning/10 text-warning-fg border-warning/30; }
+
+  /* ── Layout (layout-grid: contained column grid, 16/24/32 page margins) ── */
+  .container-custom { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
+
+  /* ── Loading (loading-states: skeleton > spinner for content) ── */
   .skeleton {
-    @apply bg-surface-highest animate-pulse;
+    @apply rounded-md bg-surface-high animate-shimmer;
+    background-image: linear-gradient(90deg, transparent, rgba(232, 236, 244, 0.06), transparent);
+    background-size: 200% 100%;
   }
+  .loader { @apply border-4 border-surface-highest border-t-primary rounded-full animate-spin; }
 
-  .loader {
-    @apply border-4 border-surface-highest border-t-primary rounded-full animate-spin;
-  }
-  .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border;
-  }
-  
-  .badge-primary {
-    @apply bg-primary/15 text-primary-dim border-primary/25;
-  }
-  
-  .badge-success {
-    @apply bg-green-500/15 text-green-400 border-green-500/25;
-  }
-  
-  .badge-warning {
-    @apply bg-yellow-500/15 text-yellow-300 border-yellow-500/25;
-  }
-  
-  .badge-danger {
-    @apply bg-red-500/15 text-red-400 border-red-500/25;
-  }
-  
-  .badge-purple {
-    @apply bg-purple-500/15 text-purple-300 border-purple-500/25;
-  }
-  
-  .icon-tile {
-    @apply w-12 h-12 rounded-xl flex items-center justify-center border;
-  }
-  
-  .icon-tile-green {
-    @apply bg-green-500/15 text-green-400 border-green-500/25;
-  }
-  
-  .icon-tile-blue {
-    @apply bg-blue-500/15 text-blue-400 border-blue-500/25;
-  }
-  
-  .icon-tile-purple {
-    @apply bg-purple-500/15 text-purple-300 border-purple-500/25;
-  }
-  
-  .icon-tile-orange {
-    @apply bg-orange-500/15 text-orange-300 border-orange-500/25;
-  }
+  /* ── Compat aliases kept compiling: panel + the single permitted glow ── */
+  .glass-panel { @apply bg-surface-low border border-surface-variant rounded-xl; }
+
+  /* F4: the ONLY place a glow may live — hero primary accents (≤2 per page). */
+  .glow-hero { text-shadow: 0 0 12px rgba(132, 169, 255, 0.35); }
+
+  /* ── Entrance motion (ease-out, 200ms, small rise; .fade-in = compat alias) ── */
+  .fade-in, .enter { animation: ui-enter var(--dur-med) var(--ease-out) both; }
+
+  /* 40ms staggers; 6 items max → total stays under 700ms (animation-principles). */
+  .stagger-in > * { animation: ui-enter var(--dur-med) var(--ease-out) both; }
+  .stagger-in > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger-in > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger-in > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger-in > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger-in > *:nth-child(n+6) { animation-delay: 200ms; }
 }
 
-/* Base utility additions */
-.glass-panel {
-  @apply bg-slate-800/80 backdrop-blur-lg border border-slate-600/20 shadow-xl;
+@keyframes ui-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.text-glow {
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+/* Global reduced-motion guard (animation-principles). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-
-.text-glow-secondary {
-  text-shadow: 0 0 10px rgba(74, 225, 118, 0.5);
-}
-
-/* Removed redundant @layer utilities to use Tailwind's auto-generated classes */
