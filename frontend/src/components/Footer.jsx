@@ -50,20 +50,20 @@ const Footer = () => {
                 <p className="text-outline text-sm">Our engineering team is available 24/7 to assist you.</p>
               </div>
               <div className="flex flex-wrap justify-center gap-3">
+                <Link
+                  to="/support"
+                  className="btn btn-primary"
+                >
+                  Contact Support <HiArrowRight aria-hidden="true" />
+                </Link>
                 <a
                   href="https://wa.me/919652332341"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm font-medium flex items-center gap-2 transition-all shadow-lg shadow-green-900/20"
+                  className="btn btn-secondary"
                 >
-                  <HiChat className="w-5 h-5" /> WhatsApp
+                  <HiChat className="w-5 h-5" aria-hidden="true" /> WhatsApp
                 </a>
-                <Link
-                  to="/support"
-                  className="px-5 py-2.5 rounded-lg bg-surface-high hover:bg-surface-highest text-white text-sm font-medium flex items-center gap-2 transition-all border border-surface-variant"
-                >
-                  Contact Support <HiArrowRight />
-                </Link>
               </div>
             </div>
           </div>
@@ -76,8 +76,8 @@ const Footer = () => {
           {/* 1. Brand & Description */}
           <div className="space-y-4">
 {/* Replace Logo Section with this: */}
-<Link to="/" className="flex items-center gap-2 group">
-  <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-container rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.35)] group-hover:scale-105 transition-transform">
+<Link to="/" className="flex items-center gap-2">
+  <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
     {/* Microchip Icon */}
     <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
@@ -96,12 +96,12 @@ const Footer = () => {
                 { icon: FaInstagram, link: "https://www.instagram.com/inovitaz/" },
                 { icon: FaYoutube, link: "https://www.youtube.com/@inovitaz/" }
               ].map((social, idx) => (
-                <a 
+                <a
                   key={idx}
                   href={social.link}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-surface-high hover:bg-primary text-outline hover:text-white transition-all duration-300"
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-surface-high hover:bg-primary text-outline hover:text-white transition-colors duration-200"
                 >
-                  <social.icon className="w-4 h-4" />
+                  <social.icon className="w-5 h-5" />
                 </a>
               ))}
             </div>
@@ -111,10 +111,10 @@ const Footer = () => {
           <div>
             <h3 className="text-white font-semibold text-lg mb-5">Explore</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link to="/projects" className="hover:text-primary-dim transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary"></span> Browse Projects</Link></li>
-              <li><Link to="/projects?category=IoT" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> IoT Solutions</Link></li>
-              <li><Link to="/projects?category=Robotics" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> Robotics</Link></li>
-              <li><Link to="/about" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-primary-dim"></span> About Us</Link></li>
+              <li><Link to="/projects" className="hover:text-primary-dim transition-colors">Browse Projects</Link></li>
+              <li><Link to="/projects?category=IoT" className="hover:text-primary-dim transition-colors">IoT Solutions</Link></li>
+              <li><Link to="/projects?category=Robotics" className="hover:text-primary-dim transition-colors">Robotics</Link></li>
+              <li><Link to="/about" className="hover:text-primary-dim transition-colors">About Us</Link></li>
             </ul>
           </div>
 
@@ -146,7 +146,7 @@ const Footer = () => {
             <h3 className="text-white font-semibold text-lg mb-5">Stay Updated</h3>
             <form
               onSubmit={handleNewsletterSubmit}
-              className="bg-surface p-1 rounded-lg flex mb-6 border border-surface-variant"
+              className="bg-surface-high p-1 rounded-full flex mb-6 border border-surface-variant focus-within:border-primary-dim transition-colors"
             >
               <label htmlFor="newsletter-email" className="sr-only">Email address for updates</label>
               <input
@@ -157,11 +157,11 @@ const Footer = () => {
                 placeholder="Enter your email"
                 value={newsletterEmail}
                 onChange={(e) => setNewsletterEmail(e.target.value)}
-                className="bg-transparent text-sm text-white px-3 py-2 w-full focus:outline-none placeholder-outline"
+                className="bg-transparent text-sm text-white px-4 py-2 w-full focus:outline-none placeholder-outline"
               />
               <button
                 type="submit"
-                className="bg-primary hover:bg-primary-dim text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                className="btn btn-primary min-h-[44px] px-5 shrink-0 text-sm"
               >
                 Join
               </button>
@@ -196,7 +196,7 @@ const Footer = () => {
           {/* Payment Trust Badges */}
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1 text-outline text-xs">
-              <HiShieldCheck className="w-4 h-4 text-green-500" />
+              <HiShieldCheck className="w-4 h-4 text-success-fg" />
               <span>100% Secure Payment</span>
             </div>
             <div className="h-4 w-px bg-surface-variant"></div>

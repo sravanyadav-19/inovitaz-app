@@ -41,10 +41,10 @@ const Navbar = () => {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `flex items-center gap-2 px-3 py-2 rounded-lg transition-colors duration-300 ${
+    `flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-full transition-colors duration-200 border ${
       isActive
-        ? 'bg-primary-dim/20 text-primary-dim border border-primary-dim/30 font-medium shadow-[0_0_10px_rgba(59,130,246,0.1)]'
-        : 'text-outline hover:bg-surface-highest hover:text-white'
+        ? 'bg-primary-dim/10 text-primary-dim border-primary-dim/40 font-semibold'
+        : 'text-outline border-transparent hover:bg-surface-highest hover:text-white font-medium'
     }`;
 
   const cartLabel = cartCount > 0
@@ -56,7 +56,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <Link to="/" aria-label="Inovitaz home" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary-DEFAULT to-primary-container rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.5)] group-hover:shadow-[0_0_25px_rgba(59,130,246,0.8)] transition-all">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <svg aria-hidden="true" className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
@@ -109,9 +109,9 @@ const Navbar = () => {
                     aria-expanded={showDropdown}
                     aria-haspopup="menu"
                     aria-controls="account-menu"
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-highest border border-outline-variant/30 hover:bg-surface-bright hover:border-outline-variant transition-colors"
+                    className="flex items-center gap-2 px-3.5 py-2 min-h-[44px] rounded-full bg-surface-highest border border-surface-variant hover:bg-surface-bright transition-colors"
                   >
-                    <span aria-hidden="true" className="w-8 h-8 bg-primary-DEFAULT rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.3)]">
+                    <span aria-hidden="true" className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                       <span className="text-white font-medium text-sm">{user?.name?.charAt(0).toUpperCase()}</span>
                     </span>
                     <span className="text-white font-medium max-w-[100px] truncate">{user?.name}</span>
@@ -129,9 +129,9 @@ const Navbar = () => {
                         id="account-menu"
                         role="menu"
                         aria-label="Account menu"
-                        className="absolute right-0 mt-2 w-48 bg-surface-highest rounded-lg shadow-lg border border-outline-variant/30 py-1 fade-in z-20"
+                        className="absolute right-0 mt-2 w-48 bg-surface-highest rounded-xl border border-surface-variant py-1 fade-in z-20"
                       >
-                        <div className="px-4 py-2 border-b border-outline-variant/20" role="presentation">
+                        <div className="px-4 py-2 border-b border-surface-variant" role="presentation">
                           <p className="text-sm font-medium text-white truncate">{user?.name}</p>
                           <p className="text-xs text-outline truncate">{user?.email}</p>
                         </div>
@@ -139,7 +139,7 @@ const Navbar = () => {
                           type="button"
                           role="menuitem"
                           onClick={handleLogout}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-left text-red-400 hover:bg-red-400/10 hover:text-red-300 transition-colors"
+                        className="w-full flex items-center gap-2 px-4 py-2.5 min-h-[44px] text-left text-danger-fg hover:bg-danger/10 transition-colors rounded-lg"
                         >
                           <HiLogout aria-hidden="true" className="w-5 h-5" />
                           Logout
@@ -153,11 +153,11 @@ const Navbar = () => {
 
             {!isAuthenticated && (
               <div className="flex items-center gap-2 ml-4">
-                <Link to="/login" className="px-4 py-2 text-outline hover:text-white font-medium transition-colors font-display tracking-wider text-sm">
-                  LOGIN
+                <Link to="/login" className="px-4 py-2.5 min-h-[44px] inline-flex items-center text-outline hover:text-white font-medium transition-colors text-sm">
+                  Login
                 </Link>
-                <Link to="/signup" className="btn btn-primary font-display tracking-widest uppercase text-sm">
-                  Initialize
+                <Link to="/signup" className="btn btn-primary text-sm">
+                  Sign up
                 </Link>
               </div>
             )}
@@ -170,16 +170,16 @@ const Navbar = () => {
               aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={isOpen}
               aria-controls="mobile-navigation"
-              className="p-2 rounded-lg text-outline hover:bg-surface-highest hover:text-white transition-colors"
-            >
-              {isOpen ? <HiX aria-hidden="true" className="w-6 h-6" /> : <HiMenu aria-hidden="true" className="w-6 h-6" />}
+                    className="w-11 h-11 inline-flex items-center justify-center rounded-full text-outline hover:bg-surface-highest hover:text-white transition-colors"
+                  >
+                    {isOpen ? <HiX aria-hidden="true" className="w-6 h-6" /> : <HiMenu aria-hidden="true" className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
       {isOpen && (
-        <div id="mobile-navigation" aria-label="Mobile navigation" className="md:hidden bg-surface-lowest border-t border-surface-variant/30 fade-in absolute w-full shadow-lg">
+        <div id="mobile-navigation" aria-label="Mobile navigation" className="md:hidden bg-surface-lowest border-t border-surface-variant fade-in absolute w-full">
           <div className="px-4 py-4 space-y-2">
             <NavLink to="/" className={navLinkClass} onClick={() => setIsOpen(false)}>
               <HiHome aria-hidden="true" className="w-5 h-5" /> Home
@@ -214,7 +214,7 @@ const Navbar = () => {
                 )}
                 <div className="pt-4 border-t border-surface-variant/30">
                   <div className="flex items-center gap-3 px-3 py-2">
-                    <div aria-hidden="true" className="w-10 h-10 bg-primary-DEFAULT rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                    <div aria-hidden="true" className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
                       <span className="text-white font-medium">{user?.name?.charAt(0).toUpperCase()}</span>
                     </div>
                     <div className="overflow-hidden">
@@ -222,7 +222,7 @@ const Navbar = () => {
                       <p className="text-sm text-outline truncate">{user?.email}</p>
                     </div>
                   </div>
-                  <button type="button" onClick={handleLogout} className="w-full flex items-center gap-2 px-3 py-2 mt-2 text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-lg transition-colors">
+                  <button type="button" onClick={handleLogout} className="w-full flex items-center gap-2 px-4 py-2.5 min-h-[44px] mt-2 text-danger-fg hover:bg-danger/10 rounded-full transition-colors">
                     <HiLogout aria-hidden="true" className="w-5 h-5" /> Logout
                   </button>
                 </div>
@@ -231,7 +231,7 @@ const Navbar = () => {
 
             {!isAuthenticated && (
               <div className="pt-4 border-t border-surface-variant/30 space-y-2">
-                <Link to="/login" className="block w-full text-center px-4 py-2 text-outline hover:text-white hover:bg-surface-highest rounded-lg font-medium transition-colors" onClick={() => setIsOpen(false)}>
+                <Link to="/login" className="block w-full text-center px-4 py-2.5 min-h-[44px] text-outline hover:text-white hover:bg-surface-highest rounded-full font-medium transition-colors" onClick={() => setIsOpen(false)}>
                   Login
                 </Link>
                 <Link to="/signup" className="block w-full btn btn-primary text-center" onClick={() => setIsOpen(false)}>
