@@ -2,11 +2,12 @@ import { HiLightBulb, HiAcademicCap, HiChip, HiUserGroup } from "react-icons/hi"
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in">
+    <div className="min-h-[100dvh] fade-in">
       
       {/* Hero */}
-      <div className="bg-surface text-white py-20 text-center px-6">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">Building the Future of Engineering</h1>
+      <div className="text-white py-20 text-center px-6 border-b border-surface-variant">
+        <div className="t-label text-primary-dim mb-3">About us</div>
+        <h1 className="t-h1 text-white mb-4">Building the Future of Engineering</h1>
         <p className="text-outline text-lg max-w-2xl mx-auto">
           Empowering students, makers, and innovators with premium IoT resources.
         </p>
@@ -15,7 +16,7 @@ export default function About() {
       {/* Mission */}
       <div className="max-w-4xl mx-auto px-6 py-16">
         <div className="prose max-w-none text-outline">
-          <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>
+          <h2 className="t-h2 text-white mb-4">Our Mission</h2>
           <p className="text-lg leading-relaxed mb-8">
             Inovitaz Innovations Pvt. Ltd. was built with a single mission — to make high-quality
             engineering and IoT project resources accessible, affordable, and ready for real-world implementation.
@@ -28,7 +29,7 @@ export default function About() {
           <ValueCard 
             icon={HiChip} 
             title="Premium Quality" 
-            desc="Every project is tested, verified, and built with industry-standard components." 
+            desc="Projects are built with industry-standard components and documented for real-world assembly." 
           />
           <ValueCard 
             icon={HiAcademicCap} 
@@ -38,12 +39,12 @@ export default function About() {
           <ValueCard 
             icon={HiLightBulb} 
             title="Innovation" 
-            desc="Cutting-edge projects ranging from basic automation to advanced AI robotics." 
+            desc="From basic automation to advanced robotics — pick your next build from the catalog." 
           />
           <ValueCard 
             icon={HiUserGroup} 
             title="Community" 
-            desc="Join thousands of engineers building the next generation of technology." 
+            desc="Join the makers building the next generation of technology." 
           />
         </div>
       </div>
@@ -53,9 +54,9 @@ export default function About() {
 
 function ValueCard({ icon: Icon, title, desc }) {
   return (
-    <div className="p-6 bg-surface rounded-xl border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-all">
-      <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mb-4">
-        <Icon className="w-6 h-6 text-primary" />
+    <div className="p-6 bg-surface rounded-xl border border-surface-variant hover:border-primary-dim/40 transition-colors">
+      <div className="w-12 h-12 icon-tile icon-tile-blue rounded-xl mb-4">
+        <Icon className="w-6 h-6" />
       </div>
       <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
       <p className="text-outline">{desc}</p>

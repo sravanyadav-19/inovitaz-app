@@ -223,7 +223,7 @@ const Dashboard = () => {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center text-primary-dim">
+            <div className="w-12 h-12 icon-tile icon-tile-blue">
               <HiShoppingBag className="w-6 h-6" />
             </div>
             <div>
@@ -233,7 +233,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-success/20 rounded-xl flex items-center justify-center text-success-fg">
+            <div className="w-12 h-12 icon-tile icon-tile-green">
               <HiCheckCircle className="w-6 h-6" />
             </div>
             <div>
@@ -245,7 +245,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-secondary/20 rounded-xl flex items-center justify-center text-secondary">
+            <div className="w-12 h-12 icon-tile icon-tile-orange">
               <HiDownload className="w-6 h-6" />
             </div>
             <div>
@@ -255,7 +255,7 @@ const Dashboard = () => {
           </div>
 
           <div className="card p-6 flex items-center gap-4">
-            <div className="w-12 h-12 bg-tertiary/20 rounded-xl flex items-center justify-center text-tertiary">
+            <div className="w-12 h-12 icon-tile icon-tile-purple">
               <HiHeart className="w-6 h-6" />
             </div>
             <div>
