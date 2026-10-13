@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { HiCheckCircle, HiXCircle, HiMail } from 'react-icons/hi';
+import Input from '../components/ui/Input';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
@@ -9,6 +10,9 @@ const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState('verifying'); // 'verifying' | 'success' | 'error'
   const [message, setMessage] = useState('');
+  const [resendEmail, setResendEmail] = useState('');
+  const [resending, setResending] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const calledRef = useRef(false);
 
   useEffect(() => {
@@ -47,10 +51,16 @@ const VerifyEmail = () => {
     }
   };
 
-  const handleResendVerification = async () => {
-    // Prompt for email
-    const email = window.prompt('Enter your email address:');
-    if (!email) return;
+  const handleResendVerification = async (e) => {
+    e.preventDefault();
+    // Design-layer replacement for the old window.prompt: a real field.
+    const email = resendEmail.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Enter a valid email address (e.g. you@example.com)');
+      return;
+    }
+    setEmailError('');
+    setResending(true);
 
     try {
       const response = await fetch(`${API_URL}/auth/resend-verification`, {
@@ -67,6 +77,8 @@ const VerifyEmail = () => {
       }
     } catch {
       toast.error('Failed to resend verification email.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -118,21 +130,38 @@ const VerifyEmail = () => {
               </div>
               <h2 className="t-h3 text-white mb-2">Verification Failed</h2>
               <p className="text-outline mb-6">{message}</p>
-              <div className="flex flex-col gap-3">
+              <form onSubmit={handleResendVerification} className="flex flex-col gap-4 text-left">
+                <Input
+                  id="resend-email"
+                  name="resend-email"
+                  type="email"
+                  label="Resend verification link"
+                  placeholder="Your account email (you@example.com)"
+                  autoComplete="email"
+                  required
+                  icon={<HiMail className="h-5 w-5" />}
+                  value={resendEmail}
+                  onChange={(e) => { setResendEmail(e.target.value); if (emailError) setEmailError(''); }}
+                  error={emailError}
+                />
                 <button
-                  onClick={handleResendVerification}
-                  className="btn btn-primary inline-flex items-center justify-center gap-2 px-8 py-3"
+                  type="submit"
+                  disabled={resending}
+                  className="btn btn-primary w-full inline-flex items-center justify-center gap-2"
                 >
-                  <HiMail className="w-5 h-5" />
-                  Resend Verification Email
+                  {resending ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <><HiMail className="w-5 h-5" /> Resend Verification Email</>
+                  )}
                 </button>
-                <Link
-                  to="/login"
-                  className="text-primary-dim hover:text-primary-fixed transition-colors text-sm"
-                >
-                  Back to Login
-                </Link>
-              </div>
+              </form>
+              <Link
+                to="/login"
+                className="block mt-4 text-center text-primary-dim hover:text-primary-fixed transition-colors text-sm"
+              >
+                Back to Login
+              </Link>
             </>
           )}
         </div>

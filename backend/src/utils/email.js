@@ -127,6 +127,7 @@ const buildEmailHtml = ({ heading, name, intro = [], ctaText, ctaLink, fallbackA
   const introHtml = intro
     .map((p) => `<p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;color:#475569;">${p}</p>`)
     .join('');
+  const FONT = "font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;";
 
   return `
 <!DOCTYPE html>
@@ -135,40 +136,45 @@ const buildEmailHtml = ({ heading, name, intro = [], ctaText, ctaLink, fallbackA
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="x-apple-disable-message-reformatting" />
+  <meta name="color-scheme" content="light" />
+  <meta name="supported-color-schemes" content="light" />
   <title>${heading}</title>
 </head>
-<body style="margin:0;padding:0;background-color:#0b1022;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0b1022;padding:32px 12px;">
+<body style="margin:0;padding:0;background-color:#f1f5f9;${FONT}-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <!-- Preheader: the preview line seen in the inbox list (envelope rule) -->
+  <div style="display:none;overflow:hidden;line-height:1px;opacity:0;max-height:0;max-width:0;">${heading} — it takes ten seconds.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f1f5f9;padding:32px 12px;${FONT}">
     <tr>
       <td align="center">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.45);">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background-color:#ffffff;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;${FONT}">
           <tr>
-            <td style="background-color:#1d4ed8;background-image:linear-gradient(135deg,#1d4ed8 0%,#4f46e5 100%);padding:36px 32px;text-align:center;">
-              <div style="font-size:26px;font-weight:700;color:#ffffff;letter-spacing:.5px;">InovitaZ</div>
-              <div style="margin-top:8px;font-size:12px;color:#c7d2fe;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;">IoT Projects &amp; Tutorials</div>
+            <td style="background-color:#1d4ed8;background-image:linear-gradient(135deg,#0f2a5c 0%,#1d4ed8 100%);padding:32px 32px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:2px;">INOVITAZ</div>
+              <div style="margin-top:6px;font-size:11px;color:#bfdbfe;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;">Premium IoT Project Marketplace</div>
             </td>
           </tr>
           <tr>
-            <td style="padding:40px 36px;background-color:#ffffff;">
-              <h1 style="margin:0 0 18px 0;font-size:24px;line-height:1.3;font-weight:700;color:#0f172a;">${heading}</h1>
+            <td style="padding:36px 32px 28px 32px;background-color:#ffffff;">
+              <h1 style="margin:0 0 18px 0;font-size:22px;line-height:1.35;font-weight:700;color:#0f172a;">${heading}</h1>
               <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;color:#475569;">Hi ${name},</p>
               ${introHtml}
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 10px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${ctaLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#2563eb;background-image:linear-gradient(135deg,#2563eb 0%,#4f46e5 100%);color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:15px 44px;border-radius:10px;box-shadow:0 6px 18px rgba(37,99,235,0.35);">${ctaText}</a>
+                    <a href="${ctaLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;background-color:#2563eb;background-image:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);color:#ffffff;text-decoration:none;font-weight:600;font-size:16px;padding:16px 44px;border-radius:12px;">${ctaText}</a>
                   </td>
                 </tr>
               </table>
               <p style="margin:14px 0 0 0;font-size:14px;line-height:1.6;color:#64748b;text-align:center;">
-                If the button doesn't work, <a href="${ctaLink}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;font-weight:600;text-decoration:none;">${fallbackAnchorText}</a>.
+                Button not working? <a href="${ctaLink}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;font-weight:600;text-decoration:none;">${fallbackAnchorText}</a>.
               </p>
-              ${note ? `<p style="margin:22px 0 0 0;font-size:13px;line-height:1.55;color:#94a3b8;text-align:center;">${note}</p>` : ''}
+              ${note ? `<p style="margin:24px 0 0 0;padding-top:20px;border-top:1px solid #e2e8f0;font-size:13px;line-height:1.55;color:#94a3b8;text-align:center;">${note}</p>` : ''}
             </td>
           </tr>
           <tr>
-            <td style="padding:22px 32px;background-color:#0f172a;text-align:center;border-radius:0 0 16px 16px;">
-              <p style="margin:0;font-size:12px;color:#94a3b8;">&copy; ${year} InovitaZ &middot; All rights reserved</p>
+            <td style="padding:20px 32px;background-color:#f8fafc;text-align:center;border-top:1px solid #e2e8f0;">
+              <p style="margin:0 0 6px 0;font-size:12px;line-height:1.5;color:#94a3b8;">Questions? Just reply to this email — we read every message.</p>
+              <p style="margin:0;font-size:12px;line-height:1.5;color:#b6c2d1;">&copy; ${year} InovitaZ &middot; All rights reserved</p>
             </td>
           </tr>
         </table>
