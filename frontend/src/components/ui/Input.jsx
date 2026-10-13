@@ -10,6 +10,7 @@ export default function Input({
   error = '',
   helper = '',
   icon = null,          // optional left icon (React node, aria-hidden)
+  rightSlot = null,     // optional right-side control (password toggles etc.)
   className = '',
   ...props
 }) {
@@ -39,9 +40,14 @@ export default function Input({
           name={name}
           aria-invalid={Boolean(error) || undefined}
           aria-describedby={describedBy}
-          className={`input ${icon ? 'pl-10' : ''} ${error ? 'border-danger-fg/60' : ''}`.trim()}
+          className={`input ${icon ? 'pl-10' : ''} ${rightSlot ? 'pr-12' : ''} ${error ? 'border-danger-fg/60' : ''}`.trim()}
           {...props}
         />
+        {rightSlot && (
+          <span className="absolute inset-y-0 right-0 pr-1 flex items-center justify-center">
+            {rightSlot}
+          </span>
+        )}
       </div>
       {error ? (
         <p id={errorId} role="alert" className="mt-1 t-caption text-danger-fg">

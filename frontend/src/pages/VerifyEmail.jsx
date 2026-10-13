@@ -71,11 +71,11 @@ const VerifyEmail = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-lowest px-4">
+    <div className="min-h-[100dvh] flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center">
-          <Link to="/" className="inline-flex items-center gap-2 mb-8 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+          <Link to="/" className="inline-flex items-center gap-2 mb-8">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
@@ -84,23 +84,23 @@ const VerifyEmail = () => {
           </Link>
         </div>
 
-        <div className="glass-panel rounded-2xl p-8 text-center">
+        <div className="glass-panel p-8 text-center fade-in">
           {status === 'verifying' && (
             <>
-              <div className="w-20 h-20 bg-primary-DEFAULT/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <div className="w-10 h-10 border-4 border-primary-DEFAULT/30 border-t-primary-DEFAULT rounded-full animate-spin" />
+              <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-10 h-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Verifying your email...</h2>
+              <h2 className="t-h3 text-white mb-2">Verifying your email...</h2>
               <p className="text-outline">Please wait while we verify your email address.</p>
             </>
           )}
 
           {status === 'success' && (
             <>
-              <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HiCheckCircle className="w-12 h-12 text-green-400" />
+              <div className="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <HiCheckCircle className="w-12 h-12 text-success-fg" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Email Verified!</h2>
+              <h2 className="t-h3 text-white mb-2">Email Verified!</h2>
               <p className="text-outline mb-6">{message}</p>
               <Link
                 to="/login"
@@ -113,10 +113,10 @@ const VerifyEmail = () => {
 
           {status === 'error' && (
             <>
-              <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HiXCircle className="w-12 h-12 text-red-400" />
+              <div className="w-20 h-20 bg-danger/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <HiXCircle className="w-12 h-12 text-danger-fg" />
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">Verification Failed</h2>
+              <h2 className="t-h3 text-white mb-2">Verification Failed</h2>
               <p className="text-outline mb-6">{message}</p>
               <div className="flex flex-col gap-3">
                 <button
