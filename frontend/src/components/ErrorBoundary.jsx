@@ -43,10 +43,10 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <main className="min-h-screen bg-surface-lowest flex items-center justify-center px-4" role="alert">
+        <main className="min-h-[100dvh] bg-surface-lowest flex items-center justify-center px-4" role="alert">
           <div className="max-w-md w-full text-center">
-            <div className="w-20 h-20 bg-red-500/15 border border-red-500/25 rounded-full flex items-center justify-center mx-auto mb-6">
-              <HiExclamationCircle className="w-12 h-12 text-red-400" aria-hidden="true" />
+            <div className="w-20 h-20 bg-danger/15 border border-danger/25 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HiExclamationCircle className="w-12 h-12 text-danger-fg" aria-hidden="true" />
             </div>
 
             <h1 className="text-2xl font-bold text-white mb-3">Something went wrong</h1>
@@ -75,8 +75,8 @@ class ErrorBoundary extends React.Component {
 
             {import.meta.env.DEV && this.state.error && (
               <details className="mt-8 text-left bg-surface-low border border-red-500/30 rounded-lg p-4">
-                <summary className="text-red-300 font-medium cursor-pointer">Error details for development</summary>
-                <pre className="mt-4 text-xs text-red-200 overflow-auto max-h-48">
+                <summary className="text-danger-fg font-medium cursor-pointer">Error details for development</summary>
+                <pre className="mt-4 text-xs text-danger-fg/80 overflow-auto max-h-48">
                   {this.state.error.toString()}
                   {'\n\n'}
                   {this.state.errorInfo?.componentStack}

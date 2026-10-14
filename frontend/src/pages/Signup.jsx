@@ -83,8 +83,8 @@ const Signup = () => {
           </Link>
 
           <div className="bg-surface rounded-2xl border border-surface-variant p-8 text-center">
-            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <HiMail className="w-12 h-12 text-green-400" />
+            <div className="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HiMail className="w-12 h-12 text-success-fg" />
             </div>
             <h2 className="t-h2 text-white mb-3">Check your email</h2>
             <p className="text-outline mb-2 leading-relaxed">
@@ -333,8 +333,8 @@ const Signup = () => {
       {existingEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 fade-in">
           <section role="dialog" aria-modal="true" aria-labelledby="existing-email-title" aria-describedby="existing-email-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center fade-in">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HiMail className="w-8 h-8 text-red-400" />
+            <div className="w-16 h-16 bg-danger/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-danger-fg" />
             </div>
             <h3 id="existing-email-title" className="text-xl font-bold text-white mb-2">Email already registered</h3>
             <p className="text-outline mb-1">

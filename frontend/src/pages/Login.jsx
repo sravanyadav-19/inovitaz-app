@@ -188,8 +188,8 @@ const Login = () => {
       {unverifiedEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 fade-in">
           <section role="dialog" aria-modal="true" aria-labelledby="unverified-email-title" aria-describedby="unverified-email-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center fade-in">
-            <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HiMail className="w-8 h-8 text-yellow-400" />
+            <div className="w-16 h-16 bg-warning/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-warning-fg" />
             </div>
             <h3 id="unverified-email-title" className="text-xl font-bold text-white mb-2">Email not verified yet</h3>
             <p className="text-outline mb-1">
@@ -200,8 +200,8 @@ const Login = () => {
             </p>
             <div className="flex flex-col gap-3">
               {resent ? (
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3 text-center">
-                  <p className="text-sm text-green-400 font-medium flex items-center justify-center gap-2">
+                <div className="bg-success/15 border border-success/40 rounded-xl px-4 py-3 text-center">
+                  <p className="text-sm text-success-fg font-medium flex items-center justify-center gap-2">
                     <HiCheckCircle className="w-5 h-5" /> Verification email sent! Check your inbox (and spam).
                   </p>
                 </div>
@@ -232,8 +232,8 @@ const Login = () => {
       {notFoundEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 fade-in">
           <section role="dialog" aria-modal="true" aria-labelledby="no-account-title" aria-describedby="no-account-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center fade-in">
-            <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HiMail className="w-8 h-8 text-blue-400" />
+            <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-primary-dim" />
             </div>
             <h3 id="no-account-title" className="text-xl font-bold text-white mb-2">No account found</h3>
             <p className="text-outline mb-1">

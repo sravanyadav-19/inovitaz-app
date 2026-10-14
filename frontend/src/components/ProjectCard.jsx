@@ -50,7 +50,7 @@ const StarRating = ({ rating }) => (
     {[1, 2, 3, 4, 5].map((star) => (
       <HiStar
         key={star}
-        className={`w-4 h-4 ${star <= Math.round(rating) ? 'text-yellow-400' : 'text-slate-600'}`}
+        className={`w-4 h-4 ${star <= Math.round(rating) ? 'text-warning-fg' : 'text-slate-600'}`}
       />
     ))}
   </div>
@@ -104,9 +104,9 @@ const ProjectCard = ({ project, highlight = '' }) => {
   }
 
   const diffStyle = {
-    Beginner: 'bg-green-500/15 text-green-400 border border-green-500/25',
-    Intermediate: 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/25',
-    Advanced: 'bg-red-500/15 text-red-400 border border-red-500/25',
+    Beginner: 'bg-success/15 text-success-fg border border-success/25',
+    Intermediate: 'bg-warning/15 text-warning-fg border border-warning/25',
+    Advanced: 'bg-danger/15 text-danger-fg border border-danger/25',
   }[difficulty] || 'bg-surface-highest text-outline border border-outline-variant/30';
 
   const isNew = createdAt && new Date().getTime() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
@@ -176,7 +176,7 @@ const ProjectCard = ({ project, highlight = '' }) => {
               aria-pressed={isWishlisted}
               className="w-11 h-11 inline-flex items-center justify-center bg-surface-highest/80 backdrop-blur-md border border-outline-variant/30 text-outline hover:text-white hover:bg-surface-highest rounded-full transition-colors duration-200 disabled:opacity-60"
             >
-              {isWishlisted ? <HiHeart aria-hidden="true" className="w-5 h-5 text-red-400" /> : <HiOutlineHeart aria-hidden="true" className="w-5 h-5 group-hover:text-red-400" />}
+              {isWishlisted ? <HiHeart aria-hidden="true" className="w-5 h-5 text-danger-fg" /> : <HiOutlineHeart aria-hidden="true" className="w-5 h-5 group-hover:text-danger-fg" />}
             </button>
           </div>
 

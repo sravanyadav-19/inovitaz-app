@@ -55,7 +55,7 @@ const DownloadButton = ({ projectId, isPurchased }) => {
       </button>
 
       {error && (
-        <div className="mt-2 flex items-center gap-2 text-red-400 text-sm">
+        <div className="mt-2 flex items-center gap-2 text-danger-fg text-sm">
           <HiExclamationCircle className="w-4 h-4" />
           {error}
         </div>

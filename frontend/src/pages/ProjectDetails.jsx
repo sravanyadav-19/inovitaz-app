@@ -481,7 +481,7 @@ export default function ProjectDetails() {
   const StarRating = ({ rating }) => (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
-        <HiStar key={star} className={`w-5 h-5 ${star <= rating ? 'text-yellow-400' : 'text-outline-variant'}`} />
+        <HiStar key={star} className={`w-5 h-5 ${star <= rating ? 'text-warning-fg' : 'text-outline-variant'}`} />
       ))}
     </div>
   );
@@ -559,9 +559,9 @@ export default function ProjectDetails() {
                   onClick={toggleWishlist}
                   aria-label={isWishlisted ? `Remove ${project.title} from wishlist` : `Save ${project.title} to wishlist`}
                   aria-pressed={isWishlisted}
-                  className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-red-500/20 transition-colors text-outline hover:text-red-400"
+                  className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-danger/20 transition-colors text-outline hover:text-danger-fg"
                 >
-                  {isWishlisted ? <HiHeart className="w-6 h-6 text-red-500" /> : <HiOutlineHeart className="w-6 h-6" />}
+                  {isWishlisted ? <HiHeart className="w-6 h-6 text-danger" /> : <HiOutlineHeart className="w-6 h-6" />}
                   <span className="text-sm font-medium">{isWishlisted ? 'Saved' : 'Save'}</span>
                 </button>
               </div>
@@ -635,7 +635,7 @@ export default function ProjectDetails() {
                       </button>
                     </form>
                   )}
-                  {couponError && <p id="project-coupon-error" role="alert" className="text-xs text-red-400 mt-1">{couponError}</p>}
+                  {couponError && <p id="project-coupon-error" role="alert" className="text-xs text-danger-fg mt-1">{couponError}</p>}
                 </div>
               )}
 
@@ -751,7 +751,7 @@ export default function ProjectDetails() {
                     {components.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {components.map((c, i) => (
-                          <div key={i} className="flex items-center justify-between bg-surface p-4 rounded-xl border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-all">
+                          <div key={i} className="flex items-center justify-between bg-surface p-4 rounded-xl border border-surface-variant hover:border-primary-dim/40 transition-colors">
                             {/* Left: Name and Quantity */}
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
