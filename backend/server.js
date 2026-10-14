@@ -128,11 +128,16 @@ const strictLimiter = rateLimit({
 // ==========================================
 // SECURE CORS
 // ==========================================
+// FRONTEND_URL = production frontend (also used to build email links — never point it at a preview).
+// ALLOWED_ORIGINS = optional comma-separated extras (Vercel preview deploys of branches, etc.).
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : []),
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-].filter(Boolean);
+];
 
 app.use(cors({
   origin: function (origin, callback) {
