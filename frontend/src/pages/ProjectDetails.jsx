@@ -481,14 +481,14 @@ export default function ProjectDetails() {
   const StarRating = ({ rating }) => (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
-        <HiStar key={star} className={`w-5 h-5 ${star <= rating ? 'text-yellow-400' : 'text-outline-variant'}`} />
+        <HiStar key={star} className={`w-5 h-5 ${star <= rating ? 'text-warning-fg' : 'text-outline-variant'}`} />
       ))}
     </div>
   );
 
   const LockedOverlay = () => (
-    <div className="absolute inset-0 bg-surface-lowest/80 backdrop-blur-sm flex flex-col items-center justify-center text-center z-10 rounded-lg border border-surface-variant">
-      <div className="bg-surface-high p-8 rounded-2xl shadow-2xl border border-surface-variant max-w-sm transform scale-100 transition-transform">
+    <div className="absolute inset-0 bg-surface-lowest/80 backdrop-blur-sm flex flex-col items-center justify-center text-center z-10 rounded-xl border border-surface-variant">
+      <div className="bg-surface-high p-8 rounded-xl border border-surface-variant max-w-sm">
         <div className="w-16 h-16 bg-primary/20 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
           <HiLockClosed className="w-8 h-8" />
         </div>
@@ -499,7 +499,7 @@ export default function ProjectDetails() {
         <button 
           onClick={handleBuy} 
           disabled={processing}
-          className="w-full btn btn-primary py-3 flex items-center justify-center gap-2 text-lg shadow-lg hover:shadow-blue-500/30 transition-all"
+          className="w-full btn btn-primary py-3 flex items-center justify-center gap-2 text-lg"
         >
           {processing ? "Processing..." : <><HiShoppingCart /> Buy Now ₹{displayPrice}</>}
         </button>
@@ -507,9 +507,9 @@ export default function ProjectDetails() {
     </div>
   );
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><LoadingSpinner size="large" /></div>;
+  if (loading) return <div className="min-h-[100dvh] flex items-center justify-center"><LoadingSpinner size="large" /></div>;
   if (!project) return (
-    <div className="min-h-screen bg-surface-lowest flex items-center justify-center">
+    <div className="min-h-[100dvh] flex items-center justify-center">
       <div className="text-center p-8 bg-surface rounded-2xl border border-surface-variant">
         <h2 className="text-2xl font-bold text-white mb-2">Project Not Found</h2>
         <p className="text-outline mb-6">The project you are looking for does not exist or has been removed.</p>
@@ -525,17 +525,17 @@ export default function ProjectDetails() {
   tabs.push('reviews');
 
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in">
+    <div className="min-h-[100dvh] fade-in">
       {/* Header */}
-      <div className="bg-surface border-b border-surface-variant">
-        <div className="max-w-7xl mx-auto px-4 py-10">
+      <div>
+        <div className="max-w-7xl mx-auto px-4 pt-8 pb-10">
           <div className="grid lg:grid-cols-2 gap-10">
             {/* Image */}
             <div className="relative">
               <img
                 src={project.thumbnail || PROJECT_DETAIL_FALLBACK_IMAGE}
                 alt={project.title}
-                className="w-full rounded-xl shadow-lg object-cover aspect-video border border-surface-variant"
+                className="w-full rounded-xl object-cover aspect-video border border-surface-variant"
                 onError={(e) => {
                   e.currentTarget.onerror = null;
                   e.currentTarget.src = PROJECT_DETAIL_FALLBACK_IMAGE;
@@ -545,8 +545,8 @@ export default function ProjectDetails() {
 
             {/* Info */}
             <div className="flex flex-col justify-center">
-              <span className="text-primary font-semibold tracking-wide text-sm mb-2 uppercase">{project.category}</span>
-              <h1 className="text-3xl font-bold text-white mb-2 leading-tight">{project.title}</h1>
+              <div className="t-label text-primary-dim mb-2">{project.category}</div>
+              <h1 className="t-h1 text-white mb-2">{project.title}</h1>
               
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-1">
@@ -559,21 +559,21 @@ export default function ProjectDetails() {
                   onClick={toggleWishlist}
                   aria-label={isWishlisted ? `Remove ${project.title} from wishlist` : `Save ${project.title} to wishlist`}
                   aria-pressed={isWishlisted}
-                  className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-red-500/20 transition-colors text-outline hover:text-red-400"
+                  className="ml-auto flex items-center gap-2 px-3 py-1 rounded-full hover:bg-danger/20 transition-colors text-outline hover:text-danger-fg"
                 >
-                  {isWishlisted ? <HiHeart className="w-6 h-6 text-red-500" /> : <HiOutlineHeart className="w-6 h-6" />}
+                  {isWishlisted ? <HiHeart className="w-6 h-6 text-danger" /> : <HiOutlineHeart className="w-6 h-6" />}
                   <span className="text-sm font-medium">{isWishlisted ? 'Saved' : 'Save'}</span>
                 </button>
               </div>
 
               <div className="flex items-baseline gap-3 mb-4 flex-wrap">
-                <span className="text-5xl font-bold text-primary">
+                <span className="t-num text-5xl font-bold text-primary-dim">
                   {formatINRFromPaise(appliedCoupon ? appliedCoupon.final_amount : project.price)}
                 </span>
                 {appliedCoupon ? (
                   <>
                     <span className="text-xl text-outline line-through">{formatINRFromPaise(project.price)}</span>
-                    <span className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full text-sm font-bold">
+                    <span className="bg-success/15 text-success-fg px-3 py-1 rounded-full text-sm font-bold">
                       -{formatINRFromPaise(appliedCoupon.discount_amount)}
                     </span>
                   </>
@@ -593,7 +593,7 @@ export default function ProjectDetails() {
                       "Lifetime download access",
                     ].map((item) => (
                       <li key={item} className="flex items-start gap-2 text-sm text-outline">
-                        <HiCheckCircle className="w-5 h-5 text-green-500 shrink-0" />
+                        <HiCheckCircle className="w-5 h-5 text-success-fg shrink-0" />
                         <span>{item}</span>
                       </li>
                     ))}
@@ -605,12 +605,12 @@ export default function ProjectDetails() {
               {!purchased && (
                 <div className="mb-6">
                   {appliedCoupon ? (
-                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-3">
+                    <div className="flex items-center justify-between bg-success/10 border border-success/30 rounded-xl px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <HiCheckCircle className="text-green-500 w-5 h-5" />
+                        <HiCheckCircle className="text-success-fg w-5 h-5" />
                         <div>
                           <p className="text-sm font-semibold text-white">{appliedCoupon.code} applied</p>
-                          <p className="text-xs text-green-400">{appliedCoupon.savings_text}</p>
+                          <p className="text-xs text-success-fg">{appliedCoupon.savings_text}</p>
                         </div>
                       </div>
                       <button type="button" onClick={removeCoupon} className="text-xs text-outline hover:text-white underline">
@@ -635,7 +635,7 @@ export default function ProjectDetails() {
                       </button>
                     </form>
                   )}
-                  {couponError && <p id="project-coupon-error" role="alert" className="text-xs text-red-400 mt-1">{couponError}</p>}
+                  {couponError && <p id="project-coupon-error" role="alert" className="text-xs text-danger-fg mt-1">{couponError}</p>}
                 </div>
               )}
 
@@ -644,7 +644,7 @@ export default function ProjectDetails() {
                   <button 
                     onClick={handleBuy} 
                     disabled={processing} 
-                    className="w-full btn btn-primary btn-lg text-lg py-4 shadow-lg hover:shadow-xl transition-all"
+                    className="w-full btn btn-primary btn-lg text-lg py-4"
                   >
                     {processing ? "Processing Payment..." : "Buy Now & Unlock Full Access"}
                   </button>
@@ -670,8 +670,8 @@ export default function ProjectDetails() {
               
               {!purchased && (
                 <div className="mt-3 space-y-2">
-                  <div className="flex items-center justify-center gap-2 rounded-lg border border-surface-variant bg-surface-high/60 px-3 py-2">
-                    <HiShieldCheck className="w-5 h-5 text-green-500" />
+                  <div className="flex items-center justify-center gap-2 rounded-xl border border-surface-variant bg-surface-high/60 px-3 py-2">
+                    <HiShieldCheck className="w-5 h-5 text-success-fg" />
                     <span className="text-xs text-outline">
                       Payments secured by{" "}
                       <a
@@ -699,7 +699,7 @@ export default function ProjectDetails() {
 
       {/* Content Tabs */}
       <div className="max-w-7xl mx-auto px-4 py-10">
-        <div className="card overflow-hidden shadow-sm rounded-xl min-h-[400px]">
+        <div className="card overflow-hidden min-h-[400px]">
           {/* Tab Navigation */}
           <div role="tablist" aria-label="Project information" className="flex border-b border-surface-variant bg-surface-highest overflow-x-auto">
             {tabs.map((tab) => (
@@ -751,7 +751,7 @@ export default function ProjectDetails() {
                     {components.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {components.map((c, i) => (
-                          <div key={i} className="flex items-center justify-between bg-surface p-4 rounded-xl border border-surface-variant hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] transition-all">
+                          <div key={i} className="flex items-center justify-between bg-surface p-4 rounded-xl border border-surface-variant hover:border-primary-dim/40 transition-colors">
                             {/* Left: Name and Quantity */}
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -771,7 +771,7 @@ export default function ProjectDetails() {
                                 href={c.link} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center gap-1 text-xs font-bold text-primary bg-surface border border-primary/30 hover:bg-primary/10 px-3 py-1.5 rounded-lg transition-colors"
+                                className="flex items-center gap-1 text-xs font-bold text-primary bg-surface border border-primary/30 hover:bg-primary/10 px-3 py-1.5 rounded-full transition-colors"
                               >
                                 <HiShoppingCart className="w-3 h-3" />
                                 Buy
@@ -810,7 +810,7 @@ export default function ProjectDetails() {
                 </h3>
                 {circuit.image ? (
                   <div className="mb-6">
-                    <img src={circuit.image} alt="Circuit" className="rounded-lg border border-surface-variant shadow-[0_0_15px_rgba(59,130,246,0.2)] max-w-full md:max-w-2xl" />
+                    <img src={circuit.image} alt="Circuit" className="rounded-xl border border-surface-variant max-w-full md:max-w-2xl" />
                   </div>
                 ) : (
                   <p className="text-outline italic mb-4">No diagram image available.</p>
@@ -852,12 +852,12 @@ export default function ProjectDetails() {
                           navigator.clipboard.writeText(source);
                           toast.success("Source code copied to clipboard!");
                         }}
-                        className="flex items-center gap-1.5 text-xs font-semibold text-outline bg-surface-high hover:bg-surface-highest hover:text-white px-3 py-1.5 rounded-lg border border-surface-variant transition-colors"
+                        className="flex items-center gap-1.5 text-xs font-semibold text-outline bg-surface-high hover:bg-surface-highest hover:text-white px-4 min-h-[44px] rounded-full border border-surface-variant transition-colors"
                       >
                         <HiDocumentDuplicate className="w-4 h-4" /> Copy Code
                       </button>
                     </div>
-                    <pre className="bg-[#000000] text-emerald-400 p-4 rounded-lg overflow-x-auto text-sm border border-surface-variant">
+                    <pre className="bg-surface-lowest text-success-fg p-4 rounded-xl overflow-x-auto text-sm border border-surface-variant">
                       {source}
                     </pre>
                   </div>
@@ -871,7 +871,7 @@ export default function ProjectDetails() {
                 <h3 className="text-xl font-bold text-white mb-6">Customer Reviews</h3>
 
                 {purchased ? (
-                  <div className="bg-surface-high p-6 rounded-lg mb-8 border border-surface-variant">
+                  <div className="bg-surface-high p-6 rounded-xl mb-8 border border-surface-variant">
                     <h4 className="font-bold text-white mb-3">Leave a Review</h4>
                     <form onSubmit={handleSubmitReview}>
                       <div className="flex items-center gap-2 mb-4">
@@ -895,7 +895,7 @@ export default function ProjectDetails() {
                       <label htmlFor="project-review-comment" className="sr-only">Your review</label>
                       <textarea
                         id="project-review-comment"
-                        className="w-full p-3 bg-surface-lowest border border-surface-variant rounded-md focus:ring-2 focus:ring-primary focus:outline-none mb-3 text-white placeholder-outline"
+                        className="w-full p-3 bg-surface-lowest border border-surface-variant rounded-xl focus:ring-2 focus:ring-primary focus:outline-none mb-3 text-white placeholder-outline"
                         rows="3"
                         placeholder="Share your experience..."
                         value={newReview.comment}

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiUser, HiArrowRight } from 'react-icons/hi';
+import Input from '../components/ui/Input';
+import AuthPane from '../components/auth/AuthPane';
 import { useAuth } from '../hooks/useAuth';
 import toast from 'react-hot-toast';
 
@@ -19,10 +21,10 @@ function getPasswordStrength(password) {
   if (/\d/.test(password)) score += 1;
   if (/[^A-Za-z0-9]/.test(password)) score += 1;
 
-  if (score <= 1) return { score, level: 1, label: "Weak", bar: "bg-red-500", text: "text-red-400" };
-  if (score <= 3) return { score, level: 2, label: "Fair", bar: "bg-yellow-500", text: "text-yellow-400" };
-  if (score <= 4) return { score, level: 3, label: "Good", bar: "bg-green-500", text: "text-green-400" };
-  return { score, level: 4, label: "Strong", bar: "bg-green-500", text: "text-green-400" };
+  if (score <= 1) return { score, level: 1, label: "Weak", bar: "bg-danger", text: "text-danger-fg" };
+  if (score <= 3) return { score, level: 2, label: "Fair", bar: "bg-warning", text: "text-warning-fg" };
+  if (score <= 4) return { score, level: 3, label: "Good", bar: "bg-success", text: "text-success-fg" };
+  return { score, level: 4, label: "Strong", bar: "bg-success", text: "text-success-fg" };
 }
 
 const Signup = () => {
@@ -69,10 +71,10 @@ const Signup = () => {
   // verification email was sent (instead of silently redirecting to login).
   if (registeredEmail) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-lowest fade-in px-4 py-12">
+      <div className="min-h-[100dvh] flex items-center justify-center fade-in px-4 py-12">
         <div className="w-full max-w-md">
-          <Link to="/" className="flex items-center gap-2 mb-8 group justify-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+          <Link to="/" className="flex items-center gap-2 mb-8 justify-center">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
@@ -81,10 +83,10 @@ const Signup = () => {
           </Link>
 
           <div className="bg-surface rounded-2xl border border-surface-variant p-8 text-center">
-            <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <HiMail className="w-12 h-12 text-green-400" />
+            <div className="w-20 h-20 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <HiMail className="w-12 h-12 text-success-fg" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-3">Check your email</h2>
+            <h2 className="t-h2 text-white mb-3">Check your email</h2>
             <p className="text-outline mb-2 leading-relaxed">
               We've sent a verification link to <span className="text-white font-medium">{registeredEmail}</span>.
             </p>
@@ -160,102 +162,79 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-surface-lowest fade-in">
+    <div className="min-h-[100dvh] flex fade-in">
       <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
         <div className="w-full max-w-md space-y-8">
           <div>
-            <Link to="/" className="flex items-center gap-2 mb-6 group">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <Link to="/" className="flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                 </svg>
               </div>
               <span className="text-2xl font-bold text-white tracking-tight">Inovitaz</span>
             </Link>
-            <h2 className="text-3xl font-bold text-white">Create an account</h2>
+            <div className="t-label text-primary-dim mb-2">Create account</div>
+            <h2 className="t-h1 text-white">Create an account</h2>
             <p className="mt-2 text-sm text-outline">
               Join thousands of makers building the future. Free to join — browse, wishlist, and buy projects with instant download.
             </p>
           </div>
 
           <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="signup-name" className="block text-sm font-medium text-outline mb-1">Full Name</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiUser className="h-5 w-5 text-outline" />
-                </div>
-                <input
-                  id="signup-name"
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  aria-invalid={Boolean(errors.name)}
-                  aria-describedby={errors.name ? 'signup-name-error' : undefined}
-                  className={`input pl-10 w-full ${errors.name ? 'border-red-500' : ''}`}
-                  placeholder="John Doe"
-                />
-              </div>
-              {errors.name && <p id="signup-name-error" role="alert" className="mt-1 text-xs text-red-400">{errors.name}</p>}
-            </div>
+            <Input
+              id="signup-name"
+              name="name"
+              label="Full Name"
+              type="text"
+              autoComplete="name"
+              required
+              value={formData.name}
+              onChange={handleChange}
+              error={errors.name}
+              icon={<HiUser className="h-5 w-5" />}
+              placeholder="John Doe"
+            />
+
+            <Input
+              id="signup-email"
+              name="email"
+              label="Email Address"
+              type="email"
+              autoComplete="email"
+              required
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              icon={<HiMail className="h-5 w-5" />}
+              placeholder="you@example.com"
+            />
 
             <div>
-              <label htmlFor="signup-email" className="block text-sm font-medium text-outline mb-1">Email Address</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiMail className="h-5 w-5 text-outline" />
-                </div>
-                <input
-                  id="signup-email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  aria-invalid={Boolean(errors.email)}
-                  aria-describedby={errors.email ? 'signup-email-error' : undefined}
-                  className={`input pl-10 w-full ${errors.email ? 'border-red-500' : ''}`}
-                  placeholder="you@example.com"
-                />
-              </div>
-              {errors.email && <p id="signup-email-error" role="alert" className="mt-1 text-xs text-red-400">{errors.email}</p>}
-            </div>
-
-            <div>
-              <label htmlFor="signup-password" className="block text-sm font-medium text-outline mb-1">Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiLockClosed className="h-5 w-5 text-outline" />
-                </div>
-                <input
-                  id="signup-password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  aria-invalid={Boolean(errors.password)}
-                  aria-describedby={errors.password ? 'signup-password-error signup-password-hint' : 'signup-password-hint'}
-                  className={`input pl-10 pr-10 w-full ${errors.password ? 'border-red-500' : ''}`}
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}
-                </button>
-              </div>
-              {errors.password && <p id="signup-password-error" role="alert" className="mt-1 text-xs text-red-400">{errors.password}</p>}
-
+              <Input
+                id="signup-password"
+                name="password"
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="new-password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                icon={<HiLockClosed className="h-5 w-5" />}
+                rightSlot={(
+                  <button
+                    type="button"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
+                    className="w-11 h-11 inline-flex items-center justify-center text-outline hover:text-white"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}
+                  </button>
+                )}
+                placeholder="••••••••"
+              />
               {/* Strength meter (shown once the user starts typing) */}
               {formData.password && (
                 <div className="mt-2">
@@ -272,42 +251,35 @@ const Signup = () => {
                   </p>
                 </div>
               )}
-              <p id="signup-password-hint" className="mt-1 text-xs text-outline">
-                At least 6 characters. Use a mix of upper & lower case letters, numbers and symbols for a stronger password.
+              <p className="mt-1 t-caption text-outline">
+                At least 6 characters. A mix of upper/lower case, numbers and symbols makes it stronger.
               </p>
             </div>
 
-            <div>
-              <label htmlFor="signup-confirm-password" className="block text-sm font-medium text-outline mb-1">Confirm Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiLockClosed className="h-5 w-5 text-outline" />
-                </div>
-                <input
-                  id="signup-confirm-password"
-                  name="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  aria-invalid={Boolean(errors.confirmPassword)}
-                  aria-describedby={errors.confirmPassword ? 'signup-confirm-password-error' : undefined}
-                  className={`input pl-10 pr-10 w-full ${errors.confirmPassword ? 'border-red-500' : ''}`}
-                  placeholder="••••••••"
-                />
+            <Input
+              id="signup-confirm-password"
+              name="confirmPassword"
+              label="Confirm Password"
+              type={showConfirmPassword ? 'text' : 'password'}
+              autoComplete="new-password"
+              required
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              error={errors.confirmPassword}
+              icon={<HiLockClosed className="h-5 w-5" />}
+              rightSlot={(
                 <button
                   type="button"
                   aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
                   aria-pressed={showConfirmPassword}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white"
+                  className="w-11 h-11 inline-flex items-center justify-center text-outline hover:text-white"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? <HiEyeOff className="h-5 w-5" /> : <HiEye className="h-5 w-5" />}
                 </button>
-              </div>
-              {errors.confirmPassword && <p id="signup-confirm-password-error" role="alert" className="mt-1 text-xs text-red-400">{errors.confirmPassword}</p>}
-            </div>
+              )}
+              placeholder="••••••••"
+            />
 
             <div className="flex items-start">
               <input
@@ -321,12 +293,12 @@ const Signup = () => {
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-outline">
                 I agree to the{' '}
-                <Link to="/terms" className="text-primary hover:text-primary-dim">Terms</Link>
+                <Link to="/terms" className="text-primary-dim hover:text-primary-fixed">Terms</Link>
                 {' '}and{' '}
-                <Link to="/privacy" className="text-primary hover:text-primary-dim">Privacy Policy</Link>
+                <Link to="/privacy" className="text-primary-dim hover:text-primary-fixed">Privacy Policy</Link>
               </label>
             </div>
-            {errors.terms && <p id="signup-terms-error" role="alert" className="text-xs text-red-400">{errors.terms}</p>}
+            {errors.terms && <p id="signup-terms-error" role="alert" className="text-xs text-danger-fg">{errors.terms}</p>}
 
             <button
               type="submit"
@@ -342,38 +314,27 @@ const Signup = () => {
 
           <p className="mt-2 text-center text-sm text-outline">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-primary hover:text-primary-dim">
+            <Link to="/login" className="font-medium text-primary-dim hover:text-primary-fixed">
               Sign in instead
             </Link>
           </p>
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 bg-surface relative overflow-hidden items-center justify-center">
-        <div className="absolute inset-0 bg-gradient-to-bl from-primary/20 to-surface opacity-90" />
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: 'url("https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1600&q=80")',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            mixBlendMode: 'overlay'
-          }}
-        />
-        <div className="relative z-10 text-center px-8">
-          <h2 className="text-4xl font-bold text-white mb-4">Join the Community</h2>
-          <p className="text-outline text-lg max-w-md mx-auto">
-            Access premium projects and connect with fellow engineers.
-          </p>
-        </div>
-      </div>
+      {/* Right Side — shared CSS brand pane (F8: no external imagery) */}
+      <AuthPane
+        eyebrow="Membership"
+        title="Join the community"
+        subtitle="Access premium projects and connect with fellow engineers."
+        footnote="registry: open — seats: unlimited"
+      />
 
       {/* Email already registered popup */}
       {existingEmail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <section role="dialog" aria-modal="true" aria-labelledby="existing-email-title" aria-describedby="existing-email-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center">
-            <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <HiMail className="w-8 h-8 text-red-400" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 fade-in">
+          <section role="dialog" aria-modal="true" aria-labelledby="existing-email-title" aria-describedby="existing-email-description" className="bg-surface rounded-2xl border border-surface-variant p-8 max-w-md w-full text-center fade-in">
+            <div className="w-16 h-16 bg-danger/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <HiMail className="w-8 h-8 text-danger-fg" />
             </div>
             <h3 id="existing-email-title" className="text-xl font-bold text-white mb-2">Email already registered</h3>
             <p className="text-outline mb-1">

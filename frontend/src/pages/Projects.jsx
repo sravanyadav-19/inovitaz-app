@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { HiSearch, HiFilter, HiX } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { SkeletonCard } from '../components/ui/Skeleton';
 import { projectsAPI } from '../api/projects';
 import { requestCookieConsent } from '../context/CookieConsentContext';
 
@@ -194,20 +194,16 @@ const Projects = () => {
   }, [categories]);
 
   return (
-    <div className="min-h-screen bg-surface fade-in">
+    <div className="min-h-[100dvh] bg-surface fade-in">
       {/* Header */}
-      <div className="bg-surface-lowest border-b border-surface-variant/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative overflow-hidden">
-          {/* Subtle glow behind header */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-DEFAULT/5 rounded-full blur-3xl"></div>
-          
-          <h1 className="text-3xl lg:text-4xl font-display font-bold text-white mb-2 relative z-10">
-            Database querying <span className="animate-pulse text-secondary-DEFAULT">_</span>
-          </h1>
-          <p className="text-outline relative z-10">
-            Explore our repository of premium IoT and embedded systems modules.
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
+        <div className="t-label text-primary-dim mb-2">Catalog</div>
+        <h1 className="t-h1 text-white mb-2">
+          Project catalog
+        </h1>
+        <p className="text-outline">
+          Explore our repository of premium IoT and embedded systems modules.
+        </p>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -227,7 +223,7 @@ const Projects = () => {
                     placeholder="Search projects… e.g. weather station"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="input pl-10 pr-10 bg-surface text-white placeholder-outline-variant font-medium tracking-wide"
+                    className="input pl-10 pr-10 placeholder-outline-variant font-medium"
                   />
                   {searchInput && (
                     <button
@@ -331,7 +327,7 @@ const Projects = () => {
                   aria-label="Maximum project price"
                   value={maxPrice}
                   onChange={(e) => handleMaxPriceChange(e.target.value)}
-                  className="input w-auto text-sm bg-surface text-white"
+                  className="input w-auto text-sm"
                 >
                   <option value="29900">₹299</option>
                   <option value="49900">₹499</option>
@@ -474,7 +470,7 @@ const Projects = () => {
         {/* Active Filters Display */}
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-sm text-outline font-medium tracking-wide">ACTIVE_FILTERS:</span>
+            <span className="t-label text-outline self-center">Active filters</span>
             {category && (
               <span className="px-2 py-1 bg-surface-highest border border-primary-dim/30 text-primary-dim rounded-full text-xs uppercase tracking-wide flex items-center gap-1">
                 {category}
@@ -512,20 +508,22 @@ const Projects = () => {
 
         {/* Results Count */}
         {!loading && (
-          <p className="text-outline mb-6 text-sm font-mono opacity-80">
-            &gt; FOUND_MODULES: {projects.length} OF {pagination.total || 0}
-            {search && ` FOR QUERY [${search}]`}
+          <p className="text-outline mb-6 text-sm">
+            Showing <span className="t-num">{projects.length}</span> of <span className="t-num">{pagination.total || 0}</span> projects
+            {search && <> for &ldquo;{search}&rdquo;</>}
           </p>
         )}
 
         {/* Projects Grid */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <LoadingSpinner size="large" text={search ? "Searching…" : "Loading projects..."} />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-busy="true" aria-label={search ? 'Searching projects' : 'Loading projects'}>
+            {[...Array(8)].map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
           </div>
         ) : projects.length === 0 ? (
-          <div className="text-center py-12 bg-surface-lowest border border-surface-variant rounded-xl glass-panel">
-            <div className="w-24 h-24 bg-surface-highest rounded-full flex items-center justify-center mx-auto mb-4 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+          <div className="text-center py-12 card">
+            <div className="w-24 h-24 bg-surface-highest rounded-full flex items-center justify-center mx-auto mb-4">
               <HiSearch className="w-12 h-12 text-primary" />
             </div>
             <h3 className="text-xl font-display font-semibold text-white mb-2">
@@ -573,7 +571,7 @@ const Projects = () => {
                 <button
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-secondary"
                 >
                   Previous
                 </button>
@@ -593,10 +591,10 @@ const Projects = () => {
                         <button
                           key={pageNum}
                           onClick={() => setPage(pageNum)}
-                          className={`w-10 h-10 rounded font-medium transition-colors ${
+                          className={`w-11 h-11 rounded-full t-num text-sm transition-colors ${
                             page === pageNum
-                              ? 'bg-primary-DEFAULT text-white shadow-[0_0_10px_rgba(59,130,246,0.3)]'
-                              : 'bg-surface-lowest text-outline border border-outline-variant/30 hover:bg-surface-highest hover:text-white'
+                              ? 'bg-primary text-white'
+                              : 'bg-surface-low text-outline border border-surface-variant hover:bg-surface-highest hover:text-white'
                           }`}
                         >
                           {pageNum}
@@ -608,7 +606,7 @@ const Projects = () => {
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={page === pagination.pages}
-                  className="btn btn-secondary btn-sm"
+                  className="btn btn-secondary"
                 >
                   Next
                 </button>

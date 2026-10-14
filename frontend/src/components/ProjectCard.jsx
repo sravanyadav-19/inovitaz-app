@@ -50,7 +50,7 @@ const StarRating = ({ rating }) => (
     {[1, 2, 3, 4, 5].map((star) => (
       <HiStar
         key={star}
-        className={`w-4 h-4 ${star <= Math.round(rating) ? 'text-yellow-400' : 'text-slate-600'}`}
+        className={`w-4 h-4 ${star <= Math.round(rating) ? 'text-warning-fg' : 'text-slate-600'}`}
       />
     ))}
   </div>
@@ -104,9 +104,9 @@ const ProjectCard = ({ project, highlight = '' }) => {
   }
 
   const diffStyle = {
-    Beginner: 'bg-green-500/15 text-green-400 border border-green-500/25',
-    Intermediate: 'bg-yellow-500/15 text-yellow-300 border border-yellow-500/25',
-    Advanced: 'bg-red-500/15 text-red-400 border border-red-500/25',
+    Beginner: 'bg-success/15 text-success-fg border border-success/25',
+    Intermediate: 'bg-warning/15 text-warning-fg border border-warning/25',
+    Advanced: 'bg-danger/15 text-danger-fg border border-danger/25',
   }[difficulty] || 'bg-surface-highest text-outline border border-outline-variant/30';
 
   const isNew = createdAt && new Date().getTime() - new Date(createdAt).getTime() < 7 * 24 * 60 * 60 * 1000;
@@ -141,13 +141,13 @@ const ProjectCard = ({ project, highlight = '' }) => {
 
   return (
     <article className="group relative h-full">
-      <div className="card hover:-translate-y-1 transition-all duration-300 h-full flex flex-col relative z-10 group-hover:border-primary-dim/30 group-hover:shadow-[0_0_20px_rgba(59,130,246,0.15)]">
-        <div className="relative h-48 overflow-hidden bg-surface-lowest border-b border-outline-variant/20">
+      <div className="card h-full flex flex-col relative z-10 transition-colors duration-200 group-hover:border-primary-dim/40">
+        <div className="relative h-48 overflow-hidden bg-surface-lowest border-b border-surface-variant">
           <Link to={detailsPath} aria-label={`View ${title}`} className="block h-full">
             <img
               src={displayImage}
               alt={title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+              className="w-full h-full object-cover"
               onError={(event) => {
                 event.currentTarget.onerror = null;
                 event.currentTarget.src = FALLBACK_IMAGE;
@@ -174,9 +174,9 @@ const ProjectCard = ({ project, highlight = '' }) => {
               disabled={wishlistLoading}
               aria-label={isWishlisted ? `Remove ${title} from wishlist` : `Add ${title} to wishlist`}
               aria-pressed={isWishlisted}
-              className="p-2 bg-surface-highest/80 backdrop-blur-md border border-outline-variant/30 text-outline hover:text-white rounded-full shadow-sm transition-all duration-200 hover:scale-110 disabled:opacity-60"
+              className="w-11 h-11 inline-flex items-center justify-center bg-surface-highest/80 backdrop-blur-md border border-outline-variant/30 text-outline hover:text-white hover:bg-surface-highest rounded-full transition-colors duration-200 disabled:opacity-60"
             >
-              {isWishlisted ? <HiHeart aria-hidden="true" className="w-5 h-5 text-red-400" /> : <HiOutlineHeart aria-hidden="true" className="w-5 h-5 group-hover:text-red-400" />}
+              {isWishlisted ? <HiHeart aria-hidden="true" className="w-5 h-5 text-danger-fg" /> : <HiOutlineHeart aria-hidden="true" className="w-5 h-5 group-hover:text-danger-fg" />}
             </button>
           </div>
 
@@ -204,9 +204,9 @@ const ProjectCard = ({ project, highlight = '' }) => {
             <span className="text-xs text-outline">({reviewCount})</span>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-outline-variant/20 mt-auto">
+          <div className="flex items-center justify-between pt-4 border-t border-surface-variant mt-auto">
             <div className="flex flex-col">
-              <span className="text-2xl font-display font-bold text-primary-dim text-glow">{formatINRFromPaise(price)}</span>
+              <span className="t-num text-2xl font-bold text-primary-dim">{formatINRFromPaise(price)}</span>
               <span className="text-xs text-outline font-medium">One-time purchase</span>
             </div>
 
@@ -214,7 +214,7 @@ const ProjectCard = ({ project, highlight = '' }) => {
               <Link
                 to={detailsPath}
                 aria-label={`View details for ${title}`}
-                className="p-2.5 bg-surface-highest border border-outline-variant/30 rounded-lg hover:bg-surface-variant hover:border-outline-variant transition-colors"
+                className="w-11 h-11 inline-flex items-center justify-center bg-surface-highest border border-outline-variant/30 rounded-full hover:bg-surface-bright transition-colors"
               >
                 <HiEye aria-hidden="true" className="w-5 h-5 text-outline group-hover:text-white" />
               </Link>
@@ -224,10 +224,10 @@ const ProjectCard = ({ project, highlight = '' }) => {
                   type="button"
                   onClick={handleAddToCart}
                   aria-label={inCart ? `${title} is already in cart` : `Add ${title} to cart`}
-                  className={`p-2.5 rounded-lg transition-all ${
+                  className={`w-11 h-11 inline-flex items-center justify-center rounded-full transition-colors duration-200 ${
                     inCart
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/40'
-                      : 'bg-gradient-to-r from-primary-dim to-primary-container shadow-[0_0_10px_rgba(59,130,246,0.2)] hover:shadow-[0_0_15px_rgba(59,130,246,0.5)]'
+                      ? 'bg-success/15 text-success-fg border border-success/40'
+                      : 'bg-primary hover:bg-primary-container'
                   }`}
                 >
                   {inCart ? <HiCheck aria-hidden="true" className="w-5 h-5" /> : <HiShoppingCart aria-hidden="true" className="w-5 h-5 text-white" />}
@@ -237,7 +237,6 @@ const ProjectCard = ({ project, highlight = '' }) => {
           </div>
         </div>
 
-        <div aria-hidden="true" className="absolute inset-0 border border-primary-dim/30 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20" />
       </div>
     </article>
   );

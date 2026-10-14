@@ -132,7 +132,7 @@ const Home = () => {
       {/* Hero Section */}
       <section className="relative bg-surface text-white overflow-hidden border-b border-surface-variant/30">
         {/* Hacker grid texture — kept whisper-quiet so type stays the hierarchy */}
-        <div className="absolute inset-0 bg-hacker-grid bg-[size:40px_40px] opacity-[0.06]"></div>
+        <div className="absolute inset-0 bg-hacker-grid bg-[size:40px_40px] opacity-20"></div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -181,13 +181,14 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Hero frame — elevation by surface + border, not a glow halo (F4) */}
+            {/* Hero frame — the boxed panel is back (user-requested); elevation by
+                soft glass surface + hairline, still no glow halo (F4) */}
             <div className="hidden lg:block">
-              <div className="relative">
+              <div className="relative rounded-2xl border border-white/10 bg-surface-low/60 backdrop-blur-sm p-3">
                 <img
                   src="/hero-iot.png"
                   alt="IoT Projects Matrix"
-                  className="rounded-xl border border-surface-variant min-h-[400px] bg-surface-low w-full object-cover"
+                  className="rounded-xl min-h-[400px] bg-surface-low w-full object-cover"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = HERO_FALLBACK_IMAGE;

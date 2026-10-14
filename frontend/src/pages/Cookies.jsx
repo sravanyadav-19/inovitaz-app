@@ -2,14 +2,14 @@ import { LEGAL_LAST_UPDATED } from "../utils/legal";
 
 export default function Cookies() {
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto bg-surface rounded-2xl shadow-sm border border-surface-variant px-8 py-10">
-        <h1 className="text-3xl font-bold text-white mb-2">Cookie Policy</h1>
+    <div className="min-h-[100dvh] fade-in py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto bg-surface rounded-2xl border border-surface-variant px-8 py-10">
+        <h1 className="t-h1 text-white mb-2">Cookie Policy</h1>
         <p className="text-outline text-sm mb-8">Last updated: {LEGAL_LAST_UPDATED}</p>
 
         <div className="space-y-8 text-outline [&_strong]:text-white">
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">
+            <h2 className="t-h3 text-white mb-3">
               What this policy covers
             </h2>
             <p className="leading-relaxed">
@@ -20,7 +20,7 @@ export default function Cookies() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">
+            <h2 className="t-h3 text-white mb-3">
               What we use and why
             </h2>
             <div className="space-y-4">
@@ -73,7 +73,7 @@ export default function Cookies() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">
+            <h2 className="t-h3 text-white mb-3">
               Managing cookies
             </h2>
             <p className="leading-relaxed">
@@ -87,7 +87,7 @@ export default function Cookies() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">Contact</h2>
+            <h2 className="t-h3 text-white mb-3">Contact</h2>
             <p>
               Questions about this policy? Contact us at{" "}
               <a
