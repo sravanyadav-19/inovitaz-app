@@ -9,9 +9,19 @@ export default function AuthPane({
   title,
   subtitle,
   footnote,
+  image = '/auth-pane.jpg',   // local asset (repo-bundled — offline-safe, unlike the old Unsplash hotlink)
 }) {
   return (
     <div className="hidden lg:flex flex-1 relative overflow-hidden items-center justify-center border-l border-white/5">
+      {/* Brand imagery (user-requested) — kept whisper-quiet under a scrim
+          so the type stays the hierarchy */}
+      <img
+        src={image}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover opacity-30"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-surface-lowest via-surface-lowest/80 to-surface-lowest/50 pointer-events-none" />
       <div className="absolute inset-0 bg-hacker-grid bg-[size:40px_40px] opacity-[0.06] pointer-events-none" />
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
