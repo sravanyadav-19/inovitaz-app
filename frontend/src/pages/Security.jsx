@@ -17,14 +17,15 @@ import {
  */
 export default function Security() {
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-[100dvh] fade-in py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">
           <div className="w-16 h-16 mx-auto bg-primary/20 rounded-2xl flex items-center justify-center mb-4">
-            <HiShieldCheck className="w-9 h-9 text-primary" />
+            <HiShieldCheck className="w-9 h-9 text-primary-dim" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white">Security at InovitaZ</h1>
+          <div className="t-label text-primary-dim mb-2">Security</div>
+          <h1 className="t-h1 text-white">Security at InovitaZ</h1>
           <p className="text-outline mt-3 max-w-xl mx-auto">
             How we protect your data, your payments, and your purchases — explained in plain language.
           </p>
@@ -35,7 +36,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiLockClosed className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Data encryption</h2>
+              <h2 className="t-h3 text-white">Data encryption</h2>
             </div>
             <div className="space-y-3 text-outline text-sm leading-relaxed">
               <p>
@@ -60,7 +61,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiServer className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Data residency</h2>
+              <h2 className="t-h3 text-white">Data residency</h2>
             </div>
             <p className="text-outline text-sm leading-relaxed">
               InovitaZ runs on trusted cloud providers:{" "}
@@ -81,7 +82,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiUserGroup className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Access controls</h2>
+              <h2 className="t-h3 text-white">Access controls</h2>
             </div>
             <ul className="list-disc pl-5 space-y-2 text-outline text-sm leading-relaxed">
               <li>Access to customer data is restricted by role — staff can only see what's needed to run the platform.</li>
@@ -94,7 +95,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiMail className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Vulnerability disclosure</h2>
+              <h2 className="t-h3 text-white">Vulnerability disclosure</h2>
             </div>
             <p className="text-outline text-sm leading-relaxed">
               Found a security issue? We'd love to hear from you. Email{" "}
@@ -115,7 +116,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiClock className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Incident history</h2>
+              <h2 className="t-h3 text-white">Incident history</h2>
             </div>
             <p className="text-outline text-sm leading-relaxed">
               <strong className="text-white">No disclosed security incidents to date.</strong> If an
@@ -128,7 +129,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiDocumentReport className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Penetration testing</h2>
+              <h2 className="t-h3 text-white">Penetration testing</h2>
             </div>
             <p className="text-outline text-sm leading-relaxed">
               InovitaZ is a young platform and has not yet completed a formal third-party penetration test.
@@ -148,7 +149,7 @@ export default function Security() {
           <section className="bg-surface rounded-2xl border border-surface-variant p-6">
             <div className="flex items-center gap-3 mb-3">
               <HiBadgeCheck className="w-6 h-6 text-primary" />
-              <h2 className="text-xl font-semibold text-white">Certifications & compliance</h2>
+              <h2 className="t-h3 text-white">Certifications & compliance</h2>
             </div>
             <p className="text-outline text-sm leading-relaxed">
               InovitaZ does not yet hold formal certifications such as SOC 2 or ISO 27001 — we'd rather be

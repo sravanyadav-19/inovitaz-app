@@ -59,7 +59,7 @@ const FAQ_TOPICS = [
       },
       {
         q: "What if the code doesn't work?",
-        a: "Every project is tested before listing. If you run into an issue, contact our technical support via WhatsApp or email and we'll help you debug it."
+        a: "Projects are assembled and checked before they are listed — if anything still breaks, contact technical support via WhatsApp or email and we'll help you debug it."
       },
       {
         q: "Do you provide support after purchase?",
@@ -100,7 +100,7 @@ function FAQItem({ question, answer }) {
         className="w-full px-6 py-4 text-left flex justify-between items-center hover:bg-surface-high transition-colors"
       >
         <span className="font-semibold text-white">{question}</span>
-        {isOpen ? <HiChevronUp aria-hidden="true" className="text-primary" /> : <HiChevronDown aria-hidden="true" className="text-outline" />}
+        {isOpen ? <HiChevronUp aria-hidden="true" className="text-primary-dim" /> : <HiChevronDown aria-hidden="true" className="text-outline" />}
       </button>
       {isOpen && (
         <div id={panelId} role="region" aria-labelledby={triggerId} className="px-6 pb-4 text-outline text-sm leading-relaxed border-t border-surface-variant bg-surface-highest">
@@ -133,12 +133,13 @@ export default function Support() {
   const totalCount = FAQ_TOPICS.reduce((acc, t) => acc + t.items.length, 0);
 
   return (
-    <div className="min-h-screen bg-surface-lowest fade-in">
+    <div className="min-h-[100dvh] fade-in">
       
       {/* 1. Hero Section */}
-      <div className="bg-gradient-to-br from-primary/20 to-surface text-white py-16">
+      <div className="text-white py-16 border-b border-surface-variant">
         <div className="max-w-4xl mx-auto px-6 text-center">
-          <h1 className="text-4xl font-bold mb-4">How can we help you?</h1>
+          <div className="t-label text-primary-dim mb-3">Support</div>
+          <h1 className="t-h1 text-white mb-4">How can we help you?</h1>
           <p className="text-outline text-lg max-w-2xl mx-auto">
             Whether you have a question about a project, pricing, or need technical assistance, our team is ready to answer all your questions.
           </p>
@@ -146,24 +147,24 @@ export default function Support() {
       </div>
 
       {/* 2. Contact Cards - Floating overlap */}
-      <div className="max-w-7xl mx-auto px-6 -mt-10 pb-16">
+      <div className="max-w-7xl mx-auto px-6 mt-10 pb-16">
         <div className="grid gap-6 md:grid-cols-3 items-stretch">
           
           {/* WhatsApp */}
-          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
-            <div className="w-14 h-14 mx-auto bg-green-500/20 rounded-full flex items-center justify-center mb-4">
-              <HiChat className="w-7 h-7 text-green-500" />
+          <div className="bg-surface rounded-2xl p-8 text-center border border-surface-variant hover:border-primary-dim/40 transition-colors flex flex-col h-full">
+            <div className="w-14 h-14 mx-auto bg-success/20 rounded-full flex items-center justify-center mb-4">
+              <HiChat className="w-7 h-7 text-success-fg" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">Chat on WhatsApp</h2>
             <p className="text-outline mb-6 text-sm">
-              Fastest way to get answers. <br/>Available 9 AM - 9 PM.
+              Fastest way to get an answer.
             </p>
             <div className="mt-auto space-y-2">
               <a
                 href="https://wa.me/919705594777"
                 target="_blank"
                 rel="noreferrer"
-                className="block w-full py-2.5 rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white transition-colors"
+                className="block w-full py-2.5 rounded-lg font-semibold bg-secondary hover:bg-secondary-container text-white transition-colors"
               >
                 +91 97055 94777
               </a>
@@ -171,7 +172,7 @@ export default function Support() {
                 href="https://wa.me/919652332341"
                 target="_blank"
                 rel="noreferrer"
-                className="block w-full py-2.5 rounded-lg font-semibold bg-green-500 hover:bg-green-600 text-white transition-colors"
+                className="block w-full py-2.5 rounded-lg font-semibold bg-secondary hover:bg-secondary-container text-white transition-colors"
               >
                 +91 96523 32341
               </a>
@@ -179,41 +180,41 @@ export default function Support() {
           </div>
 
           {/* Email */}
-          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
-            <div className="w-14 h-14 mx-auto bg-blue-500/20 rounded-full flex items-center justify-center mb-4">
-              <HiMail className="w-7 h-7 text-blue-500" />
+          <div className="bg-surface rounded-2xl p-8 text-center border border-surface-variant hover:border-primary-dim/40 transition-colors flex flex-col h-full">
+            <div className="w-14 h-14 mx-auto bg-primary/20 rounded-full flex items-center justify-center mb-4">
+              <HiMail className="w-7 h-7 text-primary-dim" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">Send an Email</h2>
             <p className="text-outline mb-6 text-sm">
-              For detailed technical queries. <br/>Response within 24 hours.
+              For detailed technical queries. We reply to every message.
             </p>
             <a
               href="mailto:inovitaz.help@gmail.com"
-              className="block w-full py-2.5 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-colors mt-auto"
+              className="block w-full py-2.5 rounded-lg font-semibold bg-primary hover:bg-primary-container text-white transition-colors mt-auto"
             >
               Compose Email
             </a>
           </div>
 
           {/* Phone */}
-          <div className="bg-surface rounded-2xl shadow-lg p-8 text-center border border-surface-variant hover:-translate-y-1 transition-transform duration-300 flex flex-col h-full">
+          <div className="bg-surface rounded-2xl p-8 text-center border border-surface-variant hover:border-primary-dim/40 transition-colors flex flex-col h-full">
             <div className="w-14 h-14 mx-auto bg-purple-500/20 rounded-full flex items-center justify-center mb-4">
-              <HiPhone className="w-7 h-7 text-purple-500" />
+              <HiPhone className="w-7 h-7 text-purple-300" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">Call Us</h2>
             <p className="text-outline mb-6 text-sm">
-              Speak directly to our team. <br/>Mon — Fri, 9 AM — 6 PM.
+              Speak directly to our team.
             </p>
             <div className="mt-auto space-y-2">
               <a
                 href="tel:+919705594777"
-                className="block w-full py-2.5 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                className="block w-full py-2.5 rounded-lg btn-secondary transition-colors"
               >
                 +91 97055 94777
               </a>
               <a
                 href="tel:+919652332341"
-                className="block w-full py-2.5 rounded-lg font-semibold bg-purple-600 hover:bg-purple-700 text-white transition-colors"
+                className="block w-full py-2.5 rounded-lg btn-secondary transition-colors"
               >
                 +91 96523 32341
               </a>
@@ -224,8 +225,8 @@ export default function Support() {
         {/* 3. FAQ Section */}
         <div className="mt-20 max-w-3xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-              <HiQuestionMarkCircle className="text-primary" />
+            <h2 className="t-h2 text-white flex items-center justify-center gap-2">
+              <HiQuestionMarkCircle className="text-primary-dim" />
               Frequently Asked Questions
             </h2>
             <p className="text-outline text-sm mt-2">
@@ -298,7 +299,7 @@ export default function Support() {
             <div className="space-y-8">
               {visibleTopics.map((topic) => (
                 <div key={topic.id}>
-                  <h3 className="text-lg font-semibold text-white mb-4">{topic.label}</h3>
+                  <h3 className="t-h4 text-white mb-4">{topic.label}</h3>
                   <div className="space-y-4">
                     {topic.items.map((item) => (
                       <FAQItem key={item.q} question={item.q} answer={item.a} />
@@ -313,7 +314,7 @@ export default function Support() {
         {/* 4. Location Footer */}
         <div className="mt-20 pt-10 border-t border-surface-variant text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-high rounded-full text-outline text-sm font-medium">
-            <HiLocationMarker className="w-4 h-4 text-primary" />
+            <HiLocationMarker className="w-4 h-4 text-primary-dim" />
             Amaravathi, Andhra Pradesh, India
           </div>
         </div>

@@ -128,16 +128,33 @@ const strictLimiter = rateLimit({
 // ==========================================
 // SECURE CORS
 // ==========================================
+// FRONTEND_URL = production frontend (also used to build email links — never point it at a preview).
+// ALLOWED_ORIGINS = optional comma-separated extras (Vercel preview deploys of branches, etc.).
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...(process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : []),
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-].filter(Boolean);
+];
+
+// Vercel mints a NEW per-deployment hash URL on every push
+// (<name>-<hash>-<team>.vercel.app). Exact matches can't keep up with
+// branch previews, so allow this project's Vercel team scope only:
+// any hostname ending in -sravanyadav-19s-projects.vercel.app.
+const isOwnVercelPreview = (origin) => {
+  try {
+    return new URL(origin).hostname.endsWith('-sravanyadav-19s-projects.vercel.app');
+  } catch {
+    return false;
+  }
+};
 
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    const isAllowed = allowedOrigins.includes(origin) ||
+    const isAllowed = allowedOrigins.includes(origin) || isOwnVercelPreview(origin) ||
       (!isProduction && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')));
     if (isAllowed) {
       callback(null, true);

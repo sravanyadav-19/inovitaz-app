@@ -124,8 +124,16 @@
   /* ── Compat aliases kept compiling: panel + the single permitted glow ── */
   .glass-panel { @apply bg-surface-low border border-surface-variant rounded-xl; }
 
-  /* F4: the ONLY place a glow may live — hero primary accents (≤2 per page). */
-  .glow-hero { text-shadow: 0 0 12px rgba(132, 169, 255, 0.35); }
+/* F4: the ONLY place a glow may live — hero primary accents (≤2 per page). */
+.glow-hero { text-shadow: 0 0 12px rgba(132, 169, 255, 0.35); }
+
+/* Locked-content preview: text dissolves at the bottom edge instead of a
+   hard clip (Phase 4 — used by ProjectDetails when content is unpurchased).
+   Static CSS mask; no runtime cost. */
+.mask-fade-bottom {
+  -webkit-mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 55%, transparent 100%);
+}
 
   /* ── Entrance motion (ease-out, 200ms, small rise; .fade-in = compat alias) ── */
   .fade-in, .enter { animation: ui-enter var(--dur-med) var(--ease-out) both; }

@@ -38,11 +38,11 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface-lowest fade-in px-4 py-12">
+    <div className="min-h-[100dvh] flex items-center justify-center fade-in px-4 py-12">
       <div className="w-full max-w-md space-y-8">
         <div>
-          <Link to="/" className="flex items-center gap-2 mb-6 group">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-container rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.35)] group-hover:scale-105 transition-transform">
+          <Link to="/" className="flex items-center gap-2 mb-6">
+            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
               <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
               </svg>
@@ -50,7 +50,8 @@ export default function ResetPassword() {
             <span className="text-2xl font-bold text-white tracking-tight">Inovitaz</span>
           </Link>
 
-          <h2 className="text-3xl font-bold text-white">Set a new password</h2>
+          <div className="t-label text-primary-dim mb-2">Password reset</div>
+          <h2 className="t-h1 text-white">Set a new password</h2>
           <p className="mt-2 text-sm text-outline">Choose a strong password for your account.</p>
 
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -107,7 +108,7 @@ export default function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full btn btn-primary flex justify-center items-center gap-2 py-3 shadow-lg hover:shadow-xl transition-all"
+              className="w-full btn btn-primary flex justify-center items-center gap-2 py-3"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -119,7 +120,7 @@ export default function ResetPassword() {
 
           <p className="mt-6 text-center text-sm text-outline">
             Remembered it?{' '}
-            <Link to="/login" className="font-medium text-primary hover:text-primary-dim transition-colors">
+            <Link to="/login" className="font-medium text-primary-dim hover:text-primary-fixed transition-colors">
               Back to login
             </Link>
           </p>
