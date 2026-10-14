@@ -139,10 +139,22 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
 ];
 
+// Vercel mints a NEW per-deployment hash URL on every push
+// (<name>-<hash>-<team>.vercel.app). Exact matches can't keep up with
+// branch previews, so allow this project's Vercel team scope only:
+// any hostname ending in -sravanyadav-19s-projects.vercel.app.
+const isOwnVercelPreview = (origin) => {
+  try {
+    return new URL(origin).hostname.endsWith('-sravanyadav-19s-projects.vercel.app');
+  } catch {
+    return false;
+  }
+};
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    const isAllowed = allowedOrigins.includes(origin) ||
+    const isAllowed = allowedOrigins.includes(origin) || isOwnVercelPreview(origin) ||
       (!isProduction && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')));
     if (isAllowed) {
       callback(null, true);
