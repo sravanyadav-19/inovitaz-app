@@ -8,6 +8,7 @@ import { HiPlus, HiPencil, HiTrash, HiStar, HiX } from "react-icons/hi";
 import { adminProjectsAPI, projectsAPI } from "../../api/projects";
 import { formatINRFromPaise, rupeesToPaise, paiseToRupees } from "../../utils/price";
 import AdminSkeleton from "./AdminSkeleton";
+import MarkdownField from "./MarkdownField";
 
 const formatPaiseToINR = formatINRFromPaise;
 
@@ -616,9 +617,10 @@ const AdminProjects = () => {
                   <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     1. Overview
                   </h4>
-                  <textarea
-                    required
-                    rows={4}
+                  <MarkdownField
+                    id="overview"
+                    label="Overview content (Markdown)"
+                    rows={7}
                     value={formData.overview}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -626,8 +628,7 @@ const AdminProjects = () => {
                         overview: e.target.value,
                       }))
                     }
-                    className="input w-full min-h-[160px] resize-y"
-                    placeholder="High-level summary of the project..."
+                    placeholder="High-level summary of the project... (supports **bold**, lists, tables)"
                   />
                 </div>
 
@@ -753,23 +754,19 @@ const AdminProjects = () => {
                       placeholder="https://your-domain.com/images/circuit.png"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-outline mb-1">
-                      Circuit Explanation
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={formData.circuitText}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          circuitText: e.target.value,
-                        }))
-                      }
-                      className="input w-full min-h-[150px] resize-y"
-                      placeholder="Explain connections..."
-                    />
-                  </div>
+                  <MarkdownField
+                    id="circuitText"
+                    label="Circuit Explanation (Markdown)"
+                    rows={6}
+                    value={formData.circuitText}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        circuitText: e.target.value,
+                      }))
+                    }
+                    placeholder="Explain connections... (**bold** pins, `GPIO4`, numbered wiring list)"
+                  />
                 </div>
 
                 {/* Steps */}
@@ -777,8 +774,10 @@ const AdminProjects = () => {
                   <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     4. Step-by-Step Process
                   </h4>
-                  <textarea
-                    rows={8}
+                  <MarkdownField
+                    id="steps"
+                    label="Step-by-Step content (Markdown)"
+                    rows={10}
                     value={formData.steps}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -786,8 +785,7 @@ const AdminProjects = () => {
                         steps: e.target.value,
                       }))
                     }
-                    className="input w-full min-h-[200px] resize-y"
-                    placeholder={"1. Install Arduino IDE...\n2. Add ESP32 board support..."}
+                    placeholder={"## Step 1 — Install Arduino IDE\n1. Download from arduino.cc\n2. Add ESP32 board support...\n\n> Tip: use tables and checklists too."}
                   />
                 </div>
 
@@ -796,8 +794,10 @@ const AdminProjects = () => {
                   <h4 className="text-xs font-semibold uppercase tracking-wide text-outline mb-2">
                     5. Source Code & Extra Notes
                   </h4>
-                  <textarea
-                    rows={5}
+                  <MarkdownField
+                    id="source"
+                    label="Source Code & Notes (Markdown)"
+                    rows={7}
                     value={formData.source}
                     onChange={(e) =>
                       setFormData((prev) => ({
@@ -805,8 +805,7 @@ const AdminProjects = () => {
                         source: e.target.value,
                       }))
                     }
-                    className="input w-full min-h-[160px] resize-y"
-                    placeholder="Explain what is inside the ZIP..."
+                    placeholder={"Explain what is inside the ZIP... (``` code blocks supported)"}
                   />
                 </div>
 

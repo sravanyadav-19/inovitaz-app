@@ -4,7 +4,6 @@ import { projectsAPI, wishlistAPI } from "../api/projects";
 import { paymentsAPI } from "../api/payments";
 import { couponsAPI } from "../api/payments";
 import { AuthContext } from "../context/AuthContext";
-import { tokenize as linkifyTokenize } from "linkifyjs";
 import { 
   HiStar, 
   HiShoppingCart, 
@@ -29,6 +28,7 @@ import DownloadButton from '../components/DownloadButton';
 import { formatINRFromPaise, paiseToRupees } from "../utils/price";
 import { useCart } from "../context/CartContext";
 import StatusStamp from "../components/StatusStamp";
+import Markdown from "../components/Markdown";
 import { requestCookieConsent } from "../context/CookieConsentContext";
 
 const PROJECT_DETAIL_FALLBACK_IMAGE =
@@ -446,39 +446,6 @@ export default function ProjectDetails() {
   }
 
   // --- LINK DECORATORS ---
-  const standardLinkDecorator = (href, text, key) => (
-    <a href={href} key={key} target="_blank" rel="noopener noreferrer" className="text-primary-dim underline hover:text-primary-fixed break-words z-20 relative">
-      {text}
-    </a>
-  );
-
-  // linkifyjs standalone renderer (replaces the removed react-linkify dependency).
-  // Splits a string into link / non-link tokens using the same decorator contract.
-  const LinkifyText = ({ children, componentDecorator }) => {
-    if (typeof children !== "string") return children;
-    const tokens = linkifyTokenize(children);
-    return (
-      <>
-        {tokens.map((token, index) => {
-          const text = token.toString();
-          if (!token.isLink) {
-            return <span key={`t-${index}`}>{text}</span>;
-          }
-          // Derive the href from the token type. (linkifyjs' token.to shape is not
-          // stable across builds, so we avoid reading token.to.href directly.)
-          const href =
-            token.to?.href ||
-            (token.type === "email"
-              ? `mailto:${text}`
-              : /^https?:\/\//i.test(text)
-              ? text
-              : `http://${text}`);
-          return componentDecorator(href, text, index);
-        })}
-      </>
-    );
-  };
-
   const StarRating = ({ rating }) => (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
@@ -743,11 +710,7 @@ export default function ProjectDetails() {
               <div className="relative">
                 <div className={`prose max-w-none text-outline leading-relaxed ${!purchased ? 'max-h-40 overflow-hidden mask-fade-bottom' : ''}`}>
                   <h3 className="text-xl font-bold text-white mb-4">Project Overview</h3>
-                  <div style={{ whiteSpace: "pre-line" }}>
-                    <LinkifyText componentDecorator={standardLinkDecorator}>
-                      {overviewText}
-                    </LinkifyText>
-                  </div>
+                  <Markdown>{overviewText}</Markdown>
                 </div>
                 {!purchased && <LockedOverlay />}
               </div>
@@ -830,11 +793,7 @@ export default function ProjectDetails() {
                 {circuit.text && (
                   <div className="bg-surface p-4 rounded-lg border border-surface-variant">
                     <h4 className="font-semibold text-white mb-2">Wiring Instructions:</h4>
-                    <div className="text-outline whitespace-pre-line">
-                      <LinkifyText componentDecorator={standardLinkDecorator}>
-                        {circuit.text}
-                      </LinkifyText>
-                    </div>
+                    <Markdown>{circuit.text}</Markdown>
                   </div>
                 )}
               </div>
@@ -846,13 +805,11 @@ export default function ProjectDetails() {
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <HiClipboardList className="text-primary" /> Step-by-Step Guide
                 </h3>
-                <div className="prose max-w-none text-outline">
-                  <div style={{ whiteSpace: "pre-line" }}>
-                    <LinkifyText componentDecorator={standardLinkDecorator}>
-                      {steps || "No steps provided."}
-                    </LinkifyText>
-                  </div>
-                </div>
+                {steps?.trim() ? (
+                  <Markdown>{steps}</Markdown>
+                ) : (
+                  <p className="text-outline italic">No steps provided.</p>
+                )}
 
                 {source && (
                   <div className="mt-8 border-t border-surface-variant pt-6">
@@ -868,9 +825,9 @@ export default function ProjectDetails() {
                         <HiDocumentDuplicate className="w-4 h-4" /> Copy Code
                       </button>
                     </div>
-                    <pre className="bg-surface-lowest text-success-fg p-4 rounded-xl overflow-x-auto text-sm border border-surface-variant">
-                      {source}
-                    </pre>
+                    <div className="bg-surface-lowest p-4 rounded-xl border border-surface-variant">
+                      <Markdown>{source}</Markdown>
+                    </div>
                   </div>
                 )}
               </div>
