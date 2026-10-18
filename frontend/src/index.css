@@ -110,6 +110,25 @@
   .icon-tile-purple { @apply bg-purple-500/10 text-purple-300 border-purple-400/30; }
   .icon-tile-orange { @apply bg-warning/10 text-warning-fg border-warning/30; }
 
+  /* ── StatusStamp — classic rotated paper stamp for paused projects ── */
+  .stamp {
+    @apply inline-block px-4 py-2 -rotate-2 border-2 rounded-sm t-label;
+    letter-spacing: 0.28em;
+    position: relative;
+  }
+  /* inner rule — the classic double-line stamp look */
+  .stamp::before {
+    content: '';
+    position: absolute; inset: 3px;
+    border: 1px solid currentColor;
+    border-radius: inherit;
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .stamp-sm { @apply px-2 py-1 border rounded-sm; letter-spacing: 0.18em; font-size: 10px; }
+  .stamp-maintenance { @apply border-info/70 text-info-fg bg-info/5; }
+  .stamp-closed      { @apply border-danger/70 text-danger-fg bg-danger/5; }
+
   /* ── Layout (layout-grid: contained column grid, 16/24/32 page margins) ── */
   .container-custom { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
 

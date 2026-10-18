@@ -43,6 +43,7 @@ const AdminProjects = () => {
     source: "",
     features: "",
     tech_stack: "",
+    status: 'active',
   });
 
   const [saving, setSaving] = useState(false);
@@ -80,6 +81,7 @@ const AdminProjects = () => {
       source: "",
       features: "",
       tech_stack: "",
+      status: 'active',
     });
   };
 
@@ -155,6 +157,7 @@ const AdminProjects = () => {
       source,
       features: featuresStr,
       tech_stack: techStackStr,
+      status: ['active', 'maintenance', 'closed'].includes(project.status) ? project.status : 'active',
     });
     setShowModal(true);
   };
@@ -233,6 +236,7 @@ const AdminProjects = () => {
         content_url: formData.content_url,
         category: formData.category,
         difficulty: formData.difficulty,
+        status: formData.status,
         description: JSON.stringify(descriptionJson),
         features: featuresArray,
         tech_stack: techStackArray,
@@ -340,6 +344,12 @@ const AdminProjects = () => {
                         <p className="text-sm text-outline truncate max-w-xs">
                           {getShortDescription(project)}
                         </p>
+                        {project.status === 'maintenance' && (
+                          <span className="badge badge-primary mt-1">Under maintenance</span>
+                        )}
+                        {project.status === 'closed' && (
+                          <span className="badge badge-danger mt-1">Temporarily closed</span>
+                        )}
                       </div>
                     </div>
                   </td>
@@ -567,6 +577,37 @@ const AdminProjects = () => {
                       className="input w-full"
                       placeholder="https://example.com/download.zip"
                     />
+                  </div>
+
+                  {/* Project status — admin-only 3-state control (stamp shows on the public page) */}
+                  <div className="md:col-span-2">
+                    <label className="block t-label text-outline mb-2">Project status</label>
+                    <div
+                      role="group"
+                      aria-label="Project status"
+                      className="grid grid-cols-3 gap-0 rounded-xl border border-surface-variant overflow-hidden"
+                    >
+                      {[
+                        { value: 'active',      label: 'Active',      desc: 'sells + downloads', sel: 'bg-success/15 text-success-fg border-success/40' },
+                        { value: 'maintenance', label: 'Under Maintenance', desc: 'sales paused', sel: 'bg-info/15 text-info-fg border-info/40' },
+                        { value: 'closed',      label: 'Temporarily Closed', desc: 'all paused',  sel: 'bg-danger/15 text-danger-fg border-danger/40' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          aria-pressed={formData.status === opt.value}
+                          onClick={() => setFormData((prev) => ({ ...prev, status: opt.value }))}
+                          className={`min-h-11 py-3 px-2 text-center border-r border-surface-variant last:border-r-0 transition-colors ${
+                            formData.status === opt.value
+                              ? `${opt.sel} border-y font-semibold`
+                              : 'text-outline hover:text-white hover:bg-surface-high'
+                          }`}
+                        >
+                          <span className="block text-sm font-medium">{opt.label}</span>
+                          <span className="block t-caption">{opt.desc}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 

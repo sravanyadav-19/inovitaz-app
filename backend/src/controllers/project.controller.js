@@ -102,6 +102,7 @@ const getAllProjects = async (req, res) => {
       SELECT p.id, p.title, p.description, p.price, p.thumbnail, ${contentUrlSelect}
              p.category, p.difficulty, p.average_rating, p.reviews_count,
              p.features, p.tech_stack, p.created_at, p.updated_at,
+             p.status,
              ${wishlistSelect} ${purchaseSelect}
              CASE WHEN p.created_at >= NOW() - INTERVAL '7 days' THEN TRUE ELSE FALSE END AS is_new
       FROM projects p
@@ -141,7 +142,8 @@ const getProjectById = async (req, res) => {
     const { id } = req.params;
     const projects = await db.query(
       `SELECT id, title, description, price, thumbnail, content_url, category, difficulty,
-              average_rating, reviews_count, features, tech_stack, created_at, updated_at
+              average_rating, reviews_count, features, tech_stack, created_at, updated_at,
+              status
        FROM projects WHERE id = $1`, [id]
     );
 
@@ -197,7 +199,7 @@ const downloadProject = async (req, res) => {
     const isAdmin = req.user.role === 'admin';
 
     const projects = await db.query(
-      'SELECT id, title, description, content_url FROM projects WHERE id = $1',
+      'SELECT id, title, description, content_url, status FROM projects WHERE id = $1',
       [id]
     );
 
@@ -206,6 +208,14 @@ const downloadProject = async (req, res) => {
     }
 
     const project = projects[0];
+
+    if (!isAdmin && project.status === 'closed') {
+      return res.status(403).json({
+        success: false,
+        message: 'This project is temporarily closed — downloads are paused. Please check back soon.',
+      });
+    }
+
     let orderId = null;
     let downloadLog = null;
 

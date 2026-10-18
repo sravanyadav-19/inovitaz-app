@@ -28,6 +28,7 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import DownloadButton from '../components/DownloadButton';
 import { formatINRFromPaise, paiseToRupees } from "../utils/price";
 import { useCart } from "../context/CartContext";
+import StatusStamp from "../components/StatusStamp";
 import { requestCookieConsent } from "../context/CookieConsentContext";
 
 const PROJECT_DETAIL_FALLBACK_IMAGE =
@@ -496,13 +497,17 @@ export default function ProjectDetails() {
         <p className="text-outline mb-6 leading-relaxed">
           Purchase this project to instantly access the full source code, circuit diagrams, and documentation.
         </p>
-        <button 
-          onClick={handleBuy} 
-          disabled={processing}
-          className="w-full btn btn-primary py-3 flex items-center justify-center gap-2 text-lg"
-        >
-          {processing ? "Processing..." : <><HiShoppingCart /> Buy Now ₹{displayPrice}</>}
-        </button>
+        {project.status && project.status !== 'active' ? (
+          <StatusStamp status={project.status} detail />
+        ) : (
+          <button
+            onClick={handleBuy}
+            disabled={processing}
+            className="w-full btn btn-primary py-3 flex items-center justify-center gap-2 text-lg"
+          >
+            {processing ? "Processing..." : <><HiShoppingCart /> Buy Now ₹{displayPrice}</>}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -641,23 +646,29 @@ export default function ProjectDetails() {
 
               {!purchased ? (
                 <div className="space-y-3">
-                  <button 
-                    onClick={handleBuy} 
-                    disabled={processing} 
-                    className="w-full btn btn-primary btn-lg text-lg py-4"
-                  >
-                    {processing ? "Processing Payment..." : "Buy Now & Unlock Full Access"}
-                  </button>
-                  <button
-                    onClick={handleAddToCart}
-                    className="w-full btn btn-secondary flex items-center justify-center gap-2"
-                  >
+                  {project.status && project.status !== 'active' ? (
+                    <StatusStamp status={project.status} detail />
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleBuy}
+                        disabled={processing}
+                        className="w-full btn btn-primary btn-lg text-lg py-4"
+                      >
+                        {processing ? "Processing Payment..." : "Buy Now & Unlock Full Access"}
+                      </button>
+                      <button
+                        onClick={handleAddToCart}
+                        className="w-full btn btn-secondary flex items-center justify-center gap-2"
+                      >
                     {inCart ? (
                       <>✓ In Cart — View Cart</>
                     ) : (
                       <><HiShoppingCart className="w-5 h-5" /> Add to Cart</>
                     )}
                   </button>
+                    </>
+                  )}
                 </div>
               ) : (
                 <div className="mt-2">

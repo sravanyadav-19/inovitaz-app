@@ -69,6 +69,7 @@ const ProjectCard = ({ project, highlight = '' }) => {
     category,
     difficulty,
     isPurchased,
+    status,
     created_at: createdAt,
   } = project;
 
@@ -183,6 +184,11 @@ const ProjectCard = ({ project, highlight = '' }) => {
           {difficulty && (
             <span className={`absolute bottom-3 right-3 ${diffStyle} text-xs font-medium px-3 py-1 rounded-full shadow-sm`}>
               {difficulty}
+            </span>
+          )}
+          {(status === 'maintenance' || status === 'closed') && (
+            <span className={`absolute top-3 left-3 stamp stamp-sm ${status === 'maintenance' ? 'stamp-maintenance' : 'stamp-closed'}`}>
+              {status === 'maintenance' ? 'Under maintenance' : 'Temporarily closed'}
             </span>
           )}
         </div>

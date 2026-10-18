@@ -419,15 +419,23 @@ const Dashboard = () => {
                                 onClick={() => handleDownload(project)}
                                 disabled={
                                   downloadingId === project.id ||
-                                  project.downloads_remaining <= 0
+                                  project.downloads_remaining <= 0 ||
+                                  project.status === 'closed'
                                 }
                                 className="btn btn-primary btn-sm flex items-center gap-1"
                               >
-                                {downloadingId === project.id
+                                {project.status === 'closed'
+                                  ? 'Paused'
+                                  : downloadingId === project.id
                                   ? 'Preparing...'
                                   : <><HiDownload /> Download</>
                                 }
                               </button>
+                              {project.status === 'closed' && (
+                                <p className="text-xs text-danger-fg self-center">
+                                  Temporarily closed — back soon
+                                </p>
+                              )}
                               <Link
                                 to={`/projects/${project.id}`}
                                 aria-label={`View ${project.title}`}

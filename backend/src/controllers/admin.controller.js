@@ -3,28 +3,34 @@ const logger = require('../utils/logger');
 
 const ALLOWED_PROJECT_FIELDS = [
   'title', 'description', 'price', 'thumbnail', 'content_url',
-  'category', 'difficulty', 'features', 'tech_stack'
+  'category', 'difficulty', 'features', 'tech_stack',
+  'status'
 ];
+
+const PROJECT_STATUSES = ['active', 'maintenance', 'closed'];
 
 const createProject = async (req, res) => {
   try {
     const {
       title, description, price, thumbnail, content_url,
-      category, difficulty, features, tech_stack
+      category, difficulty, features, tech_stack,
+      status = 'active'
     } = req.body;
+    const safeStatus = PROJECT_STATUSES.includes(status) ? status : 'active';
 
     const result = await db.query(
       `INSERT INTO projects
        (title, description, price, thumbnail, content_url,
-        category, difficulty, features, tech_stack, created_at, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW())
+        category, difficulty, features, tech_stack, status, created_at, updated_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW())
        RETURNING id`,
       [
         title, description, price,
         thumbnail || null, content_url || null,
         category || 'IoT', difficulty || 'Beginner',
         JSON.stringify(features || []),
-        JSON.stringify(tech_stack || [])
+        JSON.stringify(tech_stack || []),
+        safeStatus
       ]
     );
 
@@ -64,6 +70,7 @@ const updateProject = async (req, res) => {
 
     for (const field of ALLOWED_PROJECT_FIELDS) {
       if (req.body[field] !== undefined) {
+        if (field === 'status' && !PROJECT_STATUSES.includes(req.body.status)) continue;
         updates.push(`${field} = $${paramIndex++}`);
         if (field === 'features' || field === 'tech_stack') {
           params.push(JSON.stringify(req.body[field]));

@@ -130,6 +130,7 @@ const getPurchasedProjects = async (req, res) => {
          p.thumbnail,
          p.content_url,
          p.category,
+         p.status,
          oi.final_amount AS amount,
          oi.original_amount,
          oi.discount_amount,

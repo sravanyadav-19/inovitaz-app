@@ -43,7 +43,7 @@ const parseProjectIds = (body = {}) => {
 
 const loadOrderItems = async (projectIds) => {
   const rows = await db.query(
-    'SELECT id, title, price FROM projects WHERE id = ANY($1::int[])',
+    'SELECT id, title, price, status FROM projects WHERE id = ANY($1::int[])',
     [projectIds]
   );
 
@@ -52,6 +52,16 @@ const loadOrderItems = async (projectIds) => {
     const missingIds = projectIds.filter((id) => !foundIds.has(id));
     const error = new Error(`Project not found: ${missingIds.join(', ')}`);
     error.status = 404;
+    throw error;
+  }
+
+  const paused = rows.filter((row) => row.status && row.status !== 'active');
+  if (paused.length > 0) {
+    const label = (st) => (st === 'maintenance' ? 'under maintenance' : 'temporarily closed');
+    const error = new Error(
+      `Purchases are paused for: ${paused.map((row) => `${row.title} (${label(row.status)})`).join(', ')}`
+    );
+    error.status = 403;
     throw error;
   }
 
