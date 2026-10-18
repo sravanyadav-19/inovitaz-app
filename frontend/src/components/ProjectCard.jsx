@@ -187,7 +187,7 @@ const ProjectCard = ({ project, highlight = '' }) => {
             </span>
           )}
           {(status === 'maintenance' || status === 'closed') && (
-            <span className={`absolute top-3 left-3 stamp stamp-sm ${status === 'maintenance' ? 'stamp-maintenance' : 'stamp-closed'}`}>
+            <span className={`stamp stamp-card ${status === 'maintenance' ? 'stamp-maintenance' : 'stamp-closed'}`}>
               {status === 'maintenance' ? 'Under maintenance' : 'Temporarily closed'}
             </span>
           )}

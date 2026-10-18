@@ -129,6 +129,22 @@
   .stamp-maintenance { @apply border-info/70 text-info-fg bg-info/5; }
   .stamp-closed      { @apply border-danger/70 text-danger-fg bg-danger/5; }
 
+  /* Diagonal corner stamp for catalog card thumbnails — -15°, slightly
+     corner-bleeding, sits on a soft dark scrim so it reads on any image */
+  .stamp-card {
+    position: absolute;
+    top: 18px; left: -8px;
+    padding: 0.5rem 1rem;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    transform: rotate(-15deg);
+    background: rgba(7, 10, 22, 0.55);
+    backdrop-filter: blur(3px);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+    z-index: 20;
+  }
+
   /* ── Layout (layout-grid: contained column grid, 16/24/32 page margins) ── */
   .container-custom { @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8; }
 
