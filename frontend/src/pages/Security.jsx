@@ -70,10 +70,10 @@ export default function Security() {
               <strong className="text-white">Vercel</strong> (frontend). Your data is processed and stored
               within these providers' secure data centres. For specific region details, contact us at{" "}
               <a
-                href="mailto:inovitaz.help@gmail.com"
+                href="mailto:support@inovitaz.in"
                 className="font-medium text-primary-dim hover:text-primary-fixed underline"
               >
-                inovitaz.help@gmail.com
+                support@inovitaz.in
               </a>.
             </p>
           </section>
@@ -100,10 +100,10 @@ export default function Security() {
             <p className="text-outline text-sm leading-relaxed">
               Found a security issue? We'd love to hear from you. Email{" "}
               <a
-                href="mailto:inovitaz.help@gmail.com"
+                href="mailto:support@inovitaz.in"
                 className="font-medium text-primary-dim hover:text-primary-fixed underline"
               >
-                inovitaz.help@gmail.com
+                support@inovitaz.in
               </a>{" "}
               with as much detail as possible (steps to reproduce, affected page). We aim to acknowledge
               reports within <strong className="text-white">5 business days</strong> and resolve confirmed
@@ -137,10 +137,10 @@ export default function Security() {
               signature-verified webhooks — and plan to commission an independent audit as we grow. For
               details, contact{" "}
               <a
-                href="mailto:inovitaz.help@gmail.com"
+                href="mailto:support@inovitaz.in"
                 className="font-medium text-primary-dim hover:text-primary-fixed underline"
               >
-                inovitaz.help@gmail.com
+                support@inovitaz.in
               </a>.
             </p>
           </section>

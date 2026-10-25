@@ -41,10 +41,10 @@ export default function Refund() {
                 <div className="flex items-center gap-3 mb-2">
                   <HiMail className="text-primary-dim" />
                   <a
-                    href="mailto:inovitaz.help@gmail.com"
+                    href="mailto:support@inovitaz.in"
                     className="hover:underline font-medium text-primary-dim hover:text-primary-fixed"
                   >
-                    inovitaz.help@gmail.com
+                    support@inovitaz.in
                   </a>
                 </div>
               <div className="flex items-start gap-3">

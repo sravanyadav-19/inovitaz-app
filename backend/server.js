@@ -35,6 +35,7 @@ const orderRoutes = require('./src/routes/order.routes');
 const couponRoutes = require('./src/routes/coupon.routes');
 const reviewRoutes = require('./src/routes/review.routes');
 const wishlistRoutes = require('./src/routes/wishlist.routes');
+const supportRoutes = require('./src/routes/support.routes');
 
 const db = require('./src/config/db');
 
@@ -137,10 +138,7 @@ const allowedOrigins = [
     : []),
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  'https://inovitaz.in', // <-- explicitly added root domain
-  'https://www.inovitaz.in'
 ];
-
 
 // Vercel mints a NEW per-deployment hash URL on every push
 // (<name>-<hash>-<team>.vercel.app). Exact matches can't keep up with
@@ -227,6 +225,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/wishlist', wishlistRoutes);
+app.use('/api/support', strictLimiter, supportRoutes);
 
 // 404 + Error handlers
 app.use((req, res) => {

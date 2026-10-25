@@ -91,10 +91,10 @@ export default function Cookies() {
             <p>
               Questions about this policy? Contact us at{" "}
               <a
-                href="mailto:inovitaz.help@gmail.com"
+                href="mailto:support@inovitaz.in"
                 className="font-medium text-primary-dim hover:text-primary-fixed underline"
               >
-                inovitaz.help@gmail.com
+                support@inovitaz.in
               </a>
               .
             </p>

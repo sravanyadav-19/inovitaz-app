@@ -47,8 +47,8 @@ export default function Privacy() {
             </ul>
             <p className="mt-2">
               To make a request, email us at{" "}
-              <a href="mailto:inovitaz.help@gmail.com" className="font-medium text-primary-dim hover:text-primary-fixed underline">
-                inovitaz.help@gmail.com
+              <a href="mailto:support@inovitaz.in" className="font-medium text-primary-dim hover:text-primary-fixed underline">
+                support@inovitaz.in
               </a>{" "}
               and we will respond within a reasonable time.
             </p>
@@ -65,8 +65,8 @@ export default function Privacy() {
             <h2 className="t-h3 text-white mb-3">Contact Us</h2>
             <p>
               If you have questions about this policy, please contact our support team at{" "}
-              <a href="mailto:inovitaz.help@gmail.com" className="font-medium text-primary-dim hover:text-primary-fixed underline">
-                inovitaz.help@gmail.com
+              <a href="mailto:support@inovitaz.in" className="font-medium text-primary-dim hover:text-primary-fixed underline">
+                support@inovitaz.in
               </a>.
             </p>
           </section>

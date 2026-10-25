@@ -59,7 +59,7 @@ const parseSender = (from) => {
   return { name: 'InovitaZ', email: String(from || '').trim() };
 };
 
-const sendViaBrevoApi = async ({ to, subject, html }) => {
+const sendViaBrevoApi = async ({ to, subject, html, replyTo }) => {
   const sender = parseSender(process.env.SMTP_FROM || process.env.BREVO_SENDER || 'InovitaZ <noreply@inovitaz.com>');
 
   const response = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -74,6 +74,7 @@ const sendViaBrevoApi = async ({ to, subject, html }) => {
       to: [{ email: to }],
       subject,
       htmlContent: html,
+      ...(replyTo ? { replyTo: { email: replyTo.address || replyTo, name: replyTo.name || 'InovitaZ Support' } } : {}),
     }),
   });
 
@@ -89,10 +90,12 @@ const sendViaBrevoApi = async ({ to, subject, html }) => {
 /* ------------------------------------------------------------------ */
 /* Core send: picks API vs SMTP vs log                                 */
 /* ------------------------------------------------------------------ */
-const sendEmail = async ({ to, subject, html, devLogLabel, devLogLink }) => {
+const sendEmail = async ({ to, subject, html, replyTo, devLogLabel, devLogLink }) => {
+  // Every outbound mail invites a reply to a HUMAN, not a void.
+  const effectiveReplyTo = replyTo || process.env.REPLY_TO_EMAIL || 'support@inovitaz.in';
   // 1) Brevo HTTP API (preferred — works from Render)
   if (process.env.BREVO_API_KEY) {
-    const info = await sendViaBrevoApi({ to, subject, html });
+    const info = await sendViaBrevoApi({ to, subject, html, replyTo: effectiveReplyTo });
     logger.info('✅ Email sent (Brevo API)', { to, messageId: info.messageId });
     return info;
   }
@@ -105,6 +108,7 @@ const sendEmail = async ({ to, subject, html, devLogLabel, devLogLink }) => {
       to,
       subject,
       html,
+      headers: { 'Reply-To': (effectiveReplyTo.address || effectiveReplyTo) },
     });
     logger.info('✅ Email sent (SMTP)', { to, messageId: info.messageId });
     if (process.env.NODE_ENV !== 'production') {
@@ -271,4 +275,5 @@ const sendPasswordResetEmail = async (email, name, token) => {
 module.exports = {
   sendVerificationEmail,
   sendPasswordResetEmail,
+  sendEmail,
 };

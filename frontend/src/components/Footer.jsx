@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import EmailUs from "./EmailUs";
 import { useContext, useState } from "react";
 import toast from "react-hot-toast";
 import { AuthContext } from "../context/AuthContext";
@@ -181,7 +182,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-3">
                 <HiMail className="w-5 h-5 text-primary flex-shrink-0" />
-                <a href="mailto:inovitaz.help@gmail.com" className="hover:text-white">inovitaz.help@gmail.com</a>
+                <EmailUs label="support@inovitaz.in" className="hover:text-white inline-flex items-center gap-1.5" />
               </div>
             </div>
           </div>

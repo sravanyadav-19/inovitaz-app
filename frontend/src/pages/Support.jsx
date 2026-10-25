@@ -10,6 +10,9 @@ import {
   HiSearch
 } from "react-icons/hi";
 import { requestCookieConsent } from "../context/CookieConsentContext";
+import toast from "react-hot-toast";
+import EmailUs from "../components/EmailUs";
+import api from "../api/axios";
 
 // FAQ content, grouped by topic. Edit questions/answers here.
 const FAQ_TOPICS = [
@@ -114,6 +117,26 @@ function FAQItem({ question, answer }) {
 export default function Support() {
   const [activeTopic, setActiveTopic] = useState("all");
   const [query, setQuery] = useState("");
+  const [contact, setContact] = useState({ name: "", email: "", subject: "", message: "", company: "" });
+  const [sending, setSending] = useState(false);
+
+  // "company" is a honeypot: invisible to humans, filled by bots -> fake success.
+  const handleContactSubmit = async (e) => {
+    e.preventDefault();
+    if (contact.company) { toast.success("Message sent — we reply within 24 hours."); setContact({ name: "", email: "", subject: "", message: "", company: "" }); return; }
+    setSending(true);
+    try {
+      const res = await api.post("/support/contact", {
+        name: contact.name, email: contact.email, subject: contact.subject, message: contact.message,
+      });
+      toast.success(res.data?.message || "Message sent — we reply within 24 hours.");
+      setContact({ name: "", email: "", subject: "", message: "", company: "" });
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not send right now — try WhatsApp instead.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -188,12 +211,11 @@ export default function Support() {
             <p className="text-outline mb-6 text-sm">
               For detailed technical queries. We reply to every message.
             </p>
-            <a
-              href="mailto:inovitaz.help@gmail.com"
-              className="block w-full py-2.5 rounded-lg font-semibold bg-primary hover:bg-primary-container text-white transition-colors mt-auto"
-            >
-              Compose Email
-            </a>
+            <EmailUs
+              block
+              label="Compose Email"
+              className="w-full py-2.5 rounded-lg font-semibold bg-primary hover:bg-primary-container text-white transition-colors mt-auto justify-center inline-flex items-center gap-2"
+            />
           </div>
 
           {/* Phone */}
@@ -220,6 +242,60 @@ export default function Support() {
               </a>
             </div>
           </div>
+        </div>
+
+        {/* Contact form — posts straight into the team inbox (no mail app needed) */}
+        <div className="mt-12 max-w-2xl mx-auto bg-surface rounded-2xl border border-surface-variant p-6 md:p-8">
+          <h2 className="text-xl font-bold text-white mb-2 text-center">Message the team directly</h2>
+          <p className="text-outline text-sm mb-6 text-center">
+            No mail app, no detour — this lands in our inbox and we reply to your email.
+          </p>
+          <form onSubmit={handleContactSubmit} className="grid gap-4" noValidate={false}>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <input
+                type="text" required minLength={2} maxLength={80}
+                value={contact.name}
+                onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))}
+                placeholder="Your name" aria-label="Your name"
+                className="input w-full min-h-11"
+              />
+              <input
+                type="email" required
+                value={contact.email}
+                onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))}
+                placeholder="Your email" aria-label="Your email"
+                className="input w-full min-h-11"
+              />
+            </div>
+            <input
+              type="text" required minLength={3} maxLength={150}
+              value={contact.subject}
+              onChange={(e) => setContact((p) => ({ ...p, subject: e.target.value }))}
+              placeholder="Subject (e.g. Download link for my order)" aria-label="Subject"
+              className="input w-full min-h-11"
+            />
+            <textarea
+              required minLength={10} maxLength={2000} rows={5}
+              value={contact.message}
+              onChange={(e) => setContact((p) => ({ ...p, message: e.target.value }))}
+              placeholder="How can we help? Share your order ID or project name if it's about one."
+              aria-label="Message"
+              className="input w-full resize-y min-h-[140px]"
+            />
+            {/* honeypot — spam bots only */}
+            <input
+              type="text" value={contact.company} tabIndex={-1} aria-hidden="true" autoComplete="off"
+              onChange={(e) => setContact((p) => ({ ...p, company: e.target.value }))}
+              className="hidden" style={{ display: "none" }}
+            />
+            <button
+              type="submit" disabled={sending}
+              className="btn btn-primary inline-flex items-center justify-center gap-2 min-h-11 disabled:opacity-60"
+            >
+              <HiMail aria-hidden="true" className="w-4 h-4" />
+              {sending ? "Sending…" : "Send message"}
+            </button>
+          </form>
         </div>
 
         {/* 3. FAQ Section */}
