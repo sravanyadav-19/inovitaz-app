@@ -178,8 +178,8 @@ const Home = () => {
                   <div className="t-num text-3xl font-bold text-white">4.9</div>
                   <div className="text-outline text-sm">Rating</div>
                 </div>
-              </div>
-            </div> */}
+              </div> */}
+            </div>
 
             {/* Hero frame — the boxed panel is back (user-requested); elevation by
                 soft glass surface + hairline, still no glow halo (F4) */}
