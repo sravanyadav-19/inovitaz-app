@@ -165,7 +165,7 @@ const Home = () => {
               </div>
 
               {/* Stats — mono/tabular telemetry voice (typography-scale pairing rule) */}
-              <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/10">
+              {/* <div className="grid grid-cols-3 gap-8 mt-12 pt-8 border-t border-white/10">
                 <div>
                   <div className="t-num text-3xl font-bold text-white">50+</div>
                   <div className="text-outline text-sm">Projects</div>
@@ -179,7 +179,7 @@ const Home = () => {
                   <div className="text-outline text-sm">Rating</div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Hero frame — the boxed panel is back (user-requested); elevation by
                 soft glass surface + hairline, still no glow halo (F4) */}
