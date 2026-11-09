@@ -433,14 +433,14 @@ const AdminProjects = () => {
             onClick={() => setShowModal(false)}
             aria-hidden="true"
           />
-          <div className="relative z-10 flex min-h-full items-stretch justify-center p-0 sm:p-3">
+          <div className="relative z-10 flex h-[100dvh] w-full">
             <section
               role="dialog"
               aria-modal="true"
               aria-labelledby="project-modal-title"
               tabIndex={-1}
               onKeyDown={(event) => event.key === 'Escape' && setShowModal(false)}
-              className="relative bg-surface-lowest border border-surface-variant rounded-none sm:rounded-2xl w-full max-w-none min-h-[100dvh] sm:min-h-0 sm:h-[calc(100dvh-1.5rem)] overflow-hidden fade-in flex flex-col"
+              className="relative bg-surface-lowest border-0 border-surface-variant w-full max-w-none h-[100dvh] overflow-hidden fade-in flex flex-col"
             >
               <button
                 type="button"
