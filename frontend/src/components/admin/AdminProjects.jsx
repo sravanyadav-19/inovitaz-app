@@ -433,14 +433,14 @@ const AdminProjects = () => {
             onClick={() => setShowModal(false)}
             aria-hidden="true"
           />
-          <div className="relative z-10 flex min-h-full items-center justify-center p-4">
+          <div className="relative z-10 flex min-h-full items-stretch justify-center p-0 sm:p-3">
             <section
               role="dialog"
               aria-modal="true"
               aria-labelledby="project-modal-title"
               tabIndex={-1}
               onKeyDown={(event) => event.key === 'Escape' && setShowModal(false)}
-              className="relative bg-surface-lowest border border-surface-variant rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto fade-in"
+              className="relative bg-surface-lowest border border-surface-variant rounded-none sm:rounded-2xl w-full max-w-none min-h-[100dvh] sm:min-h-0 sm:h-[calc(100dvh-1.5rem)] overflow-hidden fade-in flex flex-col"
             >
               <button
                 type="button"
@@ -451,7 +451,7 @@ const AdminProjects = () => {
               >
                 <HiX aria-hidden="true" className="w-5 h-5" />
               </button>
-              <div className="p-6 border-b border-surface-variant">
+              <div className="p-6 border-b border-surface-variant shrink-0">
                 <h3 id="project-modal-title" className="t-h3 text-white">
                   {editingProject ? "Edit Project" : "Add New Project"}
                 </h3>
@@ -459,7 +459,7 @@ const AdminProjects = () => {
                   Add complete project information.
                 </p>
               </div>
-              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 overflow-y-auto">
                 {/* Basic Info */}
                 <div className="grid md:grid-cols-2 gap-4 bg-surface border border-surface-variant rounded-xl p-4">
                   <h4 className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-outline mb-2">
