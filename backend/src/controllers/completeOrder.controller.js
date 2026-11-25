@@ -36,14 +36,27 @@ const DEFAULT_BUILD_LIMIT = 5;
 const ACTIVE_STATUSES = ['active', 'paused', 'ready']; // orders occupying the workbench
 
 const getCapacityState = async () => {
-  const setting = await db.query('SELECT value FROM site_settings WHERE key = $1', [CAPACITY_KEY]);
-  const parsed = setting.rows.length ? parseInt(setting.rows[0].value, 10) : DEFAULT_BUILD_LIMIT;
-  const limit = Number.isInteger(parsed) && parsed >= 0 ? parsed : DEFAULT_BUILD_LIMIT;
-  const countResult = await db.query(
-    'SELECT COUNT(*)::int AS n FROM complete_orders WHERE status = ANY($1::text[])',
-    [ACTIVE_STATUSES]
-  );
-  const activeCount = countResult.rows[0].n;
+  // Degrade gracefully: a missing site_settings / complete_orders table (a
+  // migration not yet run on this branch) must never 500 the storefront —
+  // fall back to the default limit and zero active builds.
+  let limit = DEFAULT_BUILD_LIMIT;
+  try {
+    const setting = await db.query('SELECT value FROM site_settings WHERE key = $1', [CAPACITY_KEY]);
+    const parsed = setting.rows.length ? parseInt(setting.rows[0].value, 10) : DEFAULT_BUILD_LIMIT;
+    if (Number.isInteger(parsed) && parsed >= 0) limit = parsed;
+  } catch (error) {
+    logger.warn('site_settings unavailable — using default build limit', { error: error.message });
+  }
+  let activeCount = 0;
+  try {
+    const countResult = await db.query(
+      'SELECT COUNT(*)::int AS n FROM complete_orders WHERE status = ANY($1::text[])',
+      [ACTIVE_STATUSES]
+    );
+    activeCount = countResult.rows[0].n;
+  } catch (error) {
+    logger.warn('complete_orders unavailable — assuming 0 active builds', { error: error.message });
+  }
   return {
     limit,
     activeCount,
