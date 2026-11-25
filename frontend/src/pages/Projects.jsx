@@ -5,11 +5,12 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { HiSearch, HiFilter, HiX } from 'react-icons/hi';
+import { HiSearch, HiFilter, HiX, HiChip } from 'react-icons/hi';
 import ProjectCard from '../components/ProjectCard';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import { projectsAPI } from '../api/projects';
 import { requestCookieConsent } from '../context/CookieConsentContext';
+import { orderSiteUrl } from '../utils/host';
 
 const Projects = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,7 +39,7 @@ const Projects = () => {
         category,
         sort,
         page,
-        limit: 12,
+        limit: 8,
         difficulty,
         maxPrice,
         technology,
@@ -516,7 +517,7 @@ const Projects = () => {
 
         {/* Projects Grid */}
         {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" aria-busy="true" aria-label={search ? 'Searching projects' : 'Loading projects'}>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6" aria-busy="true" aria-label={search ? 'Searching projects' : 'Loading projects'}>
             {[...Array(8)].map((_, i) => (
               <SkeletonCard key={i} />
             ))}
@@ -559,7 +560,7 @@ const Projects = () => {
           </div>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {projects.map((project) => (
                 <ProjectCard key={project.id} project={project} highlight={search} />
               ))}
@@ -614,6 +615,24 @@ const Projects = () => {
             )}
           </>
         )}
+
+        {/* Order-a-build CTA — the former header entry, now living below the catalog */}
+        <div className="mt-14 glass-panel rounded-2xl p-8 sm:p-10 text-center">
+          <div className="t-label text-primary-dim mb-2">Custom builds</div>
+          <h2 className="text-xl sm:text-2xl font-display font-semibold text-white mb-3">
+            Want a project like these?
+          </h2>
+          <p className="text-outline max-w-xl mx-auto mb-6">
+            Place an order and we will build the project for you — fully assembled, tested, and delivered.
+          </p>
+          <a
+            href={orderSiteUrl()}
+            className="btn btn-primary inline-flex items-center gap-2 px-6"
+          >
+            <HiChip aria-hidden="true" className="w-5 h-5" />
+            Order a Project
+          </a>
+        </div>
       </div>
     </div>
   );

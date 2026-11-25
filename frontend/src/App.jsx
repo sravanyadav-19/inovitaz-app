@@ -8,6 +8,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import AdminRoute from './components/AdminRoute';
 import ScrollToTop from './components/ScrollToTop';
 import CookieConsent from './components/CookieConsent';
+import SupportFab from './components/SupportFab';
+import OrderPromoPopup from './components/OrderPromoPopup';
 import { useCookieConsent } from './context/CookieConsentContext';
 
 // Pages
@@ -101,6 +103,8 @@ function App() {
         </main>
         <Footer />
         <CookieConsent />
+        <SupportFab />
+        <OrderPromoPopup />
         <Toaster
           position="top-right"
           gutter={10}

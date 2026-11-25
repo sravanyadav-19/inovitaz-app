@@ -32,7 +32,6 @@ export default function OrderForm() {
     phone: "",
     email: user?.email || "",
     deliveryAddressId: "",
-    deliveryRoom: "",
     notes: "",
   });
 
@@ -94,7 +93,6 @@ export default function OrderForm() {
         phone: form.phone,
         email: form.email,
         deliveryAddressId: Number(form.deliveryAddressId),
-        deliveryRoom: form.deliveryRoom,
         notes: form.notes,
       });
       if (res?.success) {
@@ -239,19 +237,6 @@ export default function OrderForm() {
                   </div>
                 </label>
               ))}
-            </div>
-            <div>
-              <label className="block text-sm text-outline mb-1.5" htmlFor="deliveryRoom">
-                Hostel block / room / who collects (optional)
-              </label>
-              <input
-                id="deliveryRoom"
-                type="text"
-                value={form.deliveryRoom}
-                onChange={set("deliveryRoom")}
-                placeholder="e.g. MH-3, Room 412 — collect at reception"
-                className={inputClass}
-              />
             </div>
           </section>
 

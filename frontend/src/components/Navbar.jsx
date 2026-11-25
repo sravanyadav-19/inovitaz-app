@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../context/CartContext';
-import { isOrderHost, mainSiteUrl, orderSiteUrl } from '../utils/host';
+import { isOrderHost, mainSiteUrl } from '../utils/host';
 import {
   HiMenu,
   HiX,
@@ -10,7 +10,6 @@ import {
   HiViewGrid,
   HiHome,
   HiCollection,
-  HiSupport,
   HiShoppingCart,
   HiShieldCheck,
   HiChip,
@@ -20,6 +19,9 @@ const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const onOrderHost = isOrderHost();
   const { count: cartCount } = useCart();
+  // Header cart: customers only (never guests, never admins) and only on the
+  // main site — the order flow pays directly and has no cart step.
+  const showCart = !onOrderHost && isAuthenticated && !isAdmin;
   const [isOpen, setIsOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
@@ -68,22 +70,26 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-2">
-            <NavLink to="/" className={navLinkClass}>
-              <HiHome aria-hidden="true" className="w-5 h-5" />
-              Home
-            </NavLink>
-            <NavLink to="/projects" className={navLinkClass}>
-              <HiCollection aria-hidden="true" className="w-5 h-5" />
-              Projects
-            </NavLink>
             {!onOrderHost && (
-              <a
-                href={orderSiteUrl()}
-                className="flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-full transition-colors duration-200 border border-primary/40 text-primary-dim hover:bg-primary/10 font-medium"
-              >
-                <HiChip aria-hidden="true" className="w-5 h-5" />
-                Order a Build
-              </a>
+              <>
+                <NavLink to="/projects" className={navLinkClass}>
+                  <HiCollection aria-hidden="true" className="w-5 h-5" />
+                  Projects
+                </NavLink>
+                {showCart && (
+                  <NavLink to="/cart" aria-label={cartLabel} className={navLinkClass}>
+                    <span aria-hidden="true" className="relative">
+                      <HiShoppingCart className="w-5 h-5" />
+                      {cartCount > 0 && (
+                        <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </span>
+                    Cart
+                  </NavLink>
+                )}
+              </>
             )}
             {onOrderHost && (
               <>
@@ -100,21 +106,6 @@ const Navbar = () => {
                 </a>
               </>
             )}
-            <NavLink to="/support" className={navLinkClass}>
-              <HiSupport aria-hidden="true" className="w-5 h-5" />
-              Support
-            </NavLink>
-            <NavLink to="/cart" aria-label={cartLabel} className={navLinkClass}>
-              <span aria-hidden="true" className="relative">
-                <HiShoppingCart className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
-                    {cartCount}
-                  </span>
-                )}
-              </span>
-              Cart
-            </NavLink>
 
             {isAuthenticated && (
               <>
@@ -208,26 +199,39 @@ const Navbar = () => {
       {isOpen && (
         <div id="mobile-navigation" aria-label="Mobile navigation" className="md:hidden bg-surface-lowest border-t border-surface-variant fade-in absolute w-full">
           <div className="px-4 py-4 space-y-2">
-            <NavLink to="/" className={navLinkClass} onClick={() => setIsOpen(false)}>
-              <HiHome aria-hidden="true" className="w-5 h-5" /> Home
-            </NavLink>
-            <NavLink to="/projects" className={navLinkClass} onClick={() => setIsOpen(false)}>
-              <HiCollection aria-hidden="true" className="w-5 h-5" /> Projects
-            </NavLink>
-            <NavLink to="/support" className={navLinkClass} onClick={() => setIsOpen(false)}>
-              <HiSupport aria-hidden="true" className="w-5 h-5" /> Support
-            </NavLink>
-            <NavLink to="/cart" aria-label={cartLabel} className={navLinkClass} onClick={() => setIsOpen(false)}>
-              <span aria-hidden="true" className="relative">
-                <HiShoppingCart className="w-5 h-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
-                    {cartCount}
-                  </span>
+            {!onOrderHost && (
+              <>
+                <NavLink to="/projects" className={navLinkClass} onClick={() => setIsOpen(false)}>
+                  <HiCollection aria-hidden="true" className="w-5 h-5" /> Projects
+                </NavLink>
+                {showCart && (
+                  <NavLink to="/cart" aria-label={cartLabel} className={navLinkClass} onClick={() => setIsOpen(false)}>
+                    <span aria-hidden="true" className="relative">
+                      <HiShoppingCart className="w-5 h-5" />
+                      {cartCount > 0 && (
+                        <span className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-primary text-white text-[10px] font-bold flex items-center justify-center">
+                          {cartCount}
+                        </span>
+                      )}
+                    </span>
+                    Cart
+                  </NavLink>
                 )}
-              </span>
-              Cart
-            </NavLink>
+              </>
+            )}
+            {onOrderHost && (
+              <>
+                <NavLink to="/track" className={navLinkClass} onClick={() => setIsOpen(false)}>
+                  <HiChip aria-hidden="true" className="w-5 h-5" /> Track Build
+                </NavLink>
+                <a
+                  href={mainSiteUrl()}
+                  className="flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-full transition-colors duration-200 border text-outline border-transparent hover:bg-surface-highest hover:text-white font-medium"
+                >
+                  <HiHome aria-hidden="true" className="w-5 h-5" /> Main Site
+                </a>
+              </>
+            )}
 
             {isAuthenticated && (
               <>
