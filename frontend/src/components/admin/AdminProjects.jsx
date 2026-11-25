@@ -33,7 +33,6 @@ const AdminProjects = () => {
     title: "",
     price: "",
     build_price: "",
-    bundle_price: "",
     thumbnail: "",
     content_url: "",
     category: "IoT",
@@ -149,7 +148,6 @@ const AdminProjects = () => {
       title: project.title,
       price: project.price != null ? String(paiseToRupees(project.price)) : "",
       build_price: project.build_price != null ? String(paiseToRupees(project.build_price)) : "",
-      bundle_price: project.bundle_price != null ? String(paiseToRupees(project.bundle_price)) : "",
       thumbnail: project.thumbnail || "",
       content_url: project.content_url || jsonDownloadUrl || "",
       category: project.category || "IoT",
@@ -238,7 +236,6 @@ const AdminProjects = () => {
         title: formData.title,
         price: rupeesToPaise(formData.price),
         build_price: formData.build_price === "" ? null : rupeesToPaise(formData.build_price),
-        bundle_price: formData.bundle_price === "" ? null : rupeesToPaise(formData.bundle_price),
         thumbnail: formData.thumbnail,
         content_url: formData.content_url,
         category: formData.category,
@@ -491,7 +488,7 @@ const AdminProjects = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-outline mb-1">
-                      Price (₹) *
+                      Price (₹) * <span className="text-outline-variant font-normal">(docs bundle — main site)</span>
                     </label>
                     <input
                       type="number"
@@ -526,25 +523,6 @@ const AdminProjects = () => {
                       }
                       className="input w-full"
                       placeholder="2499"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-outline mb-1">
-                      Bundle Price (₹) <span className="text-outline-variant">(docs + code)</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={formData.bundle_price}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          bundle_price: e.target.value,
-                        }))
-                      }
-                      className="input w-full"
-                      placeholder="499"
                     />
                   </div>
                   <div>

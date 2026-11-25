@@ -7,7 +7,6 @@
 
 -- 1. Two prices per project: complete build vs DIY bundle.
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS build_price INTEGER;
-ALTER TABLE projects ADD COLUMN IF NOT EXISTS bundle_price INTEGER;
 
 -- 2. Delivery addresses — seeded with VIT-AP as the only active option.
 CREATE TABLE IF NOT EXISTS delivery_addresses (
@@ -21,6 +20,10 @@ CREATE TABLE IF NOT EXISTS delivery_addresses (
   is_active BOOLEAN NOT NULL DEFAULT FALSE,
   sort_order SMALLINT NOT NULL DEFAULT 0
 );
+
+-- Unique label guard: makes the seed INSERTs below genuinely idempotent
+-- (ON CONFLICT needs a unique index to conflict against).
+CREATE UNIQUE INDEX IF NOT EXISTS idx_delivery_addresses_label ON delivery_addresses(label);
 
 INSERT INTO delivery_addresses (label, line1, line2, city, state, pincode, is_active, sort_order)
 VALUES (

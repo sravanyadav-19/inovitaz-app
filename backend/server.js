@@ -142,8 +142,20 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'https://inovitaz.vercel.app',
   'https://inovitaz.in', // <-- explicitly added root domain
-  'https://www.inovitaz.in'
+  'https://www.inovitaz.in',
+  'https://order.inovitaz.in' // <-- order portal subdomain
 ];
+
+// Any current or future *.inovitaz.in subdomain (order., support., ...)
+// is our own property — allow it, scoped to exactly this domain.
+const isInovitazSubdomain = (origin) => {
+  try {
+    const host = new URL(origin).hostname;
+    return host === 'inovitaz.in' || host.endsWith('.inovitaz.in');
+  } catch {
+    return false;
+  }
+};
 
 // Vercel mints a NEW per-deployment hash URL on every push
 // (<name>-<hash>-<team>.vercel.app). Exact matches can't keep up with
@@ -160,7 +172,7 @@ const isOwnVercelPreview = (origin) => {
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-    const isAllowed = allowedOrigins.includes(origin) || isOwnVercelPreview(origin) ||
+    const isAllowed = allowedOrigins.includes(origin) || isOwnVercelPreview(origin) || isInovitazSubdomain(origin) ||
       (!isProduction && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')));
     if (isAllowed) {
       callback(null, true);

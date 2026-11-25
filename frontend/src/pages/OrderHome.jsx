@@ -176,7 +176,7 @@ export default function OrderHome() {
                     <p className="text-xs text-outline mb-1.5">
                       DIY bundle{" "}
                       <span className="text-white font-semibold">
-                        {formatINRFromPaise(project.bundle_price || project.price)}
+                        {formatINRFromPaise(project.price)}
                       </span>
                       <span className="block">docs + code, instant download</span>
                     </p>
