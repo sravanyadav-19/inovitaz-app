@@ -28,3 +28,5 @@ uploads/
 dist/
 build/
 seed-admin.js
+
+db-backup.json
