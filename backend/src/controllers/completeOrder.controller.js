@@ -85,14 +85,16 @@ const updateCapacity = async (req, res) => {
         message: 'Limit must be a whole number between 0 and 100 (0 = ordering closed)',
       });
     }
-    await db.query(
+    const upsert = await db.query(
       `INSERT INTO site_settings (key, value, updated_at) VALUES ($1, $2, NOW())
-       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()
+       RETURNING value`,
       [CAPACITY_KEY, String(limit)]
     );
+    const savedValue = parseInt(upsert.rows[0].value, 10);
     const state = await getCapacityState();
-    logger.info('BUILD_LIMIT_UPDATED', { adminId: req.user.id, limit });
-    return res.json({ success: true, data: state });
+    logger.info('BUILD_LIMIT_UPDATED', { adminId: req.user.id, requested: limit, savedValue });
+    return res.json({ success: true, data: { ...state, savedValue } });
   } catch (error) {
     logger.error('Capacity update error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to update the limit' });
@@ -536,7 +538,10 @@ const getAllOrders = async (req, res) => {
     return res.json({ success: true, data });
   } catch (error) {
     logger.error('Admin complete orders error', { error: error.message });
-    return res.status(500).json({ success: false, message: 'Failed to load orders' });
+    return res.status(500).json({
+      success: false,
+      message: `Failed to load orders: ${error.message}`,
+    });
   }
 };
 

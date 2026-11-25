@@ -56,7 +56,21 @@ export default function AdminBuilds() {
     try {
       const res = await completeOrdersAPI.updateCapacity(limit);
       if (res?.success) {
-        setCapacity(res.data);
+        if (res.data.savedValue !== undefined && res.data.savedValue !== limit) {
+          toast.error(`Server saved ${res.data.savedValue} instead of ${limit} — screenshot this and report it`);
+          setCapacity(res.data);
+          setLimitDraft(String(res.data.limit));
+          setSavingLimit(false);
+          return;
+        }
+        // Re-read fresh state: if the display flips back, the write didn't stick.
+        const capRes = await completeOrdersAPI.getCapacity().catch(() => null);
+        if (capRes?.success) {
+          setCapacity(capRes.data);
+          setLimitDraft(String(capRes.data.limit));
+        } else {
+          setCapacity(res.data);
+        }
         toast.success(
           res.data.accepting
             ? `Limit set to ${res.data.limit} — ${res.data.slotsLeft} slot(s) open`
