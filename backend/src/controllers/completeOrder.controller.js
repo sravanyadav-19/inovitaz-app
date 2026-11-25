@@ -42,7 +42,7 @@ const getCapacityState = async () => {
   let limit = DEFAULT_BUILD_LIMIT;
   try {
     const setting = await db.query('SELECT value FROM site_settings WHERE key = $1', [CAPACITY_KEY]);
-    const parsed = setting.rows.length ? parseInt(setting.rows[0].value, 10) : DEFAULT_BUILD_LIMIT;
+    const parsed = setting.length ? parseInt(setting[0].value, 10) : DEFAULT_BUILD_LIMIT;
     if (Number.isInteger(parsed) && parsed >= 0) limit = parsed;
   } catch (error) {
     logger.warn('site_settings unavailable — using default build limit', { error: error.message });
@@ -53,7 +53,7 @@ const getCapacityState = async () => {
       'SELECT COUNT(*)::int AS n FROM complete_orders WHERE status = ANY($1::text[])',
       [ACTIVE_STATUSES]
     );
-    activeCount = countResult.rows[0].n;
+    activeCount = countResult[0].n;
   } catch (error) {
     logger.warn('complete_orders unavailable — assuming 0 active builds', { error: error.message });
   }
@@ -91,7 +91,7 @@ const updateCapacity = async (req, res) => {
        RETURNING value`,
       [CAPACITY_KEY, String(limit)]
     );
-    const savedValue = parseInt(upsert.rows[0].value, 10);
+    const savedValue = parseInt(upsert[0].value, 10);
     const state = await getCapacityState();
     logger.info('BUILD_LIMIT_UPDATED', { adminId: req.user.id, requested: limit, savedValue });
     return res.json({ success: true, data: { ...state, savedValue } });
@@ -166,7 +166,7 @@ const getDeliveryAddresses = async (_req, res) => {
     );
     return res.json({
       success: true,
-      data: result.rows.map((r) => ({
+      data: result.map((r) => ({
         id: r.id,
         label: r.label,
         line1: r.line1,
@@ -218,10 +218,10 @@ const createOrder = async (req, res) => {
       'SELECT id, title, build_price FROM projects WHERE id = $1',
       [projectId]
     );
-    if (projectResult.rows.length === 0) {
+    if (projectResult.length === 0) {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
-    const project = projectResult.rows[0];
+    const project = projectResult[0];
     if (!project.build_price || project.build_price < 100) {
       return res.status(400).json({
         success: false,
@@ -233,7 +233,7 @@ const createOrder = async (req, res) => {
       'SELECT id, is_active FROM delivery_addresses WHERE id = $1',
       [Number(b.deliveryAddressId)]
     );
-    if (addressResult.rows.length === 0 || !addressResult.rows[0].is_active) {
+    if (addressResult.length === 0 || !addressResult[0].is_active) {
       return res.status(400).json({
         success: false,
         message: 'Please select the VIT-AP University delivery address',
@@ -330,7 +330,7 @@ const getMyOrders = async (req, res) => {
       [req.user.id]
     );
 
-    const orderIds = ordersResult.rows.map((o) => o.id);
+    const orderIds = ordersResult.map((o) => o.id);
     let installments = [];
     if (orderIds.length > 0) {
       const instResult = await db.query(
@@ -338,10 +338,10 @@ const getMyOrders = async (req, res) => {
          ORDER BY order_id, installment_number`,
         [orderIds]
       );
-      installments = instResult.rows;
+      installments = instResult;
     }
 
-    const data = ordersResult.rows.map((order) => {
+    const data = ordersResult.map((order) => {
       const insts = installments
         .filter((i) => i.order_id === order.id)
         .map(installmentToClient);
@@ -374,10 +374,10 @@ const payInstallment = async (req, res) => {
        WHERE co.id = $1`,
       [orderId]
     );
-    if (orderResult.rows.length === 0) {
+    if (orderResult.length === 0) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
-    const order = orderResult.rows[0];
+    const order = orderResult[0];
     if (order.user_id !== req.user.id) {
       return res.status(403).json({ success: false, message: 'This is not your order' });
     }
@@ -389,10 +389,10 @@ const payInstallment = async (req, res) => {
       `SELECT * FROM order_installments WHERE order_id = $1 AND installment_number = $2`,
       [orderId, installmentNumber]
     );
-    if (instResult.rows.length === 0) {
+    if (instResult.length === 0) {
       return res.status(404).json({ success: false, message: 'Installment not found' });
     }
-    const installment = instResult.rows[0];
+    const installment = instResult[0];
     if (installment.status === 'paid') {
       return res.status(400).json({ success: false, message: 'This installment is already paid' });
     }
@@ -403,7 +403,7 @@ const payInstallment = async (req, res) => {
         `SELECT status FROM order_installments WHERE order_id = $1 AND installment_number = $2`,
         [orderId, installmentNumber - 1]
       );
-      if (prev.rows.length && prev.rows[0].status !== 'paid') {
+      if (prev.length && prev[0].status !== 'paid') {
         return res.status(400).json({
           success: false,
           message: `Please pay installment ${installmentNumber - 1} first`,
@@ -425,8 +425,8 @@ const payInstallment = async (req, res) => {
         `SELECT id, razorpay_order_id, amount, currency, status FROM orders WHERE id = $1`,
         [installment.razorpay_order_id]
       );
-      if (existing.rows.length && existing.rows[0].status === 'created') {
-        const row = existing.rows[0];
+      if (existing.length && existing[0].status === 'created') {
+        const row = existing[0];
         return res.json({
           success: true,
           data: {
@@ -516,16 +516,16 @@ const getAllOrders = async (req, res) => {
        ORDER BY co.created_at DESC
        LIMIT 500`
     );
-    const orderIds = result.rows.map((o) => o.id);
+    const orderIds = result.map((o) => o.id);
     let installments = [];
     if (orderIds.length > 0) {
       const inst = await db.query(
         `SELECT * FROM order_installments WHERE order_id = ANY($1::int[]) ORDER BY order_id, installment_number`,
         [orderIds]
       );
-      installments = inst.rows;
+      installments = inst;
     }
-    const data = result.rows.map((order) => {
+    const data = result.map((order) => {
       const insts = installments.filter((i) => i.order_id === order.id).map(installmentToClient);
       return {
         ...toClient(order),
@@ -573,10 +573,10 @@ const updateOrder = async (req, res) => {
        WHERE id = $${params.length} RETURNING *`,
       params
     );
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
-    return res.json({ success: true, data: toClient(result.rows[0]) });
+    return res.json({ success: true, data: toClient(result[0]) });
   } catch (error) {
     logger.error('Update complete order error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to update order' });
@@ -597,14 +597,14 @@ const sendOrderConfirmation = async (orderId) => {
        WHERE co.id = $1`,
       [orderId]
     );
-    if (result.rows.length === 0) return;
-    const order = result.rows[0];
+    if (result.length === 0) return;
+    const order = result[0];
 
     const instResult = await db.query(
       `SELECT * FROM order_installments WHERE order_id = $1 ORDER BY installment_number`,
       [orderId]
     );
-    const rows = instResult.rows
+    const rows = instResult
       .map(
         (i) => `<tr>
           <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${i.label}</td>
@@ -664,8 +664,8 @@ const handleInstallmentPaid = async (internalOrderId, razorpayOrderId) => {
       `SELECT * FROM order_installments WHERE razorpay_order_id = $1`,
       [internalOrderId]
     );
-    if (instResult.rows.length === 0) return; // not a complete-order installment
-    const installment = instResult.rows[0];
+    if (instResult.length === 0) return; // not a complete-order installment
+    const installment = instResult[0];
 
     await db.query(
       `UPDATE order_installments
@@ -682,7 +682,7 @@ const handleInstallmentPaid = async (internalOrderId, razorpayOrderId) => {
     if (installment.installment_number === 1) {
       await sendOrderConfirmation(installment.order_id);
     }
-    if (all.rows.every((r) => r.status === 'paid')) {
+    if (all.every((r) => r.status === 'paid')) {
       await db.query(
         `UPDATE complete_orders SET status = 'completed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
         [installment.order_id]
@@ -710,7 +710,7 @@ const markOverdue = async () => {
      WHERE status = 'due' AND due_date < CURRENT_DATE
      RETURNING order_id`
   );
-  const orderIds = [...new Set(result.rows.map((r) => r.order_id))];
+  const orderIds = [...new Set(result.map((r) => r.order_id))];
   for (const oid of orderIds) {
     await db.query(
       `UPDATE complete_orders SET status = 'paused', updated_at = CURRENT_TIMESTAMP

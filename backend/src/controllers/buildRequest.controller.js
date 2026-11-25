@@ -154,7 +154,7 @@ const createRequest = async (req, res) => {
       'SELECT id, title FROM projects WHERE id = $1',
       [projectId]
     );
-    if (projectResult.rows.length === 0) {
+    if (projectResult.length === 0) {
       return res.status(404).json({ success: false, message: 'Project not found' });
     }
 
@@ -183,12 +183,12 @@ const createRequest = async (req, res) => {
     );
 
     logger.info('BUILD_REQUEST_SUBMITTED', {
-      requestId: insert.rows[0].id,
+      requestId: insert[0].id,
       userId: req.user.id,
       projectId,
     });
 
-    return res.status(201).json({ success: true, data: toClient(insert.rows[0]) });
+    return res.status(201).json({ success: true, data: toClient(insert[0]) });
   } catch (error) {
     logger.error('Build request create error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to submit build request' });
@@ -206,7 +206,7 @@ const getMyRequests = async (req, res) => {
        ORDER BY br.created_at DESC`,
       [req.user.id]
     );
-    return res.json({ success: true, data: result.rows.map(toClient) });
+    return res.json({ success: true, data: result.map(toClient) });
   } catch (error) {
     logger.error('Build request list error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to load your build requests' });
@@ -234,7 +234,7 @@ const getAllRequests = async (req, res) => {
        LIMIT 500`,
       params
     );
-    return res.json({ success: true, data: result.rows.map(toClient) });
+    return res.json({ success: true, data: result.map(toClient) });
   } catch (error) {
     logger.error('Build request admin list error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to load build requests' });
@@ -250,10 +250,10 @@ const updateRequest = async (req, res) => {
     }
 
     const currentResult = await db.query('SELECT * FROM build_requests WHERE id = $1', [requestId]);
-    if (currentResult.rows.length === 0) {
+    if (currentResult.length === 0) {
       return res.status(404).json({ success: false, message: 'Build request not found' });
     }
-    const current = currentResult.rows[0];
+    const current = currentResult[0];
 
     const updates = [];
     const params = [];
@@ -341,10 +341,10 @@ const updateRequest = async (req, res) => {
     logger.info('BUILD_REQUEST_UPDATED', {
       requestId,
       adminId: req.user.id,
-      status: result.rows[0].status,
+      status: result[0].status,
     });
 
-    return res.json({ success: true, data: toClient(result.rows[0]) });
+    return res.json({ success: true, data: toClient(result[0]) });
   } catch (error) {
     logger.error('Build request update error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to update build request' });
@@ -370,10 +370,10 @@ const payAdvance = async (req, res) => {
        WHERE br.id = $1`,
       [requestId]
     );
-    if (requestResult.rows.length === 0) {
+    if (requestResult.length === 0) {
       return res.status(404).json({ success: false, message: 'Build request not found' });
     }
-    const buildRequest = requestResult.rows[0];
+    const buildRequest = requestResult[0];
 
     if (buildRequest.user_id !== req.user.id) {
       return res.status(403).json({ success: false, message: 'This is not your build request' });
@@ -395,8 +395,8 @@ const payAdvance = async (req, res) => {
          FROM orders WHERE id = $1`,
         [buildRequest.advance_order_id]
       );
-      if (existing.rows.length && existing.rows[0].status === 'created') {
-        const row = existing.rows[0];
+      if (existing.length && existing[0].status === 'created') {
+        const row = existing[0];
         return res.json({
           success: true,
           data: {
@@ -411,7 +411,7 @@ const payAdvance = async (req, res) => {
           },
         });
       }
-      if (existing.rows.length && existing.rows[0].status === 'paid') {
+      if (existing.length && existing[0].status === 'paid') {
         return res
           .status(400)
           .json({ success: false, message: 'The advance for this build is already paid' });
@@ -504,10 +504,10 @@ const getPaymentStatus = async (req, res) => {
        WHERE br.id = $1 AND br.user_id = $2`,
       [requestId, req.user.id]
     );
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).json({ success: false, message: 'Build request not found' });
     }
-    const row = result.rows[0];
+    const row = result[0];
     return res.json({
       success: true,
       data: {
