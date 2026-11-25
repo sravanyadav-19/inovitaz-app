@@ -24,6 +24,7 @@ export default function OrderForm() {
 
   const [project, setProject] = useState(null);
   const [addresses, setAddresses] = useState([]);
+  const [capacity, setCapacity] = useState(null);
   const [loadingProject, setLoadingProject] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -38,9 +39,10 @@ export default function OrderForm() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [projRes, addrRes] = await Promise.all([
+      const [projRes, addrRes, capRes] = await Promise.all([
         projectsAPI.getById(projectId),
         completeOrdersAPI.getDeliveryAddresses().catch(() => null),
+        completeOrdersAPI.getCapacity().catch(() => null),
       ]);
       if (cancelled) return;
       const p = projRes?.data?.project || projRes?.data;
@@ -49,6 +51,7 @@ export default function OrderForm() {
         toast.error("That project is not available for complete builds.");
         navigate("/");
       }
+      if (capRes?.success) setCapacity(capRes.data);
       if (addrRes?.success) {
         setAddresses(addrRes.data);
         const active = addrRes.data.find((a) => a.isActive);
@@ -111,6 +114,24 @@ export default function OrderForm() {
     return (
       <div className="min-h-screen bg-surface-lowest flex items-center justify-center">
         <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (capacity && !capacity.accepting) {
+    return (
+      <div className="min-h-screen bg-surface-lowest flex items-center justify-center px-4">
+        <div className="bg-surface border border-surface-variant rounded-2xl p-8 text-center max-w-md">
+          <h1 className="t-h3 text-white mb-2">All build slots are full</h1>
+          <p className="text-sm text-outline mb-6">
+            We're at capacity ({capacity.limit} concurrent builds). A slot opens the moment a build
+            completes — check back soon.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link to="/" className="btn btn-secondary min-h-11 inline-flex items-center">Back to catalog</Link>
+            <Link to="/track" className="btn btn-primary min-h-11 inline-flex items-center">Track my order</Link>
+          </div>
+        </div>
       </div>
     );
   }

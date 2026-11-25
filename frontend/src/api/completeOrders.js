@@ -5,6 +5,16 @@
 import api from "./axios";
 
 export const completeOrdersAPI = {
+  getCapacity: async () => {
+    const response = await api.get("/complete-orders/capacity");
+    return response.data;
+  },
+
+  updateCapacity: async (limit) => {
+    const response = await api.patch("/complete-orders/capacity", { limit });
+    return response.data;
+  },
+
   getDeliveryAddresses: async () => {
     const response = await api.get("/complete-orders/delivery-addresses");
     return response.data;

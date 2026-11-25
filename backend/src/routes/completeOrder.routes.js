@@ -8,6 +8,11 @@ const { authRequired, adminOnly } = require('../middlewares/auth.middleware');
 
 // Public
 router.get('/delivery-addresses', controller.getDeliveryAddresses);
+router.get('/capacity', controller.getCapacity);
+
+// Admin capacity control — MUST be registered before '/:id' so Express
+// doesn't treat "capacity" as an id.
+router.patch('/capacity', authRequired, adminOnly, controller.updateCapacity);
 
 // Buyer
 router.post('/', authRequired, controller.createOrder);

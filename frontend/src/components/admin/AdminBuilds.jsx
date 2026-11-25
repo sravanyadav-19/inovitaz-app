@@ -26,15 +26,51 @@ const INST_CLS = {
  */
 export default function AdminBuilds() {
   const [orders, setOrders] = useState([]);
+  const [capacity, setCapacity] = useState(null);
+  const [limitDraft, setLimitDraft] = useState("");
+  const [savingLimit, setSavingLimit] = useState(false);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await completeOrdersAPI.getAll().catch(() => null);
+    const [res, capRes] = await Promise.all([
+      completeOrdersAPI.getAll().catch(() => null),
+      completeOrdersAPI.getCapacity().catch(() => null),
+    ]);
     setOrders(res?.data || []);
+    if (capRes?.success) {
+      setCapacity(capRes.data);
+      setLimitDraft(String(capRes.data.limit));
+    }
     setLoading(false);
   }, []);
+
+  const saveLimit = async () => {
+    const limit = Number(limitDraft);
+    if (!Number.isInteger(limit) || limit < 0 || limit > 100) {
+      toast.error("Enter a whole number 0–100 (0 = ordering closed)");
+      return;
+    }
+    setSavingLimit(true);
+    try {
+      const res = await completeOrdersAPI.updateCapacity(limit);
+      if (res?.success) {
+        setCapacity(res.data);
+        toast.success(
+          res.data.accepting
+            ? `Limit set to ${res.data.limit} — ${res.data.slotsLeft} slot(s) open`
+            : `Limit set to ${res.data.limit} — ordering is now closed`
+        );
+      } else {
+        toast.error(res?.message || "Failed to update the limit");
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Failed to update the limit");
+    } finally {
+      setSavingLimit(false);
+    }
+  };
 
   useEffect(() => { load(); }, [load]);
 
@@ -69,6 +105,39 @@ export default function AdminBuilds() {
         <button type="button" onClick={load} className="btn btn-secondary min-h-11 inline-flex items-center gap-2">
           <HiOutlineRefresh className="w-4 h-4" aria-hidden="true" /> Refresh
         </button>
+      </div>
+
+      {/* Capacity control */}
+      <div className="bg-surface border border-surface-variant rounded-2xl p-5 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="text-white font-semibold">Build slot limit</p>
+          <p className="text-xs text-outline mt-1">
+            {capacity
+              ? capacity.accepting
+                ? `${capacity.activeCount} active · ${capacity.slotsLeft} slot(s) open on order.inovitaz.in`
+                : `${capacity.activeCount} active · ordering is CLOSED (limit ${capacity.limit})`
+              : "Loading…"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min="0"
+            max="100"
+            value={limitDraft}
+            onChange={(e) => setLimitDraft(e.target.value)}
+            className="w-24 bg-surface-lowest border border-surface-variant rounded-lg px-3 py-2 text-white text-sm min-h-11"
+            aria-label="Build slot limit"
+          />
+          <button
+            type="button"
+            onClick={saveLimit}
+            disabled={savingLimit}
+            className="btn btn-primary min-h-11 text-sm disabled:opacity-60"
+          >
+            {savingLimit ? "Saving…" : "Save limit"}
+          </button>
+        </div>
       </div>
 
       {loading && (

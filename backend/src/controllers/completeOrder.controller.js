@@ -28,6 +28,64 @@ const BUILD_DAYS = 25;         // requirement: deadline = order date + 25 days
 const SECOND_DUE_DAYS = 7;     // requirement: 30% due within 7 days
 const SHARES = { 1: 0.4, 2: 0.3, 3: 0.3 };
 
+/* ------------------------------------------------------------------ */
+/* Build-slot capacity — admin-adjustable via site_settings            */
+/* ------------------------------------------------------------------ */
+const CAPACITY_KEY = 'build_order_limit';
+const DEFAULT_BUILD_LIMIT = 5;
+const ACTIVE_STATUSES = ['active', 'paused', 'ready']; // orders occupying the workbench
+
+const getCapacityState = async () => {
+  const setting = await db.query('SELECT value FROM site_settings WHERE key = $1', [CAPACITY_KEY]);
+  const parsed = setting.rows.length ? parseInt(setting.rows[0].value, 10) : DEFAULT_BUILD_LIMIT;
+  const limit = Number.isInteger(parsed) && parsed >= 0 ? parsed : DEFAULT_BUILD_LIMIT;
+  const countResult = await db.query(
+    'SELECT COUNT(*)::int AS n FROM complete_orders WHERE status = ANY($1::text[])',
+    [ACTIVE_STATUSES]
+  );
+  const activeCount = countResult.rows[0].n;
+  return {
+    limit,
+    activeCount,
+    slotsLeft: Math.max(0, limit - activeCount),
+    accepting: activeCount < limit,
+  };
+};
+
+/** Public: storefront reads this to show "slots left" / "slots full". */
+const getCapacity = async (_req, res) => {
+  try {
+    return res.json({ success: true, data: await getCapacityState() });
+  } catch (error) {
+    logger.error('Capacity read error', { error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to read capacity' });
+  }
+};
+
+/** Admin: change the concurrent-build limit. 0 closes ordering. */
+const updateCapacity = async (req, res) => {
+  try {
+    const limit = Number(req.body.limit);
+    if (!Number.isInteger(limit) || limit < 0 || limit > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit must be a whole number between 0 and 100 (0 = ordering closed)',
+      });
+    }
+    await db.query(
+      `INSERT INTO site_settings (key, value, updated_at) VALUES ($1, $2, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+      [CAPACITY_KEY, String(limit)]
+    );
+    const state = await getCapacityState();
+    logger.info('BUILD_LIMIT_UPDATED', { adminId: req.user.id, limit });
+    return res.json({ success: true, data: state });
+  } catch (error) {
+    logger.error('Capacity update error', { error: error.message });
+    return res.status(500).json({ success: false, message: 'Failed to update the limit' });
+  }
+};
+
 const formatINR = (paise) =>
   `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format((paise || 0) / 100)}`;
 
@@ -164,6 +222,17 @@ const createOrder = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Please select the VIT-AP University delivery address',
+      });
+    }
+
+    // Capacity gate — the server is the real enforcer; the UI only mirrors it.
+    const capacity = await getCapacityState();
+    if (!capacity.accepting) {
+      return res.status(409).json({
+        success: false,
+        message:
+          'All build slots are full right now — new orders open as soon as a build completes. Please check back soon!',
+        data: capacity,
       });
     }
 
@@ -635,6 +704,8 @@ const markOverdue = async () => {
 };
 
 module.exports = {
+  getCapacity,
+  updateCapacity,
   getDeliveryAddresses,
   createOrder,
   getMyOrders,

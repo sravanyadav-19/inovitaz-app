@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { HiOutlineChip, HiOutlineChevronRight, HiOutlineCube, HiOutlineDocumentDownload } from "react-icons/hi";
 import { projectsAPI } from "../api/projects";
+import { completeOrdersAPI } from "../api/completeOrders";
 import { AuthContext } from "../context/AuthContext";
 import { formatINRFromPaise } from "../utils/price";
 
@@ -34,16 +35,21 @@ export default function OrderHome() {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
+  const [capacity, setCapacity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const res = await projectsAPI.getAll({ limit: 60, sort: "popular" });
+      const [res, capRes] = await Promise.all([
+        projectsAPI.getAll({ limit: 60, sort: "popular" }),
+        completeOrdersAPI.getCapacity().catch(() => null),
+      ]);
       if (cancelled) return;
       const list = res?.data?.projects || [];
       setProjects(list.filter((p) => p.status === "active"));
+      if (capRes?.success) setCapacity(capRes.data);
       setLoading(false);
       if (!res?.success && list.length === 0) setError("Could not load the catalog right now.");
     })();
@@ -71,6 +77,14 @@ export default function OrderHome() {
       {/* Hero */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-10 text-center">
         <span className="badge badge-primary mb-4 inline-flex">Built For You — VIT-AP</span>
+        {capacity && capacity.accepting && (
+          <span className="badge badge-success mb-4 ml-2 inline-flex">
+            {capacity.slotsLeft} of {capacity.limit} build slots open
+          </span>
+        )}
+        {capacity && !capacity.accepting && (
+          <span className="badge badge-danger mb-4 ml-2 inline-flex">Build slots full</span>
+        )}
         <h1 className="t-h1 text-white mb-4">
           We build the project.
           <br />
@@ -110,6 +124,16 @@ export default function OrderHome() {
         <p className="text-sm text-outline mb-6">
           Live from the InovitaZ catalog — admin changes appear here automatically.
         </p>
+
+        {capacity && !capacity.accepting && (
+          <div className="bg-danger/10 border border-danger/30 rounded-2xl p-5 mb-6 text-center">
+            <p className="text-white font-semibold mb-1">All build slots are full right now</p>
+            <p className="text-sm text-outline">
+              We're at capacity ({capacity.limit} concurrent builds). New orders open the moment a
+              build completes — check back soon, or grab a DIY bundle below and start today.
+            </p>
+          </div>
+        )}
 
         {loading && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4" aria-busy="true">
@@ -164,10 +188,11 @@ export default function OrderHome() {
                     <button
                       type="button"
                       onClick={() => orderBuild(project)}
-                      disabled={!(project.build_price > 0)}
+                      disabled={!(project.build_price > 0) || (capacity && !capacity.accepting)}
                       className="btn btn-primary w-full min-h-11 inline-flex items-center justify-center gap-2 text-sm disabled:opacity-50"
                     >
-                      Build for me <HiOutlineChevronRight className="w-4 h-4" aria-hidden="true" />
+                      {capacity && !capacity.accepting ? "Slots full" : "Build for me"}{" "}
+                      <HiOutlineChevronRight className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
 
