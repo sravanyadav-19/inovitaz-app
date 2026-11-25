@@ -11,12 +11,14 @@ import {
   HiShoppingCart,
   HiUsers,
   HiTag,
+  HiOutlineChip,
 } from "react-icons/hi";
 import AdminStats from "../components/admin/AdminStats";
 import AdminProjects from "../components/admin/AdminProjects";
 import AdminOrders from "../components/admin/AdminOrders";
 import AdminUsers from "../components/admin/AdminUsers";
 import AdminCoupons from "../components/admin/AdminCoupons";
+import AdminBuilds from "../components/admin/AdminBuilds";
 
 const AdminDashboard = () => {
   const navLinkClass = ({ isActive }) =>
@@ -52,6 +54,9 @@ const AdminDashboard = () => {
                 <NavLink to="/admin/coupons" className={navLinkClass}>
                   <HiTag className="w-5 h-5" /> Coupons
                 </NavLink>
+                <NavLink to="/admin/builds" className={navLinkClass}>
+                  <HiOutlineChip className="w-5 h-5" /> Builds
+                </NavLink>
               </nav>
             </div>
           </div>
@@ -64,6 +69,7 @@ const AdminDashboard = () => {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="users" element={<AdminUsers />} />
               <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="builds" element={<AdminBuilds />} />
             </Routes>
           </div>
         </div>

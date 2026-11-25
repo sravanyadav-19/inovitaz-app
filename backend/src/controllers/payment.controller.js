@@ -4,6 +4,7 @@ const db = require('../config/db');
 const logger = require('../utils/logger');
 const { secureCompare } = require('../utils/secureCompare');
 const { resolveValidCoupon } = require('../services/couponService');
+const completeOrderHooks = require('./completeOrder.controller');
 
 /**
  * Razorpay keys are optional in development/test (mock payment mode).
@@ -294,6 +295,9 @@ const verifyPayment = async (req, res) => {
       return { alreadyProcessed: false, internalOrderId: order.id };
     });
 
+    await markBuildRequestAdvancePaid(order.id);
+    await completeOrderHooks.handleInstallmentPaid(order.id, razorpay_order_id);
+
     logger.payment(
       result.alreadyProcessed ? 'PAYMENT_DUPLICATE' : 'PAYMENT_VERIFIED',
       razorpay_payment_id,
@@ -379,6 +383,9 @@ const handleWebhook = async (req, res) => {
       [razorpayPaymentId, order[0].id]
     );
 
+    await markBuildRequestAdvancePaid(order[0].id);
+    await completeOrderHooks.handleInstallmentPaid(order[0].id, razorpayOrderId);
+
     logger.payment('WEBHOOK_SUCCESS', razorpayOrderId, null, 'paid');
     return res.json({ success: true, message: 'Payment captured successfully' });
   } catch (error) {
@@ -428,6 +435,24 @@ const getPaymentStatus = async (req, res) => {
   } catch (error) {
     logger.error('Get payment status error', { error: error.message });
     return res.status(500).json({ success: false, message: 'Failed to fetch payment status' });
+  }
+};
+
+/**
+ * Post-payment hook: when a paid order belongs to a build-request advance,
+ * flip that request to advance_paid so the build pipeline can start.
+ * Best-effort — a failure here must never break payment verification.
+ */
+const markBuildRequestAdvancePaid = async (internalOrderId) => {
+  try {
+    await db.query(
+      `UPDATE build_requests
+       SET status = 'advance_paid', updated_at = CURRENT_TIMESTAMP
+       WHERE advance_order_id = $1 AND status = 'quoted'`,
+      [internalOrderId]
+    );
+  } catch (hookError) {
+    logger.error('Build-request advance hook failed', { error: hookError.message, internalOrderId });
   }
 };
 

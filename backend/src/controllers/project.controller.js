@@ -99,7 +99,7 @@ const getAllProjects = async (req, res) => {
     const contentUrlSelect = isAdmin ? "p.content_url," : "NULL AS content_url,";
 
     const sql = `
-      SELECT p.id, p.title, p.description, p.price, p.thumbnail, ${contentUrlSelect}
+      SELECT p.id, p.title, p.description, p.price, p.build_price, p.bundle_price, p.thumbnail, ${contentUrlSelect}
              p.category, p.difficulty, p.average_rating, p.reviews_count,
              p.features, p.tech_stack, p.created_at, p.updated_at,
              p.status,
@@ -141,7 +141,7 @@ const getProjectById = async (req, res) => {
   try {
     const { id } = req.params;
     const projects = await db.query(
-      `SELECT id, title, description, price, thumbnail, content_url, category, difficulty,
+      `SELECT id, title, description, price, build_price, bundle_price, thumbnail, content_url, category, difficulty,
               average_rating, reviews_count, features, tech_stack, created_at, updated_at,
               status
        FROM projects WHERE id = $1`, [id]

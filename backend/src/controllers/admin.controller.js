@@ -2,7 +2,8 @@ const db = require('../config/db');
 const logger = require('../utils/logger');
 
 const ALLOWED_PROJECT_FIELDS = [
-  'title', 'description', 'price', 'thumbnail', 'content_url',
+  'title', 'description', 'price', 'build_price', 'bundle_price',
+  'thumbnail', 'content_url',
   'category', 'difficulty', 'features', 'tech_stack',
   'status'
 ];
@@ -12,7 +13,7 @@ const PROJECT_STATUSES = ['active', 'maintenance', 'closed'];
 const createProject = async (req, res) => {
   try {
     const {
-      title, description, price, thumbnail, content_url,
+      title, description, price, build_price, bundle_price, thumbnail, content_url,
       category, difficulty, features, tech_stack,
       status = 'active'
     } = req.body;
@@ -20,12 +21,13 @@ const createProject = async (req, res) => {
 
     const result = await db.query(
       `INSERT INTO projects
-       (title, description, price, thumbnail, content_url,
+       (title, description, price, build_price, bundle_price, thumbnail, content_url,
         category, difficulty, features, tech_stack, status, created_at, updated_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,NOW(),NOW())
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,NOW(),NOW())
        RETURNING id`,
       [
         title, description, price,
+        build_price ?? null, bundle_price ?? null,
         thumbnail || null, content_url || null,
         category || 'IoT', difficulty || 'Beginner',
         JSON.stringify(features || []),

@@ -27,6 +27,10 @@ import Refund from './pages/Refund';
 import Cookies from './pages/Cookies';
 import Security from './pages/Security';
 import Cart from './pages/Cart';
+import OrderHome from './pages/OrderHome';
+import OrderForm from './pages/OrderForm';
+import OrderTrack from './pages/OrderTrack';
+import { isOrderHost } from './utils/host';
 import VerifyEmail from './pages/VerifyEmail';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -40,6 +44,7 @@ const toastStyle = {
 
 function App() {
   const { consent } = useCookieConsent();
+  const onOrderHost = isOrderHost();
 
   return (
     <ErrorBoundary>
@@ -49,7 +54,11 @@ function App() {
         <main className="flex-grow">
           <Routes>
             {/* Public Routes */}
-            <Route path="/" element={<Home />} />
+            {/* On order.inovitaz.in the root IS the build-ordering experience;
+                the main-site marketing routes stay reachable at their paths. */}
+            <Route path="/" element={onOrderHost ? <OrderHome /> : <Home />} />
+            <Route path="/order/:projectId" element={<OrderForm />} />
+            <Route path="/track" element={<OrderTrack />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
             <Route path="/login" element={<Login />} />

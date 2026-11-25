@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useCart } from '../context/CartContext';
+import { isOrderHost, mainSiteUrl, orderSiteUrl } from '../utils/host';
 import {
   HiMenu,
   HiX,
@@ -12,10 +13,12 @@ import {
   HiSupport,
   HiShoppingCart,
   HiShieldCheck,
+  HiChip,
 } from 'react-icons/hi';
 
 const Navbar = () => {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const onOrderHost = isOrderHost();
   const { count: cartCount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -73,6 +76,30 @@ const Navbar = () => {
               <HiCollection aria-hidden="true" className="w-5 h-5" />
               Projects
             </NavLink>
+            {!onOrderHost && (
+              <a
+                href={orderSiteUrl()}
+                className="flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-full transition-colors duration-200 border border-primary/40 text-primary-dim hover:bg-primary/10 font-medium"
+              >
+                <HiChip aria-hidden="true" className="w-5 h-5" />
+                Order a Build
+              </a>
+            )}
+            {onOrderHost && (
+              <>
+                <NavLink to="/track" className={navLinkClass}>
+                  <HiChip aria-hidden="true" className="w-5 h-5" />
+                  Track Build
+                </NavLink>
+                <a
+                  href={mainSiteUrl()}
+                  className="flex items-center gap-2 px-3.5 py-2.5 min-h-[44px] rounded-full transition-colors duration-200 border text-outline border-transparent hover:bg-surface-highest hover:text-white font-medium"
+                >
+                  <HiHome aria-hidden="true" className="w-5 h-5" />
+                  Main Site
+                </a>
+              </>
+            )}
             <NavLink to="/support" className={navLinkClass}>
               <HiSupport aria-hidden="true" className="w-5 h-5" />
               Support

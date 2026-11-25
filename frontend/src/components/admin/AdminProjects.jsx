@@ -32,6 +32,8 @@ const AdminProjects = () => {
   const [formData, setFormData] = useState({
     title: "",
     price: "",
+    build_price: "",
+    bundle_price: "",
     thumbnail: "",
     content_url: "",
     category: "IoT",
@@ -146,6 +148,8 @@ const AdminProjects = () => {
     setFormData({
       title: project.title,
       price: project.price != null ? String(paiseToRupees(project.price)) : "",
+      build_price: project.build_price != null ? String(paiseToRupees(project.build_price)) : "",
+      bundle_price: project.bundle_price != null ? String(paiseToRupees(project.bundle_price)) : "",
       thumbnail: project.thumbnail || "",
       content_url: project.content_url || jsonDownloadUrl || "",
       category: project.category || "IoT",
@@ -233,6 +237,8 @@ const AdminProjects = () => {
       const data = {
         title: formData.title,
         price: rupeesToPaise(formData.price),
+        build_price: formData.build_price === "" ? null : rupeesToPaise(formData.build_price),
+        bundle_price: formData.bundle_price === "" ? null : rupeesToPaise(formData.bundle_price),
         thumbnail: formData.thumbnail,
         content_url: formData.content_url,
         category: formData.category,
@@ -497,6 +503,44 @@ const AdminProjects = () => {
                         setFormData((prev) => ({
                           ...prev,
                           price: e.target.value,
+                        }))
+                      }
+                      className="input w-full"
+                      placeholder="499"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-outline mb-1">
+                      Complete Build Price (₹) <span className="text-outline-variant">(order.inovitaz.in)</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formData.build_price}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          build_price: e.target.value,
+                        }))
+                      }
+                      className="input w-full"
+                      placeholder="2499"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-outline mb-1">
+                      Bundle Price (₹) <span className="text-outline-variant">(docs + code)</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={formData.bundle_price}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          bundle_price: e.target.value,
                         }))
                       }
                       className="input w-full"

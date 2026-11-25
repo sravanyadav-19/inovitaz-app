@@ -36,6 +36,8 @@ const couponRoutes = require('./src/routes/coupon.routes');
 const reviewRoutes = require('./src/routes/review.routes');
 const wishlistRoutes = require('./src/routes/wishlist.routes');
 const supportRoutes = require('./src/routes/support.routes');
+const buildRequestRoutes = require('./src/routes/buildRequest.routes');
+const completeOrderRoutes = require('./src/routes/completeOrder.routes');
 
 const db = require('./src/config/db');
 
@@ -225,6 +227,8 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/admin', adminAuditLogger('ADMIN_ACCESS'), adminRoutes);
 
 app.use('/api/orders', orderRoutes);
+app.use('/api/build-requests', buildRequestRoutes);
+app.use('/api/complete-orders', completeOrderRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/wishlist', wishlistRoutes);
